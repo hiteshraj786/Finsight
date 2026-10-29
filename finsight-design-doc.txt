@@ -1,0 +1,81 @@
+FinSight
+Automated Personal Finance Monitoring & Spending Insight
+Feature List, Tech Stack & System Design - Flutter Build
+A phased mobile app that parses transaction SMS, learns your spending, and eventually tells you whether you can afford a purchase based on what's still coming due.
+Platform note: SMS reading is an Android-only capability, package or not - iOS does not allow third-party apps to read the SMS inbox. Building in Flutter gets a shared UI/business-logic codebase across platforms, but the SMS ingestion layer itself only ever runs on Android; iOS builds would need a different ingestion method (see the closing section).
+Phase 1 - SMS Parsing & Expense Tracking
+Feature List
+FeatureDescriptionSMS listenerDetect incoming bank/UPI/card transaction SMS in real timeParser engineExtract amount, merchant, account (last 4 digits), debit/credit type, date/time, txn referenceBank template layerPackage-provided bank/wallet/UPI parsing, with a custom template override system on top for banks or formats it missesConfirmation popupHeads-up popup right after parsing, with checkboxes/tags - category, "needs review," "ignore" (e.g. OTP/promo noise)Duplicate detectionDedupe on txn reference / amount+timestamp window so the same SMS isn't logged twiceMulti-account supportTrack multiple debit/credit accounts and cards separatelyManual entryAdd cash or untracked transactions manuallyCategoriesPredefined + user-defined categories, editable per transactionDaily/weekly digestSimple local notification summarizing the day's/week's spendLocal backup/exportExport to CSV; local encrypted backup fileOffline-firstFully functional with no network dependency
+Tech Stack
+LayerChoiceFrameworkFlutter (Dart) - Android-only build for SMS-dependent features; shared codebase can add iOS later with ingestion swapped outSMS read/listenanother_telephony - actively maintained fork of the widely-used telephony package (now discontinued); handles inbox query + real-time listener + background handler. android_sms_reader is a newer alternative worth comparing (pagination/search built in)SMS parsingtransaction_sms_parser as a starting layer - claims 30+ Indian banks, 14 wallets, UPI + card-scheme detection, typed TransactionInfo output. Low adoption (3 stars, v0.0.1) - vendor it into your own repo, treat as a base layer, not a black boxCustom fallback parserYour own regex/template layer (JSON config per sender ID) for banks/formats the package doesn't cover correctly - stays regardless of which package you pickPopup UIflutter_overlay_window for a system-alert-window style popup, or a high-priority local notification with inline actions via flutter_local_notificationsLocal storagedrift (type-safe SQLite for Flutter/Dart) or sqflite directlyPermissionspermission_handler for runtime SMS/notification permissions; manual battery-optimization exemption promptBackground reliabilityAndroid WorkManager via the workmanager package - Dart isolates alone aren't reliable enough after app kill
+System Design
+Data flow
+1. Incoming SMS arrives ? captured by the another_telephony listener
+2. transaction_sms_parser attempts base extraction (amount, merchant, account, type)
+3. If parsed with confidence ? map fields directly
+4. If parsed poorly/partially ? hand off to your custom fallback regex parser, then map fields
+5. Check for duplicates (txn reference, or amount+timestamp window)
+6. If duplicate ? discard
+7. If new ? insert as PENDING in local DB
+8. Trigger the confirmation popup/notification
+9. User selects category / confirms / edits / ignores
+10. Update the transaction as CONFIRMED
+11. Daily/weekly digest job (WorkManager) summarizes confirmed transactions
+
+Core data model (drift/sqflite)
+• Transaction - id, account_id, amount, type (debit/credit), merchant, category_id, status (pending/confirmed/ignored), txn_ref, raw_sms, timestamp
+• Account - id, bank_name, last4, account_type (savings/credit card)
+• Category - id, name, is_custom
+• FallbackTemplate - sender_id, regex_pattern, field_map (JSON asset, versioned/updatable without an app release) - only needed for cases the parsing package misses
+No backend in this phase - everything lives on-device, which also sidesteps sending sensitive SMS content off the phone.
+Phase 2 - Spending Insight
+Feature List
+FeatureDescriptionCategory breakdownWeekly/monthly/yearly spend by category, with trend vs previous periodBudget trackingSet per-category budgets, track actual vs budget, alert near/over limitRecurring transaction detectionIdentify subscriptions/EMIs/bills by matching merchant + amount + interval patternAnomaly detectionFlag unusually large or off-pattern transactions (rolling average/std-dev threshold)Merchant-level insightsTop merchants, frequency, average ticket sizeSavings goal progressTrack progress toward a savings target, factoring in the month's actual spendCashflow projectionSimple forward-looking balance estimate using recurring items + average discretionary spendInsight notificationsLocal push like "you're spending 20% more on food this month"Search & filterFilter transactions by date range, category, account, merchant
+Tech Stack
+LayerChoiceAnalytics engineDart module running scheduled SQL aggregation queries against drift/sqflite (grouping, windowed comparisons)Recurring/anomaly detectionRule-based first pass (interval clustering, rolling mean ± std-dev threshold); no ML needed initiallyChartsfl_chart (standard Flutter charting package) or syncfusion_flutter_charts for more polishSchedulingworkmanager periodic jobs (daily aggregation, weekly/monthly insight generation)Notificationsflutter_local_notifications - no server push needed since everything is computed on-device
+System Design
+Data flow
+1. WorkManager triggers scheduled aggregation jobs (daily/weekly/monthly) against the local DB
+2. Category & merchant aggregates are computed
+3. Recurring Pattern Detector clusters by merchant + amount + interval
+4. Anomaly Detector flags transactions outside the rolling average/std-dev threshold
+5. Budget Engine compares actual spend vs budget per category
+6. All outputs are written to an Insights table
+7. Insights surface on the Insights screen (fl_chart visuals + cards) and as local notifications
+
+New data additions
+• Budget - category_id, limit, period
+• RecurringPattern - merchant, amount, interval_days, next_expected_date
+• Insight - type, message, generated_at, related_txn_ids
+This phase is still fully on-device - it's a computation layer over Phase 1's data, not a new data source.
+Phase 3 - Ecosystem: Splitwise Integration & Affordability Check
+Feature List
+FeatureDescriptionSplitwise OAuthConnect a Splitwise account securelyTwo-way syncPull existing Splitwise groups/expenses; optionally push a parsed transaction as a shared expenseSettle-up remindersNotify when you owe/are owed, nudge before due datesWishlist integrationExisting wishlist/price-tracked items feed into the affordability check"Can I afford this?"Given a purchase amount, project balance after known upcoming bills/EMIs/subs and savings reserve, return Yes / No / Caution with reasoning shownUpcoming transaction forecastCombine recurring-pattern data with Splitwise dues into a near-term outgoing forecastCross-source dedupAvoid double-counting an expense that exists both as a parsed SMS transaction and a synced Splitwise expense
+Tech Stack
+LayerChoiceSplitwise APISplitwise public REST API, OAuth2Networkingdio or http packageToken handlingOAuth2 token exchange handled by a thin serverless function (Firebase Cloud Functions or lightweight Node.js) - safer than embedding a client secret in the app. App stores only resulting tokens, encrypted via flutter_secure_storage (Android Keystore-backed)Syncworkmanager periodic sync + optional webhook listener for near-real-time updatesAffordability engineExtension of Phase 2's forecasting: rule-based (current balance - known upcoming outflows - savings reserve = discretionary headroom)Push notificationsfirebase_messaging (FCM), for settle-up reminders and affordability alerts
+System Design
+Architecture
+1. On-device (Flutter app): local DB (transactions + insights), Splitwise Sync Module, Affordability Engine, Wishlist, "Can I afford this?" UI
+2. Thin backend (serverless): OAuth token exchange, optional Splitwise webhook receiver
+3. Splitwise Sync Module authenticates via the backend's OAuth flow, then talks to the Splitwise API directly for day-to-day sync
+4. Optional webhook receiver on the backend pushes near-real-time updates back to the Sync Module
+5. Synced data merges into the local DB, feeding the Affordability Engine alongside the Wishlist
+6. User queries an item price ? Affordability Engine returns Yes/No/Caution with reasoning to the UI
+
+Affordability logic (rule-based v1)
+projected_balance = current_balance
+                   - sum(known upcoming bills/EMIs due before target date)
+                   - sum(Splitwise amounts owed, due before target date)
+                   - savings_reserve_buffer
+
+if item_price <= projected_balance * safety_margin  ? "Yes"
+elif item_price <= projected_balance                ? "Caution" (explain what it eats into)
+else                                                 ? "No" (show which obligation blocks it)
+Architecture shift to note: Phases 1-2 are fully local-first. Phase 3 is the first point you need any server component - purely for the OAuth handshake and (optionally) webhooks, not for storing financial data. Keep transaction data on-device even here; the backend should only ever see Splitwise tokens, not your parsed SMS data.
+If iOS Ever Comes Into Scope
+Since iOS can't read SMS regardless of framework, Phase 1's ingestion would need to swap to one of: manual quick-entry, forwarded bank emails parsed via IMAP, or India's Account Aggregator framework (RBI-regulated, consent-based bank data access) - the last one is the closest like-for-like replacement and would also strengthen the Android pipeline as a fallback for banks with unreliable SMS formats. Flutter's shared codebase means only the ingestion layer changes per platform - UI, DB, insight engine, and Splitwise integration stay the same.
+Package Due-Diligence Checklist Before Locking In
+• Vendor/fork transaction_sms_parser into your own repo rather than depending on it live from pub.dev
+• Pull real (anonymized) SMS samples from the banks your actual users have, and regression-test the package against them
+• Compare another_telephony vs android_sms_reader hands-on for listener reliability on a couple of real Android versions/OEMs (SMS delivery behavior varies by manufacturer)
+• Confirm background delivery reliability with workmanager on at least one aggressive battery-optimization OEM (Xiaomi/Oppo/Vivo are notorious for killing background listeners)
