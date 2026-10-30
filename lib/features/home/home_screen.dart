@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/services/finance_data_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../sms/presentation/screens/sms_shell_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -92,6 +93,15 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 2),
           Text('Hi, $name', style: _text(20, AppColors.textPrimary, FontWeight.w800)),
         ])),
+        IconButton(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => SmsShellScreen()),
+          ),
+          tooltip: 'SMS Import',
+          style: IconButton.styleFrom(backgroundColor: Colors.white),
+          icon: const Icon(Icons.sms_outlined, color: AppColors.primary),
+        ),
+        const SizedBox(width: 8),
         IconButton(
           onPressed: _refresh,
           tooltip: 'Refresh',
