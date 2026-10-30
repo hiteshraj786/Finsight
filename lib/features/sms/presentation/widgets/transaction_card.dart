@@ -49,7 +49,9 @@ class TransactionCard extends StatelessWidget {
     final maskedAcct = maskAccount(tx.accountLast4);
     final dateStr = _formatDate(tx.date);
     final isAuto = tx.categorySource == 'auto' &&
+        tx.category.trim().isNotEmpty &&
         tx.category.toLowerCase() != 'uncategorized';
+    final categoryName = isAuto ? CategoryMeta.sanitize(tx.category) : 'Uncategorized';
 
     return Container(
       decoration: BoxDecoration(
@@ -75,7 +77,7 @@ class TransactionCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 CategoryIcon(
-                  category: tx.category,
+                  category: isAuto ? categoryName : 'Uncategorized',
                   size: 42,
                   iconSize: 22,
                 ),
@@ -102,11 +104,12 @@ class TransactionCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        '$maskedAcct · $dateStr',
-                        style: const TextStyle(
+                        '$categoryName · $maskedAcct · $dateStr',
+                        style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: isAuto ? AppColors.primary : AppColors.textSecondary,
+                          fontWeight: isAuto ? FontWeight.w600 : FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 6),

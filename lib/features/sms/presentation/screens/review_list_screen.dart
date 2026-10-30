@@ -196,9 +196,9 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                   final hiddenCount = pendingAll.where((t) => t.lowConfidence).length;
 
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Row(
                           children: [
@@ -212,35 +212,40 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                                 },
                               ),
                             ),
-                            Text(
-                              _hideLowConfidence && hiddenCount > 0
-                                  ? 'Hide low confidence ($hiddenCount hidden)'
-                                  : 'Hide low confidence',
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.textSecondary,
+                            Expanded(
+                              child: Text(
+                                _hideLowConfidence && hiddenCount > 0
+                                    ? 'Hide low confidence ($hiddenCount hidden)'
+                                    : 'Hide low confidence',
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
                             ),
                           ],
                         ),
                         if (visible.isNotEmpty)
-                          TextButton.icon(
-                            onPressed: () => _confirmAllVisible(visible),
-                            icon: const Icon(Icons.done_all_rounded, size: 16),
-                            label: Text(
-                              'Confirm all visible (${visible.length})',
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton.icon(
+                              onPressed: () => _confirmAllVisible(visible),
+                              icon: const Icon(Icons.done_all_rounded, size: 16),
+                              label: Text(
+                                'Confirm all visible (${visible.length})',
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                            style: TextButton.styleFrom(
-                              foregroundColor: AppColors.primary,
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              visualDensity: VisualDensity.compact,
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.primary,
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                visualDensity: VisualDensity.compact,
+                              ),
                             ),
                           ),
                       ],
