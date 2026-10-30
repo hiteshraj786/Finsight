@@ -45,8 +45,10 @@ class _HomeScreenState extends State<HomeScreen> {
               }
               if (snapshot.hasError) return _ErrorState(onRetry: _refresh);
               final data = snapshot.data!;
-              if (data.accounts.isEmpty) return const _EmptyState();
               if (_currentIndex == 1) return _activityView(data);
+              if (_currentIndex == 2) return _insightsView(data);
+              if (_currentIndex == 3) return _profileView(data);
+              if (data.accounts.isEmpty) return const _EmptyState();
               return _homeView(data);
             },
           ),
@@ -82,6 +84,46 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ],
+        ),
+      );
+
+  Widget _insightsView(FinanceDashboardData data) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.pie_chart_outline_rounded, size: 52, color: AppColors.primary),
+              const SizedBox(height: 16),
+              Text('Insights', style: _text(21, AppColors.textPrimary, FontWeight.w800)),
+              const SizedBox(height: 8),
+              Text(
+                'Spending insights and analytics will appear here.',
+                textAlign: TextAlign.center,
+                style: _text(14, AppColors.textSecondary, FontWeight.w500),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Widget _profileView(FinanceDashboardData data) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.person_outline_rounded, size: 52, color: AppColors.primary),
+              const SizedBox(height: 16),
+              Text('Profile', style: _text(21, AppColors.textPrimary, FontWeight.w800)),
+              const SizedBox(height: 8),
+              Text(
+                'Your profile details and settings.',
+                textAlign: TextAlign.center,
+                style: _text(14, AppColors.textSecondary, FontWeight.w500),
+              ),
+            ],
+          ),
         ),
       );
 
