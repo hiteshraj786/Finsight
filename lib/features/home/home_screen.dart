@@ -6,6 +6,10 @@ import '../../core/services/currency_service.dart';
 import '../../core/services/language_service.dart';
 import '../../core/constants/app_routes.dart';
 import '../../core/theme/app_colors.dart';
+import '../sms/data/transaction_repository.dart';
+import '../sms/models/parsed_transaction.dart';
+import '../sms/models/transaction_status.dart';
+import '../sms/presentation/screens/sms_shell_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,11 +20,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<FinanceDashboardData> _dashboard;
+  late final TransactionRepository _smsRepository;
   bool _showBalance = true;
 
   @override
   void initState() {
     super.initState();
+    _smsRepository = TransactionRepository();
     _dashboard = FinanceDataService.loadDashboard();
   }
 
@@ -58,6 +64,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       _header(data.firstName),
                       const SizedBox(height: 26),
                       _usableBalanceCard(data),
+                      const SizedBox(height: 20),
+                      _smsTransactionsCard(),
                       const SizedBox(height: 28),
                       _sectionHeader('Recent transactions'),
                       const SizedBox(height: 12),
@@ -82,6 +90,85 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
     ),
   );
+
+  Widget _smsTransactionsCard() {
+    final scheme = Theme.of(context).colorScheme;
+    return StreamBuilder<List<ParsedTransaction>>(
+      stream: _smsRepository.watchAll(statusFilter: TransactionStatus.pending),
+      builder: (context, snapshot) {
+        final pendingCount = (snapshot.data ?? []).length;
+        final subtitle = pendingCount > 0 ? '$pendingCount to review' : 'Import from SMS';
+
+        return Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: scheme.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: scheme.outlineVariant),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(Icons.sms_rounded, color: AppColors.primary, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('SMS transactions', style: _text(16, scheme.onSurface, FontWeight.w800)),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: _text(
+                        13,
+                        pendingCount > 0 ? AppColors.secondary : AppColors.textSecondary,
+                        FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              FilledButton.tonal(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => SmsShellScreen(repository: _smsRepository),
+                  ),
+                ),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primaryLight,
+                  foregroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(pendingCount > 0 ? 'Review' : 'Import', style: _text(13, AppColors.primary, FontWeight.w700)),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.arrow_forward_ios_rounded, size: 12),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Widget _header(String name) {
     final scheme = Theme.of(context).colorScheme;
