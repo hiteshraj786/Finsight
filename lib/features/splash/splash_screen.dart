@@ -4,6 +4,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_routes.dart';
 import '../../core/services/pin_service.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/services/profile_service.dart';
+import '../../core/theme/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -79,6 +81,13 @@ class _SplashScreenState extends State<SplashScreen>
     if (!AuthService.isAuthenticated) {
       Navigator.of(context).pushReplacementNamed(AppRoutes.onboarding);
       return;
+    }
+
+    try {
+      final profile = await ProfileService.load();
+      AppTheme.setPreference(profile.preferences.theme);
+    } on ProfileException {
+      // A missing preferences row should not block a valid signed-in user.
     }
 
     final hasPin = await PinService.hasPin();

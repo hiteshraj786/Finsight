@@ -213,7 +213,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       // Info text
                       RichText(
                         text: TextSpan(
-                          text: 'We send verification code to your email ',
+                          text: 'We sent a verification code to your email ',
                           style: GoogleFonts.inter(
                             fontSize: 15,
                             color: AppColors.textSecondary,
@@ -228,8 +228,26 @@ class _VerificationScreenState extends State<VerificationScreen> {
                                 color: AppColors.primary,
                               ),
                             ),
-                            const TextSpan(text: 'You can check your inbox.'),
+                            const TextSpan(
+                              text: 'Please check your Inbox and Spam folder.',
+                            ),
                           ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Change Email Button
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.edit_outlined, size: 16),
+                          label: const Text('Entered wrong email? Change'),
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: const Size(50, 30),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -247,6 +265,14 @@ class _VerificationScreenState extends State<VerificationScreen> {
                                 : AppColors.textSecondary,
                             decoration: TextDecoration.underline,
                           ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Note: If custom email server is unconfigured, test code 123456 can be used.',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: AppColors.textSecondary.withValues(alpha: 0.7),
                         ),
                       ),
 

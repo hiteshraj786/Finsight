@@ -6,7 +6,9 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/services/pin_service.dart';
 
 class SetupPinScreen extends StatefulWidget {
-  const SetupPinScreen({super.key});
+  final bool isChangingPin;
+
+  const SetupPinScreen({super.key, this.isChangingPin = false});
 
   @override
   State<SetupPinScreen> createState() => _SetupPinScreenState();
@@ -42,8 +44,12 @@ class _SetupPinScreenState extends State<SetupPinScreen> {
             if (!saved || !mounted) return;
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Security PIN set successfully!'),
+                SnackBar(
+                  content: Text(
+                    widget.isChangingPin
+                        ? 'Security PIN changed successfully!'
+                        : 'Security PIN set successfully!',
+                  ),
                   backgroundColor: AppColors.success,
                   duration: Duration(seconds: 2),
                 ),
@@ -51,12 +57,16 @@ class _SetupPinScreenState extends State<SetupPinScreen> {
             }
             Future.delayed(const Duration(milliseconds: 300), () {
               if (mounted) {
-                Navigator.of(context).pushNamed(AppRoutes.addAccount);
+                if (widget.isChangingPin) {
+                  Navigator.of(context).pop(true);
+                } else {
+                  Navigator.of(context).pushNamed(AppRoutes.addAccount);
+                }
               }
             });
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text('PINs do not match. Please try again.'),
                 backgroundColor: AppColors.error,
               ),

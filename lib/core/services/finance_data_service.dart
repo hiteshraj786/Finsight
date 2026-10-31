@@ -1,48 +1,265 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'auth_service.dart';
 
-/// Read-only, authenticated access to finance records.
+/// Read and write access to finance records with offline-first local caching.
 class FinanceDataService {
   FinanceDataService._();
 
   static SupabaseClient get _client => Supabase.instance.client;
+  static const _accountsPrefix = 'finsight_finance_accounts_';
+
+  static Future<List<FinanceAccount>> _cachedAccounts(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('$_accountsPrefix$userId');
+    if (raw == null) return [];
+    try {
+      final list = jsonDecode(raw) as List<dynamic>;
+      return list
+          .map(
+            (item) =>
+                FinanceAccount.fromJson(Map<String, dynamic>.from(item as Map)),
+          )
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  static Future<void> _cacheAccounts(
+    String userId,
+    List<FinanceAccount> accounts,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonList = accounts.map((a) => a.toJson()).toList();
+    await prefs.setString('$_accountsPrefix$userId', jsonEncode(jsonList));
+  }
 
   static Future<FinanceDashboardData> loadDashboard() async {
     final user = AuthService.currentUser;
-    if (user == null) throw const FinanceDataException('Your session has expired.');
+    final userId = user?.id ?? 'local_user';
+    final cachedAccounts = await _cachedAccounts(userId);
 
-    try {
-      final results = await Future.wait<dynamic>([
-        _client.from('profiles').select('full_name').eq('id', user.id).maybeSingle(),
-        _client
+    if (user != null && AuthService.isInitialized) {
+      try {
+        final results = await Future.wait<dynamic>([
+          _client
+              .from('profiles')
+              .select('full_name')
+              .eq('id', user.id)
+              .maybeSingle(),
+          _client
+              .from('finance_accounts')
+              .select(
+                'id, provider_name, masked_account_number, account_type, currency, latest_balance, balance_updated_at, is_active',
+              )
+              .eq('is_active', true)
+              .order('balance_updated_at', ascending: false),
+          _client
+              .from('finance_transactions')
+              .select('id, amount, direction, merchant, category, occurred_at')
+              .order('occurred_at', ascending: false)
+              .limit(10),
+        ]);
+        final profile = results[0] as Map<String, dynamic>?;
+        final accounts = (results[1] as List<dynamic>)
+            .map(
+              (row) =>
+                  FinanceAccount.fromJson(Map<String, dynamic>.from(row as Map)),
+            )
+            .toList();
+        final transactions = (results[2] as List<dynamic>)
+            .map(
+              (row) => FinanceTransaction.fromJson(
+                Map<String, dynamic>.from(row as Map),
+              ),
+            )
+            .toList();
+
+        final map = <String, FinanceAccount>{};
+        for (final a in cachedAccounts) {
+          map[a.id] = a;
+        }
+        for (final a in accounts) {
+          map[a.id] = a;
+        }
+        final merged = map.values.toList();
+        await _cacheAccounts(userId, merged);
+
+        return FinanceDashboardData(
+          firstName: _firstName(profile?['full_name'] as String?),
+          accounts: merged,
+          transactions: transactions,
+        );
+      } catch (e) {
+        debugPrint('Dashboard Supabase fetch failed: $e, using local cache.');
+      }
+    }
+
+    final cachedName = user?.userMetadata?['full_name'] as String?;
+    return FinanceDashboardData(
+      firstName: _firstName(cachedName),
+      accounts: cachedAccounts,
+      transactions: [],
+    );
+  }
+
+  static Future<List<FinanceAccount>> loadAccounts() async {
+    final user = AuthService.currentUser;
+    final userId = user?.id ?? 'local_user';
+    final cached = await _cachedAccounts(userId);
+
+    if (user != null && AuthService.isInitialized) {
+      try {
+        final rows = await _client
             .from('finance_accounts')
-            .select('id, provider_name, masked_account_number, account_type, currency, latest_balance, balance_updated_at, is_active')
+            .select(
+              'id, provider_name, masked_account_number, account_type, currency, latest_balance, balance_updated_at, is_active',
+            )
             .eq('is_active', true)
-            .order('balance_updated_at', ascending: false),
-        _client
+            .order('created_at');
+        final remote = (rows as List<dynamic>)
+            .map(
+              (row) =>
+                  FinanceAccount.fromJson(Map<String, dynamic>.from(row as Map)),
+            )
+            .toList();
+
+        final map = <String, FinanceAccount>{};
+        for (final a in cached) {
+          map[a.id] = a;
+        }
+        for (final a in remote) {
+          map[a.id] = a;
+        }
+        final merged = map.values.toList();
+        await _cacheAccounts(userId, merged);
+        return merged;
+      } catch (e) {
+        debugPrint('Accounts Supabase fetch failed: $e, returning local cache.');
+        return cached;
+      }
+    }
+    return cached;
+  }
+
+  static Future<FinanceAccount> loadAccount(String accountId) async {
+    final user = AuthService.currentUser;
+    final userId = user?.id ?? 'local_user';
+    final cached = await _cachedAccounts(userId);
+    final match = cached.where((a) => a.id == accountId).firstOrNull;
+    if (match != null) return match;
+
+    if (user != null && AuthService.isInitialized) {
+      try {
+        final row = await _client
+            .from('finance_accounts')
+            .select(
+              'id, provider_name, masked_account_number, account_type, currency, latest_balance, balance_updated_at, is_active',
+            )
+            .eq('id', accountId)
+            .eq('is_active', true)
+            .single();
+        return FinanceAccount.fromJson(Map<String, dynamic>.from(row));
+      } catch (_) {}
+    }
+    throw const FinanceDataException('This account is unavailable.');
+  }
+
+  static Future<List<FinanceTransaction>> loadAccountTransactions(
+    String accountId,
+  ) async {
+    final user = AuthService.currentUser;
+    if (user != null && AuthService.isInitialized) {
+      try {
+        final rows = await _client
             .from('finance_transactions')
             .select('id, amount, direction, merchant, category, occurred_at')
-            .order('occurred_at', ascending: false)
-            .limit(10),
-      ]);
-      final profile = results[0] as Map<String, dynamic>?;
-      final accounts = (results[1] as List<dynamic>)
-          .map((row) => FinanceAccount.fromJson(Map<String, dynamic>.from(row as Map)))
-          .toList();
-      final transactions = (results[2] as List<dynamic>)
-          .map((row) => FinanceTransaction.fromJson(Map<String, dynamic>.from(row as Map)))
-          .toList();
-      return FinanceDashboardData(
-        firstName: _firstName(profile?['full_name'] as String?),
-        accounts: accounts,
-        transactions: transactions,
-      );
-    } on PostgrestException {
-      throw const FinanceDataException('Unable to load your financial data right now.');
-    } catch (error) {
-      if (error is FinanceDataException) rethrow;
-      throw const FinanceDataException('Unable to load your financial data right now.');
+            .eq('account_id', accountId)
+            .order('occurred_at', ascending: false);
+        return (rows as List<dynamic>)
+            .map(
+              (row) => FinanceTransaction.fromJson(
+                Map<String, dynamic>.from(row as Map),
+              ),
+            )
+            .toList();
+      } catch (_) {}
+    }
+    return [];
+  }
+
+  static Future<void> saveAccount(
+    AccountDraft draft, {
+    String? accountId,
+  }) async {
+    final user = AuthService.currentUser;
+    final userId = user?.id ?? 'local_user';
+    final targetId =
+        accountId ?? 'acc_${DateTime.now().millisecondsSinceEpoch}';
+    final values = draft.toJson();
+
+    final newAccount = FinanceAccount(
+      id: targetId,
+      providerName: draft.providerName,
+      maskedAccountNumber: values['masked_account_number'] as String,
+      accountType: draft.accountType,
+      currency: draft.currency,
+      latestBalance: draft.balance,
+      balanceUpdatedAt: DateTime.now(),
+    );
+
+    // Save locally first so the account is NEVER lost
+    final currentAccounts = await _cachedAccounts(userId);
+    final updatedList = List<FinanceAccount>.from(currentAccounts);
+    final existingIndex = updatedList.indexWhere((a) => a.id == targetId);
+    if (existingIndex >= 0) {
+      updatedList[existingIndex] = newAccount;
+    } else {
+      updatedList.add(newAccount);
+    }
+    await _cacheAccounts(userId, updatedList);
+
+    // Sync to Supabase if authenticated
+    if (user != null && AuthService.isInitialized) {
+      try {
+        if (accountId == null) {
+          await _client.from('finance_accounts').insert({
+            ...values,
+            'id': targetId,
+            'user_id': user.id,
+          });
+        } else {
+          await _client
+              .from('finance_accounts')
+              .update(values)
+              .eq('id', accountId);
+        }
+      } on PostgrestException catch (e) {
+        debugPrint('Supabase finance_accounts sync warning: ${e.message}');
+      } catch (e) {
+        debugPrint('Supabase finance_accounts sync error: $e');
+      }
+    }
+  }
+
+  static Future<void> archiveAccount(String accountId) async {
+    final user = AuthService.currentUser;
+    final userId = user?.id ?? 'local_user';
+    final cached = await _cachedAccounts(userId);
+    final updated = cached.where((a) => a.id != accountId).toList();
+    await _cacheAccounts(userId, updated);
+
+    if (user != null && AuthService.isInitialized) {
+      try {
+        await _client
+            .from('finance_accounts')
+            .update({'is_active': false})
+            .eq('id', accountId);
+      } catch (_) {}
     }
   }
 
@@ -57,21 +274,35 @@ class FinanceDashboardData {
   final List<FinanceAccount> accounts;
   final List<FinanceTransaction> transactions;
 
-  const FinanceDashboardData({required this.firstName, required this.accounts, required this.transactions});
+  const FinanceDashboardData({
+    required this.firstName,
+    required this.accounts,
+    required this.transactions,
+  });
 
-  /// Credit-card balances are deliberately excluded from available cash.
   double get usableBalance => accounts
-      .where((account) => account.isDepositAccount)
-      .fold<double>(0, (total, account) => total + (account.latestBalance ?? 0));
+      .where((account) => account.isDepositAccount || account.accountType == 'wallet')
+      .fold<double>(
+        0,
+        (total, account) => total + (account.latestBalance ?? 0),
+      );
 
   double get creditCardDue => accounts
       .where((account) => account.accountType == 'credit_card')
-      .fold<double>(0, (total, account) => total + (account.latestBalance ?? 0));
+      .fold<double>(
+        0,
+        (total, account) => total + (account.latestBalance ?? 0),
+      );
 
   double get monthSpend {
     final now = DateTime.now();
     return transactions
-        .where((transaction) => transaction.direction == TransactionDirection.debit && transaction.occurredAt.year == now.year && transaction.occurredAt.month == now.month)
+        .where(
+          (transaction) =>
+              transaction.direction == TransactionDirection.debit &&
+              transaction.occurredAt.year == now.year &&
+              transaction.occurredAt.month == now.month,
+        )
         .fold<double>(0, (total, transaction) => total + transaction.amount);
   }
 }
@@ -85,29 +316,83 @@ class FinanceAccount {
   final double? latestBalance;
   final DateTime? balanceUpdatedAt;
 
-  const FinanceAccount({required this.id, required this.providerName, required this.maskedAccountNumber, required this.accountType, required this.currency, required this.latestBalance, required this.balanceUpdatedAt});
+  const FinanceAccount({
+    required this.id,
+    required this.providerName,
+    required this.maskedAccountNumber,
+    required this.accountType,
+    required this.currency,
+    required this.latestBalance,
+    required this.balanceUpdatedAt,
+  });
 
-  bool get isDepositAccount => accountType == 'savings' || accountType == 'current';
+  bool get isDepositAccount =>
+      accountType == 'savings' || accountType == 'current';
   bool get isCreditCard => accountType == 'credit_card';
 
   String get displayType => switch (accountType) {
-        'credit_card' => 'Credit card',
-        'current' => 'Current account',
-        'savings' => 'Savings account',
-        'loan' => 'Loan',
-        'wallet' => 'Wallet',
-        _ => 'Account',
-      };
+    'credit_card' => 'Credit card',
+    'current' => 'Current account',
+    'savings' => 'Savings account',
+    'loan' => 'Loan',
+    'wallet' => 'Wallet',
+    _ => 'Account',
+  };
 
   factory FinanceAccount.fromJson(Map<String, dynamic> json) => FinanceAccount(
-        id: json['id'] as String,
-        providerName: json['provider_name'] as String? ?? 'Bank account',
-        maskedAccountNumber: json['masked_account_number'] as String? ?? '••••',
-        accountType: json['account_type'] as String? ?? 'other',
-        currency: json['currency'] as String? ?? 'INR',
-        latestBalance: (json['latest_balance'] as num?)?.toDouble(),
-        balanceUpdatedAt: DateTime.tryParse(json['balance_updated_at'] as String? ?? ''),
-      );
+    id: json['id'] as String? ?? 'acc_${DateTime.now().millisecondsSinceEpoch}',
+    providerName: json['provider_name'] as String? ?? 'Bank account',
+    maskedAccountNumber: json['masked_account_number'] as String? ?? '••••',
+    accountType: json['account_type'] as String? ?? 'other',
+    currency: json['currency'] as String? ?? 'INR',
+    latestBalance: (json['latest_balance'] as num?)?.toDouble() ?? 0.0,
+    balanceUpdatedAt: DateTime.tryParse(
+      json['balance_updated_at'] as String? ?? '',
+    ),
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'provider_name': providerName,
+    'masked_account_number': maskedAccountNumber,
+    'account_type': accountType,
+    'currency': currency,
+    'latest_balance': latestBalance,
+    'balance_updated_at': balanceUpdatedAt?.toIso8601String(),
+    'is_active': true,
+  };
+}
+
+class AccountDraft {
+  final String providerName;
+  final String accountType;
+  final String currency;
+  final double balance;
+  final String maskedAccountNumber;
+
+  const AccountDraft({
+    required this.providerName,
+    required this.accountType,
+    required this.currency,
+    required this.balance,
+    this.maskedAccountNumber = '••••',
+  });
+
+  Map<String, dynamic> toJson() {
+    final raw = maskedAccountNumber.trim();
+    final formatted = raw.isEmpty || raw == '••••'
+        ? '••••'
+        : (raw.startsWith('••••') ? raw : '•••• $raw');
+    return {
+      'provider_name': providerName.trim(),
+      'account_type': accountType,
+      'currency': currency,
+      'latest_balance': balance,
+      'balance_updated_at': DateTime.now().toUtc().toIso8601String(),
+      'masked_account_number': formatted,
+      'is_active': true,
+    };
+  }
 }
 
 enum TransactionDirection { debit, credit }
@@ -120,15 +405,27 @@ class FinanceTransaction {
   final String? category;
   final DateTime occurredAt;
 
-  const FinanceTransaction({required this.id, required this.amount, required this.direction, required this.merchant, required this.category, required this.occurredAt});
+  const FinanceTransaction({
+    required this.id,
+    required this.amount,
+    required this.direction,
+    required this.merchant,
+    required this.category,
+    required this.occurredAt,
+  });
 
-  factory FinanceTransaction.fromJson(Map<String, dynamic> json) => FinanceTransaction(
+  factory FinanceTransaction.fromJson(Map<String, dynamic> json) =>
+      FinanceTransaction(
         id: json['id'] as String,
         amount: (json['amount'] as num?)?.toDouble() ?? 0,
-        direction: json['direction'] == 'credit' ? TransactionDirection.credit : TransactionDirection.debit,
+        direction: json['direction'] == 'credit'
+            ? TransactionDirection.credit
+            : TransactionDirection.debit,
         merchant: json['merchant'] as String? ?? 'Transaction',
         category: json['category'] as String?,
-        occurredAt: DateTime.tryParse(json['occurred_at'] as String? ?? '') ?? DateTime.now(),
+        occurredAt:
+            DateTime.tryParse(json['occurred_at'] as String? ?? '') ??
+            DateTime.now(),
       );
 }
 

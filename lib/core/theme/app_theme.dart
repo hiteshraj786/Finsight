@@ -5,6 +5,18 @@ import 'app_colors.dart';
 class AppTheme {
   AppTheme._();
 
+  // Light is the default for every new account. A saved setting can explicitly
+  // select dark mode or follow the device.
+  static final themeMode = ValueNotifier<ThemeMode>(ThemeMode.light);
+
+  static void setPreference(String preference) {
+    themeMode.value = switch (preference) {
+      'dark' => ThemeMode.dark,
+      'system' => ThemeMode.system,
+      _ => ThemeMode.light,
+    };
+  }
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
@@ -147,6 +159,56 @@ class AppTheme {
           color: AppColors.textPrimary,
         ),
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
+      ),
+    );
+  }
+
+  static ThemeData get darkTheme {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      brightness: Brightness.dark,
+      primary: const Color(0xFFA475FF),
+    );
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: const Color(0xFF15121B),
+      textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+      canvasColor: const Color(0xFF15121B),
+      cardTheme: CardThemeData(color: scheme.surface),
+      dividerTheme: DividerThemeData(color: scheme.outlineVariant),
+      dialogTheme: DialogThemeData(
+        backgroundColor: scheme.surface,
+        titleTextStyle: GoogleFonts.inter(
+          color: scheme.onSurface,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+        ),
+        contentTextStyle: GoogleFonts.inter(
+          color: scheme.onSurfaceVariant,
+          fontSize: 14,
+        ),
+      ),
+      listTileTheme: ListTileThemeData(
+        textColor: scheme.onSurface,
+        iconColor: scheme.onSurfaceVariant,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.transparent,
+        foregroundColor: scheme.onSurface,
+        centerTitle: true,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: scheme.outline),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        ),
       ),
     );
   }

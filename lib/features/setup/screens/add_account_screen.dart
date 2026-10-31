@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_routes.dart';
+import '../../../core/services/finance_data_service.dart';
+import '../../../core/services/currency_service.dart';
+import '../../../core/services/language_service.dart';
 
 class AddAccountScreen extends StatefulWidget {
   const AddAccountScreen({super.key});
@@ -15,6 +18,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   final _balanceController = TextEditingController(text: '00.00');
   String _selectedAccountType = 'Bank';
   String _selectedBank = 'Chase';
+  bool _isSaving = false;
 
   final List<String> _accountTypes = ['Bank', 'Wallet', 'Credit Card', 'Cash'];
 
@@ -64,11 +68,52 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     super.dispose();
   }
 
-  void _onContinue() {
-    // Navigate to Home screen
-    Navigator.of(
-      context,
-    ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
+  Future<void> _onContinue() async {
+    if (_isSaving) return;
+    final balance = double.tryParse(_balanceController.text.trim());
+    if (_nameController.text.trim().isEmpty || balance == null || balance < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enter an account name and a valid balance.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+    final type = switch (_selectedAccountType) {
+      'Bank' => 'savings',
+      'Wallet' => 'wallet',
+      'Credit Card' => 'credit_card',
+      'Cash' => 'other',
+      _ => 'other',
+    };
+    setState(() => _isSaving = true);
+    try {
+      await FinanceDataService.saveAccount(
+        AccountDraft(
+          providerName: _nameController.text.trim(),
+          accountType: type,
+          currency: CurrencyService.current,
+          balance: balance,
+        ),
+      );
+      if (mounted) {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(AppRoutes.home, (_) => false);
+      }
+    } on FinanceDataException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error.message),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   void _showBankPicker() {
@@ -222,7 +267,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Balance',
+                    'Balance'.tr(),
                     style: GoogleFonts.inter(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -233,7 +278,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                   Row(
                     children: [
                       Text(
-                        '₹ ',
+                        '${CurrencyService.symbolFor(CurrencyService.current)} ',
                         style: GoogleFonts.inter(
                           fontSize: 48,
                           fontWeight: FontWeight.w700,
@@ -376,8 +421,17 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
 
                       // Continue Button
                       ElevatedButton(
-                        onPressed: _onContinue,
-                        child: const Text('Continue'),
+                        onPressed: _isSaving ? null : _onContinue,
+                        child: _isSaving
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('Continue'),
                       ),
                     ],
                   ),

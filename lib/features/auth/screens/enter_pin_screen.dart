@@ -4,6 +4,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/pin_service.dart';
+import '../../../core/services/profile_service.dart';
+import '../../../core/services/biometric_service.dart';
 
 class EnterPinScreen extends StatefulWidget {
   const EnterPinScreen({super.key});
@@ -15,6 +17,55 @@ class EnterPinScreen extends StatefulWidget {
 class _EnterPinScreenState extends State<EnterPinScreen> {
   String _enteredPin = '';
   bool _isError = false;
+  bool _biometricEnabled = false;
+  bool _isAuthenticating = false;
+  bool _hasRequestedBiometric = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnlockPreference();
+  }
+
+  Future<void> _loadUnlockPreference() async {
+    try {
+      final profile = await ProfileService.load();
+      if (mounted) {
+        setState(
+          () => _biometricEnabled =
+              profile.preferences.securityMethod == 'biometric',
+        );
+        if (_biometricEnabled) _requestBiometricOnOpen();
+      }
+    } catch (_) {
+      // PIN remains available if settings cannot be loaded.
+    }
+  }
+
+  Future<void> _useBiometric() async {
+    if (_isAuthenticating) return;
+    setState(() => _isAuthenticating = true);
+    try {
+      final authenticated = await BiometricService.authenticate(
+        reason: 'Authenticate to unlock FinSight',
+      );
+      if (authenticated && mounted) {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(AppRoutes.home, (_) => false);
+      }
+    } finally {
+      if (mounted) setState(() => _isAuthenticating = false);
+    }
+  }
+
+  void _requestBiometricOnOpen() {
+    if (_hasRequestedBiometric) return;
+    _hasRequestedBiometric = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _biometricEnabled) _useBiometric();
+    });
+  }
 
   void _onNumberTap(String number) async {
     if (await PinService.isLocked()) {
@@ -155,6 +206,23 @@ class _EnterPinScreenState extends State<EnterPinScreen> {
             ),
 
             const SizedBox(height: 40),
+
+            if (_biometricEnabled)
+              TextButton.icon(
+                onPressed: _isAuthenticating ? null : _useBiometric,
+                icon: const Icon(
+                  Icons.fingerprint_rounded,
+                  color: Colors.white,
+                ),
+                label: Text(
+                  _isAuthenticating ? 'Authenticating…' : 'Use biometric',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            if (_biometricEnabled) const SizedBox(height: 16),
 
             // PIN dots
             Row(

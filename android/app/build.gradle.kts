@@ -24,6 +24,7 @@ android {
         applicationId = "com.finsight.finsight"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
+        // local_auth uses Android's biometric APIs, available from API 23.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
