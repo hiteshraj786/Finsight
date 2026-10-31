@@ -233,17 +233,38 @@ class AccountsScreen extends StatefulWidget {
 }
 
 class _AccountsScreenState extends State<AccountsScreen> {
-  late Future<List<FinanceAccount>> _accounts;
+  List<FinanceAccount>? _accounts;
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    _accounts = FinanceDataService.loadAccounts();
+    _loadInitial();
+  }
+
+  Future<void> _loadInitial() async {
+    final cached = await FinanceDataService.getCachedAccounts();
+    if (mounted && cached.isNotEmpty) {
+      setState(() {
+        _accounts = cached;
+        _loading = false;
+      });
+    }
+    await _refresh();
   }
 
   Future<void> _refresh() async {
-    setState(() => _accounts = FinanceDataService.loadAccounts());
-    await _accounts;
+    try {
+      final latest = await FinanceDataService.loadAccounts();
+      if (mounted) {
+        setState(() {
+          _accounts = latest;
+          _loading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -253,85 +274,94 @@ class _AccountsScreenState extends State<AccountsScreen> {
       valueListenable: CurrencyService.selected,
       builder: (context, _, child) => Scaffold(
         appBar: AppBar(title: Text('Account'.tr())),
-      body: FutureBuilder<List<FinanceAccount>>(
-        future: _accounts,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done)
-            return const Center(child: CircularProgressIndicator());
-          if (snapshot.hasError) return _ProfileError(onRetry: _refresh);
-          final accounts = snapshot.data!;
-          final total = accounts
-              .where(
-                (account) =>
-                    account.isDepositAccount || account.accountType == 'wallet',
-              )
-              .fold<double>(
-                0,
-                (value, account) => value + (account.latestBalance ?? 0),
-              );
-          return RefreshIndicator(
-            onRefresh: _refresh,
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 18, 16, 30),
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFA475FF), AppColors.primary],
-                    ),
-                    borderRadius: BorderRadius.circular(28),
+        body: _loading && _accounts == null
+            ? const Center(child: CircularProgressIndicator())
+            : _accounts == null
+                ? _ProfileError(onRetry: _loadInitial)
+                : Builder(
+                    builder: (context) {
+                      final accounts = _accounts!;
+                      final total = accounts
+                          .where(
+                            (account) =>
+                                account.isDepositAccount || account.accountType == 'wallet',
+                          )
+                          .fold<double>(
+                            0,
+                            (value, account) => value + (account.latestBalance ?? 0),
+                          );
+                      return RefreshIndicator(
+                        onRefresh: _refresh,
+                        child: ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.fromLTRB(16, 18, 16, 30),
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFFA475FF), AppColors.primary],
+                                ),
+                                borderRadius: BorderRadius.circular(28),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'Account Balance'.tr(),
+                                    style: _style(15, Colors.white70, FontWeight.w500),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    _money(total),
+                                    style: _style(38, Colors.white, FontWeight.w800),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            if (accounts.isEmpty)
+                              _emptyCard(
+                                'No accounts yet'.tr(),
+                                'Add a bank, wallet, or credit card to start tracking your finances.'.tr(),
+                              )
+                            else
+                              ...accounts.map(
+                                (account) => _AccountListTile(
+                                  account: account,
+                                  onTap: () async {
+                                    await Navigator.pushNamed(
+                                      context,
+                                      AppRoutes.accountDetail,
+                                      arguments: account.id,
+                                    );
+                                    final cached = await FinanceDataService.getCachedAccounts();
+                                    if (mounted) setState(() => _accounts = cached);
+                                    _refresh();
+                                  },
+                                ),
+                              ),
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              onPressed: () async {
+                                await Navigator.pushNamed(context, AppRoutes.accountEditor);
+                                final cached = await FinanceDataService.getCachedAccounts();
+                                if (mounted) {
+                                  setState(() {
+                                    _accounts = cached;
+                                    _loading = false;
+                                  });
+                                }
+                                _refresh();
+                              },
+                              icon: const Icon(Icons.add),
+                              label: Text('Add new account'.tr()),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Account Balance'.tr(),
-                        style: _style(15, Colors.white70, FontWeight.w500),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _money(total),
-                        style: _style(38, Colors.white, FontWeight.w800),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                if (accounts.isEmpty)
-                  _emptyCard(
-                    'No accounts yet'.tr(),
-                    'Add a bank, wallet, or credit card to start tracking your finances.'.tr(),
-                  )
-                else
-                  ...accounts.map(
-                    (account) => _AccountListTile(
-                      account: account,
-                      onTap: () async {
-                        await Navigator.pushNamed(
-                          context,
-                          AppRoutes.accountDetail,
-                          arguments: account.id,
-                        );
-                        _refresh();
-                      },
-                    ),
-                  ),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    await Navigator.pushNamed(context, AppRoutes.accountEditor);
-                    _refresh();
-                  },
-                  icon: const Icon(Icons.add),
-                  label: Text('Add new account'.tr()),
-                ),
-              ],
-            ),
-          );
-        },
       ),
-    ),
     ),
   );
 }

@@ -1,8 +1,12 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../features/sms/data/transaction_repository.dart';
+import '../../features/sms/models/transaction_status.dart';
+import '../../features/sms/models/transaction_type.dart';
 import 'auth_service.dart';
 
 /// Read and write access to finance records with offline-first local caching.
@@ -11,6 +15,15 @@ class FinanceDataService {
 
   static SupabaseClient get _client => Supabase.instance.client;
   static const _accountsPrefix = 'finsight_finance_accounts_';
+
+  static String _generateUuid() {
+    final rnd = math.Random();
+    final bytes = List<int>.generate(16, (_) => rnd.nextInt(256));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40; // RFC4122 version 4
+    bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant
+    final hex = bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).toList();
+    return '${hex.sublist(0, 4).join()}-${hex.sublist(4, 6).join()}-${hex.sublist(6, 8).join()}-${hex.sublist(8, 10).join()}-${hex.sublist(10, 16).join()}';
+  }
 
   static Future<List<FinanceAccount>> _cachedAccounts(String userId) async {
     final prefs = await SharedPreferences.getInstance();
@@ -38,10 +51,37 @@ class FinanceDataService {
     await prefs.setString('$_accountsPrefix$userId', jsonEncode(jsonList));
   }
 
+  static Future<List<FinanceAccount>> getCachedAccounts([String? userId]) async {
+    final uid = userId ?? AuthService.currentUser?.id ?? 'local_user';
+    return _cachedAccounts(uid);
+  }
+
   static Future<FinanceDashboardData> loadDashboard() async {
     final user = AuthService.currentUser;
     final userId = user?.id ?? 'local_user';
     final cachedAccounts = await _cachedAccounts(userId);
+
+    // Load local SMS and manual transactions from Drift SQLite
+    List<FinanceTransaction> localTransactions = [];
+    try {
+      final repo = TransactionRepository();
+      final localTx = await repo.getAll();
+      localTransactions = localTx
+          .where((t) => t.status != TransactionStatus.ignored)
+          .map((tx) => FinanceTransaction(
+                id: tx.id?.toString() ?? 'tx_${tx.date.millisecondsSinceEpoch}',
+                amount: tx.amountPaise / 100.0,
+                direction: tx.type == TransactionType.credit
+                    ? TransactionDirection.credit
+                    : TransactionDirection.debit,
+                merchant: tx.party.isEmpty ? 'Unknown' : tx.party,
+                category: tx.category,
+                occurredAt: tx.date,
+              ))
+          .toList();
+    } catch (e) {
+      debugPrint('Local transactions fetch error: $e');
+    }
 
     if (user != null && AuthService.isInitialized) {
       try {
@@ -62,7 +102,7 @@ class FinanceDataService {
               .from('finance_transactions')
               .select('id, amount, direction, merchant, category, occurred_at')
               .order('occurred_at', ascending: false)
-              .limit(10),
+              .limit(20),
         ]);
         final profile = results[0] as Map<String, dynamic>?;
         final accounts = (results[1] as List<dynamic>)
@@ -71,7 +111,7 @@ class FinanceDataService {
                   FinanceAccount.fromJson(Map<String, dynamic>.from(row as Map)),
             )
             .toList();
-        final transactions = (results[2] as List<dynamic>)
+        final remoteTransactions = (results[2] as List<dynamic>)
             .map(
               (row) => FinanceTransaction.fromJson(
                 Map<String, dynamic>.from(row as Map),
@@ -89,10 +129,21 @@ class FinanceDataService {
         final merged = map.values.toList();
         await _cacheAccounts(userId, merged);
 
+        // Merge remote and local transactions
+        final txMap = <String, FinanceTransaction>{};
+        for (final t in localTransactions) {
+          txMap[t.id] = t;
+        }
+        for (final t in remoteTransactions) {
+          txMap[t.id] = t;
+        }
+        final mergedTransactions = txMap.values.toList();
+        mergedTransactions.sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
+
         return FinanceDashboardData(
           firstName: _firstName(profile?['full_name'] as String?),
           accounts: merged,
-          transactions: transactions,
+          transactions: mergedTransactions,
         );
       } catch (e) {
         debugPrint('Dashboard Supabase fetch failed: $e, using local cache.');
@@ -100,10 +151,11 @@ class FinanceDataService {
     }
 
     final cachedName = user?.userMetadata?['full_name'] as String?;
+    localTransactions.sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
     return FinanceDashboardData(
       firstName: _firstName(cachedName),
       accounts: cachedAccounts,
-      transactions: [],
+      transactions: localTransactions,
     );
   }
 
@@ -198,8 +250,7 @@ class FinanceDataService {
   }) async {
     final user = AuthService.currentUser;
     final userId = user?.id ?? 'local_user';
-    final targetId =
-        accountId ?? 'acc_${DateTime.now().millisecondsSinceEpoch}';
+    final targetId = accountId ?? _generateUuid();
     final values = draft.toJson();
 
     final newAccount = FinanceAccount(
