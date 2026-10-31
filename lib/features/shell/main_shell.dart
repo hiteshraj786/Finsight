@@ -246,9 +246,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
   }
 }
 
-/// Placeholder screen for Budget / Insights tab.
-class BudgetScreen extends StatelessWidget {
-  const BudgetScreen({super.key});
+/// Placeholder screen for Insights tab.
+class InsightsScreen extends StatelessWidget {
+  const InsightsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -260,10 +260,10 @@ class BudgetScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.pie_chart_outline_rounded, size: 64, color: scheme.onSurfaceVariant.withValues(alpha: 0.4)),
+              Icon(Icons.insights_rounded, size: 64, color: scheme.onSurfaceVariant.withValues(alpha: 0.4)),
               const SizedBox(height: 16),
               Text(
-                'Budget'.tr(),
+                'Insights'.tr(),
                 style: GoogleFonts.inter(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
@@ -272,7 +272,7 @@ class BudgetScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Your budget insights will appear here'.tr(),
+                'Your spending insights will appear here'.tr(),
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   color: scheme.onSurfaceVariant,
@@ -286,11 +286,14 @@ class BudgetScreen extends StatelessWidget {
   }
 }
 
+/// Backward compatibility typedef
+typedef BudgetScreen = InsightsScreen;
+
 /// The unified app shell that wraps all four main tabs with a single,
 /// shared bottom navigation bar. This ensures consistent navigation
 /// from any tab and instant language / currency reactivity everywhere.
 class MainShellScreen extends StatefulWidget {
-  /// Optional initial tab index (0=Home, 1=Activity, 2=Budget, 3=Profile).
+  /// Optional initial tab index (0=Home, 1=Activity, 2=Insights, 3=Profile).
   final int initialTab;
   const MainShellScreen({super.key, this.initialTab = 0});
 
@@ -323,7 +326,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
               children: const [
                 HomeScreen(),
                 ActivityScreen(),
-                BudgetScreen(),
+                InsightsScreen(),
                 ProfileScreen(),
               ],
             ),
@@ -342,7 +345,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                   children: [
                     _navItem(0, Icons.home_rounded, 'Home'.tr(), scheme),
                     _navItem(1, Icons.receipt_long_outlined, 'Activity'.tr(), scheme),
-                    _navItem(2, Icons.pie_chart_outline_rounded, 'Budget'.tr(), scheme),
+                    _navItem(2, Icons.insights_rounded, 'Insights'.tr(), scheme),
                     _navItem(3, Icons.person_outline_rounded, 'Profile'.tr(), scheme),
                   ],
                 ),
