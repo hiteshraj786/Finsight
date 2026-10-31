@@ -7,42 +7,32 @@ import '../../core/theme/app_colors.dart';
 import '../home/home_screen.dart';
 import '../profile/profile_screens.dart';
 
-/// Placeholder screen for Activity tab.
-class ActivityScreen extends StatelessWidget {
+import '../sms/data/transaction_repository.dart';
+import '../sms/presentation/screens/manual_add_sheet.dart';
+import '../sms/presentation/screens/transactions_screen.dart';
+
+/// Activity tab screen with transactions list and manual add capability.
+class ActivityScreen extends StatefulWidget {
   const ActivityScreen({super.key});
 
   @override
+  State<ActivityScreen> createState() => _ActivityScreenState();
+}
+
+class _ActivityScreenState extends State<ActivityScreen> {
+  final TransactionRepository _repository = TransactionRepository();
+
+  @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Scaffold(
-      backgroundColor: scheme.surface,
-      body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.receipt_long_outlined, size: 64, color: scheme.onSurfaceVariant.withValues(alpha: 0.4)),
-              const SizedBox(height: 16),
-              Text(
-                'Activity'.tr(),
-                style: GoogleFonts.inter(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: scheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Your transactions will appear here'.tr(),
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: scheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return TransactionsScreen(
+      repository: _repository,
+      onAddManual: () {
+        ManualAddSheet.show(
+          context,
+          repository: _repository,
+          onSaved: () {},
+        );
+      },
     );
   }
 }
