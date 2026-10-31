@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/constants/app_routes.dart';
+import '../../core/services/auth_service.dart';
 import '../../core/services/finance_data_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../sms/data/transaction_repository.dart';
@@ -107,25 +109,219 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
 
-  Widget _profileView(FinanceDashboardData data) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+  Widget _profileView(FinanceDashboardData data) {
+    final user = AuthService.currentUser;
+    final email = user?.email ?? 'user@example.com';
+    final name = (data.firstName.isNotEmpty && data.firstName != 'there')
+        ? data.firstName
+        : (user?.userMetadata?['full_name'] as String? ?? email.split('@').first);
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
+
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Icon(Icons.person_outline_rounded, size: 52, color: AppColors.primary),
-              const SizedBox(height: 16),
-              Text('Profile', style: _text(21, AppColors.textPrimary, FontWeight.w800)),
-              const SizedBox(height: 8),
-              Text(
-                'Your profile details and settings.',
-                textAlign: TextAlign.center,
-                style: _text(14, AppColors.textSecondary, FontWeight.w500),
+              Container(
+                width: 72,
+                height: 72,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF9A62FF), AppColors.primary],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  initial,
+                  style: GoogleFonts.inter(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Username',
+                      style: _text(13, AppColors.textSecondary, FontWeight.w500),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      name,
+                      style: _text(22, AppColors.textPrimary, FontWeight.w800),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      email,
+                      style: _text(13, AppColors.textSecondary, FontWeight.w500),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.border, width: 1.5),
+                  color: Colors.white,
+                ),
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(Icons.edit_outlined, size: 20, color: AppColors.textPrimary),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Edit profile coming soon')),
+                    );
+                  },
+                ),
               ),
             ],
           ),
+          const SizedBox(height: 36),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: AppColors.border),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                _profileOptionTile(
+                  icon: Icons.account_balance_wallet_outlined,
+                  iconColor: AppColors.primary,
+                  iconBg: AppColors.primaryLight,
+                  title: 'Account',
+                  onTap: () {
+                    Navigator.of(context).pushNamed(AppRoutes.addAccount);
+                  },
+                ),
+                const Divider(height: 1, indent: 72, endIndent: 20, color: AppColors.border),
+                _profileOptionTile(
+                  icon: Icons.settings_outlined,
+                  iconColor: AppColors.primary,
+                  iconBg: AppColors.primaryLight,
+                  title: 'Settings',
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Settings coming soon')),
+                    );
+                  },
+                ),
+                const Divider(height: 1, indent: 72, endIndent: 20, color: AppColors.border),
+                _profileOptionTile(
+                  icon: Icons.file_upload_outlined,
+                  iconColor: AppColors.primary,
+                  iconBg: AppColors.primaryLight,
+                  title: 'Export Data',
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Export Data coming soon')),
+                    );
+                  },
+                ),
+                const Divider(height: 1, indent: 72, endIndent: 20, color: AppColors.border),
+                _profileOptionTile(
+                  icon: Icons.logout_rounded,
+                  iconColor: const Color(0xFFFD3C4A),
+                  iconBg: const Color(0xFFFFECEF),
+                  title: 'Logout',
+                  titleColor: AppColors.textPrimary,
+                  onTap: () => _showLogoutDialog(context),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _profileOptionTile({
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBg,
+    required String title,
+    Color? titleColor,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(24),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: iconBg,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: _text(16, titleColor ?? AppColors.textPrimary, FontWeight.w600),
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary, size: 22),
+          ],
         ),
-      );
+      ),
+    );
+  }
+
+  Future<void> _showLogoutDialog(BuildContext context) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Log out'),
+        content: const Text('Are you sure you want to log out of FinSight?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFFD3C4A)),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      await AuthService.signOut();
+      if (context.mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.onboarding, (_) => false);
+      }
+    }
+  }
 
   Widget _activityView(FinanceDashboardData data) => RefreshIndicator(
         onRefresh: _refresh,
@@ -334,7 +530,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
             _navItem(0, Icons.home_rounded, 'Home'),
             _navItem(1, Icons.receipt_long_outlined, 'Activity'),
-            _navItem(2, Icons.pie_chart_outline_rounded, 'Insights'),
+            _navItem(2, Icons.pie_chart_outline_rounded, 'Budget'),
             _navItem(3, Icons.person_outline_rounded, 'Profile'),
           ]),
         ),
