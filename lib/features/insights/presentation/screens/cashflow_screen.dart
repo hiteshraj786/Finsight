@@ -184,15 +184,19 @@ class _CashflowScreenState extends State<CashflowScreen> {
                   const SizedBox(height: 20),
 
                   // Footer note
-                  Center(
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(Icons.auto_awesome, size: 14, color: Color(0xFF7F3DFF)),
                         const SizedBox(width: 6),
-                        Text(
-                          'Based on your recurring payments and average daily spend.',
-                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F)),
+                        Flexible(
+                          child: Text(
+                            'Based on your recurring payments and average daily spend.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F)),
+                          ),
                         ),
                       ],
                     ),
@@ -536,9 +540,13 @@ class _CashflowScreenState extends State<CashflowScreen> {
               children: [
                 Row(
                   children: [
-                    Text(
-                      outflow.merchant,
-                      style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: const Color(0xFF212325)),
+                    Expanded(
+                      child: Text(
+                        outflow.merchant,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: const Color(0xFF212325)),
+                      ),
                     ),
                     const SizedBox(width: 6),
                     Container(
