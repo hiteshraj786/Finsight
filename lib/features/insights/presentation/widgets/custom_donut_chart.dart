@@ -24,15 +24,27 @@ class _CustomDonutChartState extends State<CustomDonutChart> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.items.isEmpty) {
+    final total = widget.items.fold<int>(0, (sum, i) => sum + i.amountPaise);
+    if (widget.items.isEmpty || total <= 0) {
       return SizedBox(
         width: widget.size,
         height: widget.size,
-        child: const Center(
-          child: Text(
-            'No data',
-            style: TextStyle(color: Color(0xFF91919F)),
-          ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              width: widget.size * 0.76,
+              height: widget.size * 0.76,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFF1F1FA), width: widget.size * 0.12),
+              ),
+            ),
+            if (widget.centerWidget != null)
+              widget.centerWidget!
+            else
+              const Text('No spend yet', style: TextStyle(color: Color(0xFF91919F), fontSize: 13)),
+          ],
         ),
       );
     }

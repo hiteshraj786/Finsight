@@ -387,16 +387,27 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                   const SizedBox(height: 16),
 
                   // Goals list
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _evaluations.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 14),
-                    itemBuilder: (context, i) {
-                      final item = _evaluations[i];
-                      return _buildGoalCard(item);
-                    },
-                  ),
+                  if (_evaluations.isEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 36),
+                        child: Text(
+                          'No savings goals created yet. Tap + to add one!',
+                          style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF91919F)),
+                        ),
+                      ),
+                    )
+                  else
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _evaluations.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 14),
+                      itemBuilder: (context, i) {
+                        final item = _evaluations[i];
+                        return _buildGoalCard(item);
+                      },
+                    ),
                   const SizedBox(height: 20),
 
                   // Computed Smart Tip Card (Section 5 rule)

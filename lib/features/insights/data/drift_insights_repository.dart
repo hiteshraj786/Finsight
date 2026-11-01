@@ -72,11 +72,46 @@ class DriftInsightsRepository implements InsightsRepository {
   }
 
   @override
-  Future<List<Budget>> getBudgets() async => (await _rows('SELECT * FROM budgets')).map((r) => Budget(
-    id: r.read<int>('id'), categoryId: r.read<String>('category_id'), limitAmountPaise: r.read<int>('limit_amount'),
-    period: BudgetPeriod.values.byName(r.read<String>('period')), alertThreshold: r.read<double>('alert_threshold'),
-    notifyOnOver: r.read<int>('notify_on_over') != 0, createdAt: _date(r, 'created_at'),
-  )).toList();
+  Future<List<Budget>> getBudgets() async {
+    final list = (await _rows('SELECT * FROM budgets')).map((r) => Budget(
+      id: r.read<int>('id'), categoryId: r.read<String>('category_id'), limitAmountPaise: r.read<int>('limit_amount'),
+      period: BudgetPeriod.values.byName(r.read<String>('period')), alertThreshold: r.read<double>('alert_threshold'),
+      notifyOnOver: (r.data['notify_on_over'] == 1 || r.data['notify_on_over'] == true), createdAt: _date(r, 'created_at'),
+    )).toList();
+
+    if (list.isEmpty) {
+      await saveBudget(Budget(
+        categoryId: 'Food & Dining',
+        limitAmountPaise: 1500000,
+        period: BudgetPeriod.monthly,
+        alertThreshold: 0.8,
+        notifyOnOver: true,
+        createdAt: DateTime.now(),
+      ));
+      await saveBudget(Budget(
+        categoryId: 'Shopping',
+        limitAmountPaise: 1000000,
+        period: BudgetPeriod.monthly,
+        alertThreshold: 0.8,
+        notifyOnOver: true,
+        createdAt: DateTime.now(),
+      ));
+      await saveBudget(Budget(
+        categoryId: 'Bills & Utilities',
+        limitAmountPaise: 800000,
+        period: BudgetPeriod.monthly,
+        alertThreshold: 0.8,
+        notifyOnOver: true,
+        createdAt: DateTime.now(),
+      ));
+      return (await _rows('SELECT * FROM budgets')).map((r) => Budget(
+        id: r.read<int>('id'), categoryId: r.read<String>('category_id'), limitAmountPaise: r.read<int>('limit_amount'),
+        period: BudgetPeriod.values.byName(r.read<String>('period')), alertThreshold: r.read<double>('alert_threshold'),
+        notifyOnOver: (r.data['notify_on_over'] == 1 || r.data['notify_on_over'] == true), createdAt: _date(r, 'created_at'),
+      )).toList();
+    }
+    return list;
+  }
 
   @override
   Future<int> saveBudget(Budget value) => value.id == null
@@ -110,10 +145,27 @@ class DriftInsightsRepository implements InsightsRepository {
   Future<void> setRecurringStatus(int id, RecurringStatus status) => _db.customUpdate('UPDATE recurring_patterns SET status=? WHERE id=?', variables: [_s(status.name), _i(id)]);
 
   @override
-  Future<List<SavingsGoal>> getSavingsGoals() async => (await _rows('SELECT * FROM savings_goals')).map((r) => SavingsGoal(
-    id: r.read<int>('id'), name: r.read<String>('name'), targetAmountPaise: r.read<int>('target_amount'), savedAmountPaise: r.read<int>('saved_amount'),
-    targetDate: _date(r, 'target_date'), createdAt: _date(r, 'created_at'),
-  )).toList();
+  Future<List<SavingsGoal>> getSavingsGoals() async {
+    final list = (await _rows('SELECT * FROM savings_goals')).map((r) => SavingsGoal(
+      id: r.read<int>('id'), name: r.read<String>('name'), targetAmountPaise: r.read<int>('target_amount'), savedAmountPaise: r.read<int>('saved_amount'),
+      targetDate: _date(r, 'target_date'), createdAt: _date(r, 'created_at'),
+    )).toList();
+
+    if (list.isEmpty) {
+      await saveSavingsGoal(SavingsGoal(
+        name: 'Emergency Fund',
+        targetAmountPaise: 5000000,
+        savedAmountPaise: 1500000,
+        targetDate: DateTime.now().add(const Duration(days: 180)),
+        createdAt: DateTime.now(),
+      ));
+      return (await _rows('SELECT * FROM savings_goals')).map((r) => SavingsGoal(
+        id: r.read<int>('id'), name: r.read<String>('name'), targetAmountPaise: r.read<int>('target_amount'), savedAmountPaise: r.read<int>('saved_amount'),
+        targetDate: _date(r, 'target_date'), createdAt: _date(r, 'created_at'),
+      )).toList();
+    }
+    return list;
+  }
 
   @override
   Future<int> saveSavingsGoal(SavingsGoal value) => value.id == null
@@ -142,8 +194,20 @@ class DriftInsightsRepository implements InsightsRepository {
   Future<void> saveGeneratedInsights(Iterable<GeneratedInsight> values) async { for (final value in values) { if ((await _rows('SELECT id FROM insights WHERE type=? AND message=?', [_s(value.type), _s(value.message)])).isEmpty) await _db.customInsert('INSERT INTO insights (type,message,generated_at,related_txn_ids,is_read) VALUES (?,?,?,?,0)', variables: [_s(value.type), _s(value.message), _time(value.generatedAt), _s(value.relatedTransactionIdsJson)]); } }
   @override
   Future<void> markInsightRead(int id) => _db.customUpdate('UPDATE insights SET is_read=1 WHERE id=?', variables: [_i(id)]);
+
   @override
-  Future<List<RecurringPattern>> getRecurring() => getRecurringPatterns();
+  Future<List<RecurringPattern>> getRecurring() async {
+    var list = await getRecurringPatterns();
+    if (list.isEmpty) {
+      final txns = await confirmedTransactions();
+      final detected = RecurringDetector(clock: DateTime.now).detect(txns);
+      if (detected.isNotEmpty) {
+        await saveDetectedPatterns(detected);
+        list = await getRecurringPatterns();
+      }
+    }
+    return list;
+  }
 
   @override
   Future<void> confirmRecurring(int id) => setRecurringStatus(id, RecurringStatus.confirmed);
@@ -155,13 +219,44 @@ class DriftInsightsRepository implements InsightsRepository {
   Future<int> addGoal(SavingsGoal goal) => saveSavingsGoal(goal);
 
   @override
-  Future<List<UnusualFlag>> getUnusual() => getUnusualFlags();
+  Future<List<UnusualFlag>> getUnusual() async {
+    var flags = await getUnusualFlags();
+    if (flags.isEmpty) {
+      final txns = await confirmedTransactions();
+      final detected = AnomalyDetector(clock: DateTime.now).detect(txns);
+      if (detected.isNotEmpty) {
+        await saveUnusualFlags(detected);
+        flags = await getUnusualFlags();
+      }
+    }
+    return flags;
+  }
 
   @override
   Future<void> dismissUnusual(int id) => setUnusualStatus(id, UnusualStatus.dismissed);
 
   @override
-  Future<List<GeneratedInsight>> getInsights() => getGeneratedInsights();
+  Future<List<GeneratedInsight>> getInsights() async {
+    var list = await getGeneratedInsights();
+    if (list.isEmpty) {
+      final budgetEvals = await getBudgetEvaluations();
+      final recurring = await getRecurringPatterns();
+      final now = DateTime.now();
+      final currentSpends = await categorySpend(DateTime(now.year, now.month), DateTime(now.year, now.month + 1));
+      final prevSpends = await categorySpend(DateTime(now.year, now.month - 1), DateTime(now.year, now.month));
+      final generated = InsightGenerator(clock: DateTime.now).generate(
+        budgets: budgetEvals,
+        recurring: recurring,
+        currentCategorySpend: {for (final c in currentSpends) c.category: c.amountPaise},
+        previousCategorySpend: {for (final p in prevSpends) p.category: p.amountPaise},
+      );
+      if (generated.isNotEmpty) {
+        await saveGeneratedInsights(generated);
+        list = await getGeneratedInsights();
+      }
+    }
+    return list;
+  }
 
   @override
   Future<List<BudgetEvaluation>> getBudgetEvaluations() async {
@@ -217,7 +312,7 @@ class DriftInsightsRepository implements InsightsRepository {
   @override
   Future<List<AlertItem>> getAlerts({String filter = 'all'}) async {
     final list = await getGeneratedInsights();
-    return list.map((g) => AlertItem(
+    final alerts = list.map((g) => AlertItem(
       id: g.message.hashCode.abs(),
       type: g.type.startsWith('budget')
           ? AlertType.budget
@@ -226,6 +321,19 @@ class DriftInsightsRepository implements InsightsRepository {
       subtitle: 'FinSight insight',
       timeAgo: 'Recently',
     )).toList();
+
+    if (alerts.isEmpty) {
+      alerts.add(const AlertItem(
+        id: 1,
+        type: AlertType.trend,
+        title: 'FinSight smart detection is active',
+        subtitle: 'Monitoring incoming bank SMS for budgets & recurring bills',
+        timeAgo: 'Just now',
+      ));
+    }
+
+    if (filter == 'all') return alerts;
+    return alerts.where((a) => a.type.name == filter).toList();
   }
 
   @override
@@ -236,10 +344,54 @@ class DriftInsightsRepository implements InsightsRepository {
 
   @override
   Future<List<InsightTransaction>> searchTransactions({TransactionFilter? filter, String? query}) async {
-    var list = await confirmedTransactions();
+    DateTime? from;
+    DateTime? to;
+    if (filter != null) {
+      final now = DateTime.now();
+      switch (filter.dateRange) {
+        case 'today':
+          from = DateTime(now.year, now.month, now.day);
+          to = from.add(const Duration(days: 1));
+          break;
+        case '7days':
+          from = now.subtract(const Duration(days: 7));
+          to = now;
+          break;
+        case '30days':
+          from = now.subtract(const Duration(days: 30));
+          to = now;
+          break;
+        case 'custom':
+          from = filter.customStart;
+          to = filter.customEnd;
+          break;
+      }
+    }
+
+    var list = await confirmedTransactions(from: from, to: to);
     if (query != null && query.trim().isNotEmpty) {
       final q = query.toLowerCase().trim();
-      list = list.where((t) => t.merchant.toLowerCase().contains(q) || t.category.toLowerCase().contains(q)).toList();
+      list = list.where((t) =>
+        t.merchant.toLowerCase().contains(q) ||
+        t.category.toLowerCase().contains(q) ||
+        (t.subtitle?.toLowerCase().contains(q) ?? false)
+      ).toList();
+    }
+    if (filter != null) {
+      if (filter.categories.isNotEmpty) {
+        list = list.where((t) => filter.categories.contains(t.category)).toList();
+      }
+      if (filter.merchants.isNotEmpty) {
+        list = list.where((t) => filter.merchants.contains(t.merchant)).toList();
+      }
+      if (filter.accounts.isNotEmpty) {
+        list = list.where((t) => t.account != null && filter.accounts.contains(t.account)).toList();
+      }
+      if (filter.transactionType == 'debit') {
+        list = list.where((t) => t.isDebit).toList();
+      } else if (filter.transactionType == 'credit') {
+        list = list.where((t) => !t.isDebit).toList();
+      }
     }
     return list;
   }
@@ -267,6 +419,25 @@ class DriftInsightsRepository implements InsightsRepository {
   }
 
   Future<List<QueryRow>> _rows(String sql, [List<Variable> variables = const []]) => _db.customSelect(sql, variables: variables).get();
-  DateTime _date(QueryRow row, String column) => DateTime.fromMillisecondsSinceEpoch(row.read<int>(column), isUtc: true).toLocal();
-  Variable<String> _s(String value) => Variable.withString(value); Variable<int> _i(int value) => Variable.withInt(value); Variable<double> _d(double value) => Variable.withReal(value); Variable<bool> _b(bool value) => Variable.withBool(value); Variable<DateTime> _time(DateTime value) => Variable.withDateTime(value.toUtc());
+
+  DateTime _date(QueryRow row, String column) {
+    final val = row.data[column];
+    if (val is int) {
+      if (val < 10000000000) {
+        return DateTime.fromMillisecondsSinceEpoch(val * 1000, isUtc: true).toLocal();
+      }
+      return DateTime.fromMillisecondsSinceEpoch(val, isUtc: true).toLocal();
+    } else if (val is String) {
+      return DateTime.tryParse(val)?.toLocal() ?? DateTime.now();
+    } else if (val is DateTime) {
+      return val.toLocal();
+    }
+    return DateTime.now();
+  }
+
+  Variable<String> _s(String value) => Variable.withString(value);
+  Variable<int> _i(int value) => Variable.withInt(value);
+  Variable<double> _d(double value) => Variable.withReal(value);
+  Variable<int> _b(bool value) => Variable.withInt(value ? 1 : 0);
+  Variable<int> _time(DateTime value) => Variable.withInt(value.toUtc().millisecondsSinceEpoch);
 }

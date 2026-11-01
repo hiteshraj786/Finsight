@@ -13,9 +13,10 @@ class SparklineCardChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final safeValues = values.length >= 2 ? values : const [0.0, 0.0];
     final spots = List.generate(
-      values.length,
-      (i) => FlSpot(i.toDouble(), values[i]),
+      safeValues.length,
+      (i) => FlSpot(i.toDouble(), safeValues[i]),
     );
 
     return SizedBox(

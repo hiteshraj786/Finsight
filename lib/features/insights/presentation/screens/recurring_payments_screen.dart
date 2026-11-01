@@ -251,16 +251,27 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                   const SizedBox(height: 14),
 
                   // List of items
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _filteredItems.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, i) {
-                      final item = _filteredItems[i];
-                      return _buildRecurringItemCard(item);
-                    },
-                  ),
+                  if (_filteredItems.isEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 36),
+                        child: Text(
+                          'No recurring subscriptions detected',
+                          style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF91919F)),
+                        ),
+                      ),
+                    )
+                  else
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _filteredItems.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, i) {
+                        final item = _filteredItems[i];
+                        return _buildRecurringItemCard(item);
+                      },
+                    ),
                   const SizedBox(height: 24),
 
                   // Info Banner

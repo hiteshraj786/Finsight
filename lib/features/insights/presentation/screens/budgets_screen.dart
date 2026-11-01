@@ -135,15 +135,27 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                     const SizedBox(height: 16),
 
                     // Category Budgets List
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _budgets.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 14),
-                      itemBuilder: (context, index) {
-                        return _buildBudgetCard(_budgets[index]);
-                      },
-                    ),
+                    if (_budgets.isEmpty)
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 36),
+                          child: Text(
+                            'No category budgets set yet. Tap below to create your first budget!',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF91919F)),
+                          ),
+                        ),
+                      )
+                    else
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _budgets.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 14),
+                        itemBuilder: (context, index) {
+                          return _buildBudgetCard(_budgets[index]);
+                        },
+                      ),
                     const SizedBox(height: 90),
                   ],
                 ),

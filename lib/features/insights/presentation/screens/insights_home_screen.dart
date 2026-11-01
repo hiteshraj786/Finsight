@@ -491,14 +491,13 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                 title: 'Shopping is over budget for October.',
                 actionText: 'Adjust budget →',
                 onTap: () {
-                  final shoppingBudget = _budgets.firstWhere(
+                  final shoppingBudget = _budgets.where(
                     (b) => b.budget.categoryId == 'Shopping',
-                    orElse: () => _budgets.first,
-                  );
+                  ).firstOrNull ?? (_budgets.isNotEmpty ? _budgets.first : null);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => BudgetFormScreen(budget: shoppingBudget.budget),
+                      builder: (_) => BudgetFormScreen(budget: shoppingBudget?.budget),
                     ),
                   );
                 },
@@ -610,7 +609,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
           crossAxisCount: 2,
           crossAxisSpacing: 14,
           mainAxisSpacing: 14,
-          childAspectRatio: 1.45,
+          childAspectRatio: 1.2,
           children: [
             _exploreTile(
               icon: Icons.account_balance_wallet_outlined,

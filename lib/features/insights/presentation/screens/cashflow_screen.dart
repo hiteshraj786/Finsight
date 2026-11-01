@@ -353,9 +353,11 @@ class _CashflowScreenState extends State<CashflowScreen> {
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
-                    spots: List.generate(_forecast!.points.length, (i) {
-                      return FlSpot(i.toDouble(), _forecast!.points[i].balancePaise.toDouble());
-                    }),
+                    spots: _forecast!.points.length >= 2
+                        ? List.generate(_forecast!.points.length, (i) {
+                            return FlSpot(i.toDouble(), _forecast!.points[i].balancePaise.toDouble());
+                          })
+                        : const [FlSpot(0, 0), FlSpot(1, 0)],
                     isCurved: true,
                     curveSmoothness: 0.35,
                     color: const Color(0xFF7F3DFF),

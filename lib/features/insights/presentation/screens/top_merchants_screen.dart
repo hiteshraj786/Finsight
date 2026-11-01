@@ -139,47 +139,49 @@ class _TopMerchantsScreenState extends State<TopMerchantsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'You shopped at 42 merchants',
+                                'You shopped at ${_merchants.length} merchants',
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
                                   color: const Color(0xFF212325),
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFEEE5FF),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        const Icon(Icons.trending_up, size: 12, color: Color(0xFF7F3DFF)),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          'Top: Swiggy',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
-                                            color: const Color(0xFF7F3DFF),
+                              if (_merchants.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEEE5FF),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.trending_up, size: 12, color: Color(0xFF7F3DFF)),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Top: ${_merchants.first.merchant}',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              color: const Color(0xFF7F3DFF),
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Responsible for 20% of monthly spend',
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  color: const Color(0xFF91919F),
+                                  ],
                                 ),
-                              ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Responsible for ${(_merchants.first.relativeShare * 100).toStringAsFixed(0)}% of monthly spend',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: const Color(0xFF91919F),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -220,16 +222,27 @@ class _TopMerchantsScreenState extends State<TopMerchantsScreen> {
                   const SizedBox(height: 14),
 
                   // Merchant List
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _merchants.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final item = _merchants[index];
-                      return _buildMerchantTile(item);
-                    },
-                  ),
+                  if (_merchants.isEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 36),
+                        child: Text(
+                          'No merchant transactions recorded yet',
+                          style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF91919F)),
+                        ),
+                      ),
+                    )
+                  else
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _merchants.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final item = _merchants[index];
+                        return _buildMerchantTile(item);
+                      },
+                    ),
                   const SizedBox(height: 24),
 
                   // Bottom Shield Note

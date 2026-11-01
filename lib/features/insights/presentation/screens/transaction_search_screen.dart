@@ -80,6 +80,25 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
   int get _totalSpendPaise =>
       _results.where((t) => t.isDebit).fold<int>(0, (sum, t) => sum + t.amountPaise);
 
+  Map<String, List<InsightTransaction>> get _groupedResults {
+    final map = <String, List<InsightTransaction>>{};
+    final now = DateTime.now();
+    for (final t in _results) {
+      final d = t.occurredAt;
+      final String group;
+      if (d.year == now.year && d.month == now.month && d.day == now.day) {
+        group = 'TODAY';
+      } else if (d.year == now.year && d.month == now.month && d.day == now.day - 1) {
+        group = 'YESTERDAY';
+      } else {
+        const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        group = '${d.day} ${months[d.month - 1]} ${d.year}';
+      }
+      map.putIfAbsent(group, () => []).add(t);
+    }
+    return map;
+  }
+
   @override
   Widget build(BuildContext context) {
     final filterCount = _filter.activeFilterCount;
@@ -289,13 +308,10 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
                     : ListView(
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         children: [
-                          _buildDateGroup('TODAY', _results.take(3).toList()),
-                          const SizedBox(height: 18),
-                          if (_results.length > 3)
-                            _buildDateGroup('YESTERDAY', _results.skip(3).take(3).toList()),
-                          const SizedBox(height: 18),
-                          if (_results.length > 6)
-                            _buildDateGroup('27 OCT', _results.skip(6).toList()),
+                          for (final entry in _groupedResults.entries) ...[
+                            _buildDateGroup(entry.key, entry.value),
+                            const SizedBox(height: 18),
+                          ],
                           const SizedBox(height: 24),
                           Center(
                             child: Row(
