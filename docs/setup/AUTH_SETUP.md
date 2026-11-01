@@ -131,7 +131,7 @@ Never commit the Google client secret to the repository.
 ## 7. Android deep link
 
 The app must be able to receive `com.finsight.finsight://login-callback/`.
-Open `android/app/src/main/AndroidManifest.xml` and check that the main `<activity>`
+Open `app/android/app/src/main/AndroidManifest.xml` and check that the main `<activity>`
 contains:
 
 ```xml
@@ -148,7 +148,7 @@ reopens. Rebuild the app after changing the manifest.
 
 ## 8. Run the app with the configuration
 
-Create `env.json` in the project root (the same folder as `pubspec.yaml`):
+Create `app/env.json` beside `app/pubspec.yaml`:
 
 ```json
 {
@@ -161,6 +161,7 @@ Create `env.json` in the project root (the same folder as `pubspec.yaml`):
 Run:
 
 ```powershell
+cd app
 flutter run --dart-define-from-file=env.json
 ```
 

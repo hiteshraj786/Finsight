@@ -41,9 +41,9 @@ app.*.map.json
 
 
 # Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+/app/android/app/debug
+/app/android/app/profile
+/app/android/app/release
 
 
 node_modules/
@@ -51,13 +51,16 @@ supabase/.env.secrets
 
 
 env.json
+/app/env.json
 supabase/.env.secrets
+/backend/supabase/.env.secrets
 .env
 .env.*
 
 env.json
 supabase/.env.secrets
 supabase/.temp/
+/backend/supabase/.temp/
 .env
 .env.*
 node_modules/

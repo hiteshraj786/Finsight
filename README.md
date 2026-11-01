@@ -4,8 +4,16 @@ Flutter personal-finance app with Supabase email/password authentication,
 email verification, password recovery, Google OAuth, a local six-digit app
 lock, and protected application routes.
 
-See [AUTH_SETUP.md](AUTH_SETUP.md) for the required Supabase, Google, Android
+See [AUTH_SETUP.md](docs/setup/AUTH_SETUP.md) for the required Supabase, Google, Android
 callback, and production release setup.
+
+The Flutter project lives in `app/`. From the repository root, run:
+
+```bash
+cd app
+flutter pub get
+flutter run --dart-define-from-file=env.json
+```
 
 ## On-device insight jobs
 

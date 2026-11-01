@@ -5,6 +5,8 @@
       "name": "FinSight",
       "request": "launch",
       "type": "dart",
+      "cwd": "app",
+      "program": "lib/main.dart",
       "args": ["--dart-define-from-file=env.json"]
     }
   ]
