@@ -12,6 +12,7 @@ import '../sms/models/parsed_transaction.dart';
 import '../sms/models/transaction_status.dart';
 import '../sms/presentation/screens/manual_add_sheet.dart';
 import '../sms/presentation/screens/sms_shell_screen.dart';
+import '../insights/presentation/screens/insights_home_screen.dart';
 
 /// Activity tab screen dedicated to SMS transactions review, scanning, and sync.
 class ActivityScreen extends StatefulWidget {
@@ -246,48 +247,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
   }
 }
 
-/// Placeholder screen for Insights tab.
-class InsightsScreen extends StatelessWidget {
-  const InsightsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Scaffold(
-      backgroundColor: scheme.surface,
-      body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.insights_rounded, size: 64, color: scheme.onSurfaceVariant.withValues(alpha: 0.4)),
-              const SizedBox(height: 16),
-              Text(
-                'Insights'.tr(),
-                style: GoogleFonts.inter(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: scheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Your spending insights will appear here'.tr(),
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: scheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Backward compatibility typedef
-typedef BudgetScreen = InsightsScreen;
+typedef InsightsScreen = InsightsHomeScreen;
+typedef BudgetScreen = InsightsHomeScreen;
 
 /// The unified app shell that wraps all four main tabs with a single,
 /// shared bottom navigation bar. This ensures consistent navigation

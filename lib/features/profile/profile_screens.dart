@@ -11,6 +11,7 @@ import '../../core/services/profile_service.dart';
 import '../../core/services/language_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
+import '../insights/data/insight_notification_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -1097,10 +1098,14 @@ class _NotificationSettingsScreenState
     extends State<NotificationSettingsScreen> {
   late ProfilePreferences _preferences;
   bool _saving = false;
+  bool _insightNotifications = false;
   @override
   void initState() {
     super.initState();
     _preferences = widget.preferences;
+    InsightNotificationService.isEnabled().then((enabled) {
+      if (mounted) setState(() => _insightNotifications = enabled);
+    });
   }
 
   Future<void> _update(ProfilePreferences value) async {
@@ -1124,6 +1129,16 @@ class _NotificationSettingsScreenState
     appBar: AppBar(title: const Text('Notification')),
     body: Column(
       children: [
+        _NotificationTile(
+          title: 'Insight notifications',
+          subtitle: 'Budget, recurring payment, and unusual transaction alerts',
+          value: _insightNotifications,
+          enabled: !_saving,
+          onChanged: (enabled) async {
+            final granted = await InsightNotificationService.setEnabled(enabled);
+            if (mounted) setState(() => _insightNotifications = granted && enabled);
+          },
+        ),
         _NotificationTile(
           title: 'Expense Alert',
           subtitle: 'Get notification about your expenses',

@@ -26,12 +26,28 @@ import 'features/setup/screens/setup_pin_screen.dart';
 import 'features/setup/screens/add_account_screen.dart';
 import 'features/profile/profile_screens.dart';
 import 'features/shell/main_shell.dart';
+import 'features/insights/data/insight_notification_service.dart';
+import 'features/insights/data/insight_background_jobs.dart';
+import 'features/insights/presentation/screens/category_analytics_screen.dart';
+import 'features/insights/presentation/screens/budgets_screen.dart';
+import 'features/insights/presentation/screens/budget_form_screen.dart';
+import 'features/insights/presentation/screens/recurring_payments_screen.dart';
+import 'features/insights/presentation/screens/unusual_transactions_screen.dart';
+import 'features/insights/presentation/screens/top_merchants_screen.dart';
+import 'features/insights/presentation/screens/savings_goals_screen.dart';
+import 'features/insights/presentation/screens/cashflow_screen.dart';
+import 'features/insights/presentation/screens/transaction_search_screen.dart';
+import 'features/insights/presentation/screens/alerts_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AuthService.initialize();
   await CurrencyService.initialize();
   await LanguageService.initialize();
+  await InsightNotificationService.initialize();
+  // WorkManager registration does not prompt for notifications. It simply gives
+  // Android a best-effort, offline task to run when the OS permits it.
+  await InsightBackgroundJobs.initializeAndSchedule();
   runApp(const FinSightApp());
 }
 
@@ -50,6 +66,9 @@ class _FinSightAppState extends State<FinSightApp> {
   @override
   void initState() {
     super.initState();
+    InsightNotificationService.onNotificationTap = (route) {
+      _navigatorKey.currentState?.pushNamed(route);
+    };
     _authSubscription = AuthService.authStateChanges.listen(
       _onAuthStateChanged,
     );
@@ -172,6 +191,47 @@ class _FinSightAppState extends State<FinSightApp> {
                 builder: (_) => const AuthGuard(child: MainShellScreen(initialTab: 1)),
               );
             case AppRoutes.budget:
+            case AppRoutes.insightsBudgets:
+              return MaterialPageRoute(
+                builder: (_) => const AuthGuard(child: BudgetsScreen()),
+              );
+            case AppRoutes.insightsBudgetForm:
+              return MaterialPageRoute(
+                builder: (_) => const AuthGuard(child: BudgetFormScreen()),
+              );
+            case AppRoutes.insightsCategory:
+              return MaterialPageRoute(
+                builder: (_) => const AuthGuard(child: CategoryAnalyticsScreen()),
+              );
+            case AppRoutes.insightsRecurring:
+              return MaterialPageRoute(
+                builder: (_) => const AuthGuard(child: RecurringPaymentsScreen()),
+              );
+            case AppRoutes.insightsUnusual:
+              return MaterialPageRoute(
+                builder: (_) => const AuthGuard(child: UnusualTransactionsScreen()),
+              );
+            case AppRoutes.insightsMerchants:
+              return MaterialPageRoute(
+                builder: (_) => const AuthGuard(child: TopMerchantsScreen()),
+              );
+            case AppRoutes.insightsGoals:
+              return MaterialPageRoute(
+                builder: (_) => const AuthGuard(child: SavingsGoalsScreen()),
+              );
+            case AppRoutes.insightsCashflow:
+              return MaterialPageRoute(
+                builder: (_) => const AuthGuard(child: CashflowScreen()),
+              );
+            case AppRoutes.insightsSearch:
+              return MaterialPageRoute(
+                builder: (_) => const AuthGuard(child: TransactionSearchScreen()),
+              );
+            case AppRoutes.alerts:
+              return MaterialPageRoute(
+                builder: (_) => const AuthGuard(child: AlertsScreen()),
+              );
+            case AppRoutes.insights:
               return MaterialPageRoute(
                 builder: (_) => const AuthGuard(child: MainShellScreen(initialTab: 2)),
               );

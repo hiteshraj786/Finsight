@@ -18,6 +18,17 @@ class AppRoutes {
   static const String home = '/home';
   static const String activity = '/activity';
   static const String budget = '/budget';
+  static const String insights = '/insights';
+  static const String insightsCategory = '/insights/category';
+  static const String insightsBudgets = '/insights/budgets';
+  static const String insightsBudgetForm = '/insights/budget-form';
+  static const String insightsRecurring = '/insights/recurring';
+  static const String insightsUnusual = '/insights/unusual';
+  static const String insightsMerchants = '/insights/merchants';
+  static const String insightsGoals = '/insights/goals';
+  static const String insightsCashflow = '/insights/cashflow';
+  static const String insightsSearch = '/insights/search';
+  static const String alerts = '/alerts';
   static const String profile = '/profile';
   static const String accounts = '/accounts';
   static const String accountEditor = '/account-editor';
