@@ -207,14 +207,19 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Monthly budget left',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withValues(alpha: 0.85),
+              Expanded(
+                child: Text(
+                  'Monthly budget left',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white.withValues(alpha: 0.85),
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
@@ -429,21 +434,24 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                RichText(
-                  text: TextSpan(
-                    style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF212325)),
-                    children: [
-                      TextSpan(
-                        text: CurrencyFormatter.formatPaise(item.actualPaise),
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
-                      ),
-                      TextSpan(
-                        text: ' of ${CurrencyFormatter.formatPaise(item.budget.limitAmountPaise)}',
-                        style: GoogleFonts.inter(color: const Color(0xFF91919F)),
-                      ),
-                    ],
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                      style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF212325)),
+                      children: [
+                        TextSpan(
+                          text: CurrencyFormatter.formatPaise(item.actualPaise),
+                          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                        ),
+                        TextSpan(
+                          text: ' of ${CurrencyFormatter.formatPaise(item.budget.limitAmountPaise)}',
+                          style: GoogleFonts.inter(color: const Color(0xFF91919F)),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 Text(
                   '$pct%',
                   style: GoogleFonts.inter(

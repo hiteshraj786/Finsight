@@ -72,13 +72,18 @@ class _CashflowScreenState extends State<CashflowScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Expected balance on 30 Nov',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: Colors.white.withValues(alpha: 0.85),
+                            Expanded(
+                              child: Text(
+                                'Expected balance on 30 Nov',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                ),
                               ),
                             ),
+                            const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
@@ -221,27 +226,32 @@ class _CashflowScreenState extends State<CashflowScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '30-Day Trajectory',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF212325),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '30-Day Trajectory',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF212325),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Projected from your recurring payments',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: const Color(0xFF91919F),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Projected from your recurring payments',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF91919F),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
@@ -403,26 +413,29 @@ class _CashflowScreenState extends State<CashflowScreen> {
 
           // Legend
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
               color: const Color(0xFFF9F7FE),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(width: 14, height: 4, decoration: BoxDecoration(color: const Color(0xFF7F3DFF), borderRadius: BorderRadius.circular(2))),
-                const SizedBox(width: 6),
-                Text('Actual', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF212325))),
-                const SizedBox(width: 18),
-                Container(width: 14, height: 2, color: const Color(0xFF7F3DFF)),
-                const SizedBox(width: 6),
-                Text('Projected', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF91919F))),
-                const SizedBox(width: 18),
-                Container(width: 14, height: 2, color: const Color(0xFFFCAC12)),
-                const SizedBox(width: 6),
-                Text('₹10K safety cushion', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFFFCAC12))),
-              ],
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(width: 14, height: 4, decoration: BoxDecoration(color: const Color(0xFF7F3DFF), borderRadius: BorderRadius.circular(2))),
+                  const SizedBox(width: 6),
+                  Text('Actual', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF212325))),
+                  const SizedBox(width: 14),
+                  Container(width: 14, height: 2, color: const Color(0xFF7F3DFF)),
+                  const SizedBox(width: 6),
+                  Text('Projected', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF91919F))),
+                  const SizedBox(width: 14),
+                  Container(width: 14, height: 2, color: const Color(0xFFFCAC12)),
+                  const SizedBox(width: 6),
+                  Text('₹10K safety cushion', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFFFCAC12))),
+                ],
+              ),
             ),
           ),
         ],

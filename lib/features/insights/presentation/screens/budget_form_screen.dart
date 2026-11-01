@@ -121,12 +121,14 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Select category',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF212325),
+                Expanded(
+                  child: Text(
+                    'Select category',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF212325),
+                    ),
                   ),
                 ),
                 Text(
@@ -241,15 +243,18 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
             const SizedBox(height: 16),
 
             // Quick Add Pills (+500, +1000, +5000)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _quickAddChip(500),
-                const SizedBox(width: 10),
-                _quickAddChip(1000),
-                const SizedBox(width: 10),
-                _quickAddChip(5000),
-              ],
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _quickAddChip(500),
+                  const SizedBox(width: 10),
+                  _quickAddChip(1000),
+                  const SizedBox(width: 10),
+                  _quickAddChip(5000),
+                ],
+              ),
             ),
             const SizedBox(height: 32),
 
@@ -293,14 +298,17 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Alert me when I reach',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF212325),
+                      Expanded(
+                        child: Text(
+                          'Alert me when I reach',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF212325),
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
@@ -350,26 +358,30 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Notify me when I go over',
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF212325),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Notify me when I go over',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF212325),
+                              ),
                             ),
-                          ),
-                          Text(
-                            'Instant push notification when limit breached',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: const Color(0xFF91919F),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Instant push notification when limit breached',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: const Color(0xFF91919F),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Switch(
                         value: _notifyOnOver,
                         activeThumbColor: const Color(0xFF7F3DFF),

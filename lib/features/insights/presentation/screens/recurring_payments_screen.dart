@@ -90,13 +90,18 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Committed every month',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: Colors.white.withValues(alpha: 0.85),
+                            Expanded(
+                              child: Text(
+                                'Committed every month',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                ),
                               ),
                             ),
+                            const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
@@ -211,34 +216,42 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            'Coming up',
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF212325),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEEE5FF),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              '${_filteredItems.length} Due',
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF7F3DFF),
+                      Expanded(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                'Coming up',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF212325),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEEE5FF),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '${_filteredItems.length} Due',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF7F3DFF),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Text(
                         'Nov 1 – Nov 12',
                         style: GoogleFonts.inter(
@@ -553,7 +566,14 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Pattern matched', style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F))),
-                      Text(item.patternDescription ?? '3rd of every month', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF212325))),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          item.patternDescription ?? '3rd of every month',
+                          textAlign: TextAlign.end,
+                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF212325)),
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 6),
@@ -561,7 +581,14 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Last debited', style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F))),
-                      Text('${CurrencyFormatter.formatPaise(item.amountPaise)} on 3 Oct 2026', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF212325))),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${CurrencyFormatter.formatPaise(item.amountPaise)} on 3 Oct 2026',
+                          textAlign: TextAlign.end,
+                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF212325)),
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),

@@ -104,32 +104,41 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            '$unreadCount unread notifications',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF91919F),
-                            ),
-                          ),
-                          if (unreadCount > 0) ...[
-                            const SizedBox(width: 6),
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF7F3DFF),
-                                shape: BoxShape.circle,
+                      Expanded(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                '$unreadCount unread notifications',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF91919F),
+                                ),
                               ),
                             ),
+                            if (unreadCount > 0) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF7F3DFF),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       GestureDetector(
                         onTap: _markAllRead,
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(Icons.done_all_rounded, size: 16, color: Color(0xFF7F3DFF)),
                             const SizedBox(width: 4),
@@ -150,7 +159,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 const SizedBox(height: 8),
 
                 // Filter Pills (All | Budgets | Recurring | Unusual)
-                Padding(
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: [
