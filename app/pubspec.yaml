@@ -1,0 +1,43 @@
+name: finsight
+description: "Automated Personal Finance Monitoring & Spending Insight"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.1.0
+  smooth_page_indicator: ^1.1.0
+  pin_code_fields: ^8.0.1
+  flutter_svg: ^2.0.9
+  shared_preferences: ^2.3.2
+  crypto: ^3.0.6
+  supabase_flutter: ^2.8.3
+  flutter_secure_storage: ^9.2.2
+  local_auth: ^2.3.0
+  path_provider: ^2.1.5
+  share_plus: ^10.1.4
+  another_telephony: 0.4.1
+  permission_handler: 11.3.1
+  drift: ^2.34.4
+  drift_flutter: ^0.3.1
+  flutter_overlay_window: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  drift_dev: ^2.34.0
+  build_runner: ^2.15.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/onboarding/
+    # Bank logos rendered from Wikipedia infobox images; see docs/setup/RUN.md.
+    - assets/images/banks/
