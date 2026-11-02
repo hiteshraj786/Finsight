@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/services/language_service.dart';
 import '../../data/insights_repository_provider.dart';
 import '../../domain/category_colors.dart';
 import '../../domain/currency_formatter.dart';
@@ -147,7 +148,7 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
                             onChanged: (_) => _search(),
                             style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: const Color(0xFF212325)),
                             decoration: const InputDecoration(
-                              hintText: 'Search transactions...',
+                              hintText: 'Search transactions...'.tr(),
                               border: InputBorder.none,
                               isDense: true,
                             ),

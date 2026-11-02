@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
+import '../../../../core/services/language_service.dart';
 import '../../data/insights_repository_provider.dart';
 import '../../domain/currency_formatter.dart';
 import '../../domain/models.dart';
@@ -41,7 +43,7 @@ class _UnusualTransactionsScreenState extends State<UnusualTransactionsScreen> {
     _loadData();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Marked as normal. Baseline updated.')),
+        SnackBar(content: Text('Marked as normal. Baseline updated.'.tr())),
       );
     }
   }
@@ -234,7 +236,7 @@ class _UnusualTransactionsScreenState extends State<UnusualTransactionsScreen> {
                                   ),
                                 ),
                                 Text(
-                                  '24 Oct 2026',
+                                  DateFormat('d MMM yyyy').format(flag.occurredAt ?? flag.createdAt),
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
                                     color: const Color(0xFF91919F),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/services/currency_service.dart';
 import '../../data/insights_repository_provider.dart';
 import '../../domain/currency_formatter.dart';
 import '../../domain/models.dart';
@@ -91,7 +92,7 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                 controller: targetCtrl,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: 'Target amount (₹)',
+                  labelText: 'Target amount (${CurrencyService.symbolFor(CurrencyService.current)})',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
                 ),
               ),
@@ -100,7 +101,7 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                 controller: savedCtrl,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: 'Already saved (₹)',
+                  labelText: 'Already saved (${CurrencyService.symbolFor(CurrencyService.current)})',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
                 ),
               ),
@@ -183,7 +184,7 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                 controller: amountCtrl,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  prefixText: '₹ ',
+                  prefixText: '${CurrencyService.symbolFor(CurrencyService.current)} ',
                   labelText: 'Amount to add',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
                 ),
@@ -449,7 +450,7 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Save ₹800 more this month?',
+                                'Save ${CurrencyFormatter.formatPaise(80000)} more this month?',
                                 style: GoogleFonts.inter(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
@@ -458,7 +459,7 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                               ),
                               const SizedBox(height: 3),
                               Text(
-                                'Save ₹800 more this month to stay on track for Emergency fund.',
+                                'Save ${CurrencyFormatter.formatPaise(80000)} more this month to stay on track for Emergency fund.',
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   color: const Color(0xFF91919F),

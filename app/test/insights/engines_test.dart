@@ -102,6 +102,9 @@ void main() {
     );
     expect(forecast.points, hasLength(3));
     expect(forecast.lowestPoint.balancePaise, forecast.endBalancePaise);
+    expect(forecast.todayBalancePaise, 100000);
+    expect(forecast.upcomingOutflows, hasLength(1));
+    expect(forecast.upcomingOutflows.single.merchant, 'Rent');
   });
 
   test('SavingsGoalEngine considers 90 percent of the needed contribution on track', () {

@@ -260,20 +260,24 @@ class CashflowForecast {
 }
 
 class GeneratedInsight {
+  final int? id;
   final String type;
   final String message;
   final DateTime generatedAt;
   final List<int> relatedTransactionIds;
   final String? actionLabel;
   final String? actionRoute;
+  final bool isRead;
 
   const GeneratedInsight({
+    this.id,
     required this.type,
     required this.message,
     required this.generatedAt,
     this.relatedTransactionIds = const [],
     this.actionLabel,
     this.actionRoute,
+    this.isRead = false,
   });
 
   String get relatedTransactionIdsJson => jsonEncode(relatedTransactionIds);

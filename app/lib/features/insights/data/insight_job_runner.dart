@@ -1,6 +1,7 @@
 import '../../../core/constants/app_routes.dart';
 import '../domain/engines.dart';
 import '../domain/models.dart';
+import '../domain/currency_formatter.dart';
 import 'insight_notification_service.dart';
 import 'insights_repository.dart';
 
@@ -36,7 +37,7 @@ class InsightJobRunner {
         await InsightNotificationService.show(
           id: 600000 + (pattern.id ?? pattern.merchant.hashCode).abs(),
           title: 'Payment due tomorrow',
-          body: '${pattern.merchant} · ₹${(pattern.amountPaise / 100).toStringAsFixed(0)}',
+          body: '${pattern.merchant} · ${CurrencyFormatter.formatPaise(pattern.amountPaise)}',
           route: AppRoutes.insightsRecurring,
         );
       }

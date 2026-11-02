@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'currency_formatter.dart';
 import 'models.dart';
 
 typedef Clock = DateTime Function();
@@ -203,7 +204,20 @@ class CashflowProjector {
       points.add(CashflowPoint(day, balance));
     }
     final lowest = points.reduce((a, b) => a.balancePaise <= b.balancePaise ? a : b);
-    return CashflowForecast(points: points, lowestPoint: lowest, endBalancePaise: points.last.balancePaise);
+    final upcoming = recurring
+        .where((p) =>
+            p.status != RecurringStatus.ignored &&
+            !_day(p.nextExpectedDate).isBefore(now) &&
+            !_day(p.nextExpectedDate).isAfter(now.add(Duration(days: windowDays))))
+        .toList()
+      ..sort((a, b) => a.nextExpectedDate.compareTo(b.nextExpectedDate));
+    return CashflowForecast(
+      points: points,
+      lowestPoint: lowest,
+      endBalancePaise: points.last.balancePaise,
+      todayBalancePaise: currentBalancePaise,
+      upcomingOutflows: upcoming,
+    );
   }
 }
 
@@ -238,7 +252,8 @@ class InsightGenerator {
       if (budget.status == BudgetStatus.over) {
         generated.add(GeneratedInsight(
           type: 'budget_over',
-          message: '${budget.budget.categoryId} is ₹${((budget.actualPaise - budget.budget.limitAmountPaise) / 100).toStringAsFixed(0)} over budget',
+          message:
+              '${budget.budget.categoryId} is ${CurrencyFormatter.formatPaise(budget.actualPaise - budget.budget.limitAmountPaise)} over budget',
           generatedAt: clock(),
         ));
       } else if (budget.status == BudgetStatus.nearLimit) {

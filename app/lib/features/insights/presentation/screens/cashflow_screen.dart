@@ -1,7 +1,9 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
+import '../../../../core/services/language_service.dart';
 import '../../data/insights_repository_provider.dart';
 import '../../domain/currency_formatter.dart';
 import '../../domain/models.dart';
@@ -48,7 +50,7 @@ class _CashflowScreenState extends State<CashflowScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Cashflow',
+          'Cashflow'.tr(),
           style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -74,7 +76,7 @@ class _CashflowScreenState extends State<CashflowScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                'Expected balance on 30 Nov',
+                                '${'Expected balance on'.tr()} ${DateFormat('d MMM').format(_forecast!.points.last.date)}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.inter(
@@ -127,7 +129,7 @@ class _CashflowScreenState extends State<CashflowScreen> {
                               const Icon(Icons.arrow_downward_rounded, size: 12, color: Colors.white),
                               const SizedBox(width: 4),
                               Text(
-                                '-${CurrencyFormatter.formatPaise(_forecast!.projectedNetChangePaise.abs())} projected net change',
+                                '-${CurrencyFormatter.formatPaise(_forecast!.projectedNetChangePaise.abs())} ${'projected net change'.tr()}',
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
@@ -155,7 +157,7 @@ class _CashflowScreenState extends State<CashflowScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Upcoming outflows',
+                        'Upcoming outflows'.tr(),
                         style: GoogleFonts.inter(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -163,7 +165,7 @@ class _CashflowScreenState extends State<CashflowScreen> {
                         ),
                       ),
                       Text(
-                        '${_forecast!.upcomingOutflows.length} scheduled',
+                        '${_forecast!.upcomingOutflows.length} ${'scheduled'.tr()}',
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -193,7 +195,7 @@ class _CashflowScreenState extends State<CashflowScreen> {
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            'Based on your recurring payments and average daily spend.',
+                            'Based on your recurring payments and average daily spend.'.tr(),
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F)),
                           ),
@@ -263,7 +265,8 @@ class _CashflowScreenState extends State<CashflowScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  'Nov 1 – Nov 30',
+                  '${DateFormat('d MMM').format(_forecast!.points.first.date)} – '
+                  '${DateFormat('d MMM').format(_forecast!.points.last.date)}',
                   style: GoogleFonts.inter(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -296,7 +299,8 @@ class _CashflowScreenState extends State<CashflowScreen> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'Dip: ${CurrencyFormatter.formatPaise(_forecast!.lowestPoint.balancePaise)} · 10 Nov post-EMI',
+                    'Dip: ${CurrencyFormatter.formatPaise(_forecast!.lowestPoint.balancePaise)} · '
+                    '${DateFormat('d MMM').format(_forecast!.lowestPoint.date)}',
                     style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -342,15 +346,13 @@ class _CashflowScreenState extends State<CashflowScreen> {
                       showTitles: true,
                       reservedSize: 22,
                       getTitlesWidget: (val, meta) {
-                        String text = '';
-                        bool isHighlight = false;
-                        if (val == 0) text = '1 Nov';
-                        if (val == 3) {
-                          text = '10 Nov';
-                          isHighlight = true;
+                        final index = val.round();
+                        if (index < 0 || index >= _forecast!.points.length) {
+                          return const SizedBox.shrink();
                         }
-                        if (val == 5) text = '20 Nov';
-                        if (val == 7) text = '30 Nov';
+                        final point = _forecast!.points[index];
+                        final text = DateFormat('d MMM').format(point.date);
+                        final isHighlight = point.date == _forecast!.lowestPoint.date;
                         if (text.isEmpty) return const SizedBox.shrink();
                         return Text(
                           text,
@@ -429,15 +431,18 @@ class _CashflowScreenState extends State<CashflowScreen> {
                 children: [
                   Container(width: 14, height: 4, decoration: BoxDecoration(color: const Color(0xFF7F3DFF), borderRadius: BorderRadius.circular(2))),
                   const SizedBox(width: 6),
-                  Text('Actual', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF212325))),
+                  Text('Actual'.tr(), style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF212325))),
                   const SizedBox(width: 14),
                   Container(width: 14, height: 2, color: const Color(0xFF7F3DFF)),
                   const SizedBox(width: 6),
-                  Text('Projected', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF91919F))),
+                  Text('Projected'.tr(), style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF91919F))),
                   const SizedBox(width: 14),
                   Container(width: 14, height: 2, color: const Color(0xFFFCAC12)),
                   const SizedBox(width: 6),
-                  Text('₹10K safety cushion', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFFFCAC12))),
+                  Text(
+                    '${CurrencyFormatter.formatPaise(_forecast!.safetyCushionPaise)} safety cushion',
+                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFFFCAC12)),
+                  ),
                 ],
               ),
             ),
@@ -474,7 +479,7 @@ class _CashflowScreenState extends State<CashflowScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Liquidity Buffer Notice',
+                  'Liquidity Buffer Notice'.tr(),
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -486,9 +491,14 @@ class _CashflowScreenState extends State<CashflowScreen> {
                   text: TextSpan(
                     style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF996100), height: 1.4),
                     children: [
-                      const TextSpan(text: 'Your balance may dip below '),
-                      TextSpan(text: '₹10,000', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
-                      const TextSpan(text: ' around 10 Nov after the auto-debit of your car EMI.'),
+                      TextSpan(text: 'Your balance may dip below '.tr()),
+                      TextSpan(
+                        text: CurrencyFormatter.formatPaise(_forecast!.safetyCushionPaise),
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                      ),
+                      TextSpan(
+                        text: ' around your next scheduled payment.'.tr(),
+                      ),
                     ],
                   ),
                 ),
@@ -523,7 +533,7 @@ class _CashflowScreenState extends State<CashflowScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'NOV',
+                  DateFormat('MMM').format(outflow.nextExpectedDate).toUpperCase(),
                   style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w700, color: const Color(0xFF7F3DFF)),
                 ),
                 Text(
@@ -556,7 +566,7 @@ class _CashflowScreenState extends State<CashflowScreen> {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        'Due in ${outflow.nextExpectedDate.day}d',
+                        'Due in ${outflow.nextExpectedDate.difference(DateTime.now()).inDays.clamp(0, 999)}d',
                         style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: const Color(0xFFFD3C4A)),
                       ),
                     ),
@@ -564,7 +574,8 @@ class _CashflowScreenState extends State<CashflowScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${outflow.nextExpectedDate.day} Nov · ${outflow.paymentMethod ?? 'Scheduled'}',
+                  '${DateFormat('d MMM').format(outflow.nextExpectedDate)} · '
+                  '${outflow.paymentMethod ?? 'Scheduled'}',
                   style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F)),
                 ),
               ],
@@ -578,7 +589,7 @@ class _CashflowScreenState extends State<CashflowScreen> {
                 style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w800, color: const Color(0xFF212325)),
               ),
               Text(
-                outflow.paymentMethod ?? 'Auto-pay',
+                outflow.paymentMethod ?? 'Auto-pay'.tr(),
                 style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF91919F)),
               ),
             ],

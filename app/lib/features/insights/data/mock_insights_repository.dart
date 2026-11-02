@@ -671,7 +671,7 @@ class MockInsightsRepository implements InsightsRepository {
 
   @override
   Future<List<AlertItem>> getAlerts({String filter = 'all'}) async {
-    if (filter == 'budgets') {
+    if (filter == 'budgets' || filter == 'budget') {
       return _alerts.where((a) => a.type == AlertType.budget).toList();
     }
     if (filter == 'recurring') {

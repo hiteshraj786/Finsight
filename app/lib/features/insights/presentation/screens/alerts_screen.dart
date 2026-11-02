@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/services/language_service.dart';
 import '../../data/insights_repository_provider.dart';
 import '../../domain/models.dart';
 import 'budgets_screen.dart';
@@ -85,7 +86,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Alerts',
+          'Alerts'.tr(),
           style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -110,7 +111,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                           children: [
                             Flexible(
                               child: Text(
-                                '$unreadCount unread notifications',
+                                '$unreadCount ${'unread notifications'.tr()}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.inter(
@@ -143,7 +144,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                             const Icon(Icons.done_all_rounded, size: 16, color: Color(0xFF7F3DFF)),
                             const SizedBox(width: 4),
                             Text(
-                              'Mark all read',
+                              'Mark all read'.tr(),
                               style: GoogleFonts.inter(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -164,13 +165,13 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: [
-                      _filterTab('All', 'all'),
+                      _filterTab('All'.tr(), 'all'),
                       const SizedBox(width: 8),
-                      _filterTab('Budgets', 'budgets'),
+                      _filterTab('Budgets'.tr(), 'budgets'),
                       const SizedBox(width: 8),
-                      _filterTab('Recurring', 'recurring'),
+                      _filterTab('Recurring'.tr(), 'recurring'),
                       const SizedBox(width: 8),
-                      _filterTab('Unusual', 'unusual'),
+                      _filterTab('Unusual'.tr(), 'unusual'),
                     ],
                   ),
                 ),
@@ -186,7 +187,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                               const Icon(Icons.notifications_off_outlined, size: 48, color: Color(0xFF91919F)),
                               const SizedBox(height: 12),
                               Text(
-                                'No alerts right now',
+                                'No alerts right now'.tr(),
                                 style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF212325)),
                               ),
                             ],

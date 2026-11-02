@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
+import '../../../../core/services/language_service.dart';
 import '../../data/insights_repository_provider.dart';
 import '../../domain/category_colors.dart';
 import '../../domain/currency_formatter.dart';
@@ -30,7 +32,7 @@ class InsightsHomeScreen extends StatefulWidget {
 class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
   final _repo = InsightsRepositoryProvider.current;
   String _selectedPeriod = 'month';
-  DateTime _selectedDate = DateTime(2026, 10, 1);
+  DateTime _selectedDate = DateTime(DateTime.now().year, DateTime.now().month, 1);
 
   bool _loading = true;
   List<CategorySpend> _categorySpends = [];
@@ -68,6 +70,37 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
   int get _totalSpendPaise =>
       _categorySpends.fold<int>(0, (sum, item) => sum + item.amountPaise);
 
+  double get _periodChange {
+    final values = _categorySpends
+        .map((item) => item.percentageChange)
+        .whereType<double>()
+        .toList();
+    if (values.isEmpty) return 0;
+    return values.reduce((a, b) => a + b) / values.length;
+  }
+
+  String get _foodInsightTitle {
+    final item = _categorySpends
+        .where((spend) => spend.category == 'Food & Dining')
+        .firstOrNull;
+    if (item == null || item.percentageChange == null) {
+      return 'Spending by category'.tr();
+    }
+    final change = item.percentageChange!.abs().toStringAsFixed(0);
+    final direction = item.percentageChange! >= 0 ? 'more'.tr() : 'less'.tr();
+    return '${'You spent'.tr()} $change% $direction ${'on Food this period'.tr()}.';
+  }
+
+  int get _periodDays {
+    if (_selectedPeriod == 'week') return 7;
+    if (_selectedPeriod == 'year') {
+      return DateTime(_selectedDate.year + 1)
+          .difference(DateTime(_selectedDate.year))
+          .inDays;
+    }
+    return DateUtils.getDaysInMonth(_selectedDate.year, _selectedDate.month);
+  }
+
   @override
   Widget build(BuildContext context) {
     final unreadAlerts = _alerts.where((a) => !a.isRead).length;
@@ -90,7 +123,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
           ),
         ),
         title: Text(
-          'Insights',
+          'Insights'.tr(),
           style: GoogleFonts.inter(
             fontSize: 20,
             fontWeight: FontWeight.w700,
@@ -154,6 +187,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                     // Month Switcher
                     MonthSwitcher(
                       selectedMonth: _selectedDate,
+                      period: _selectedPeriod,
                       onMonthChanged: (d) {
                         setState(() => _selectedDate = d);
                         _loadData();
@@ -196,7 +230,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Total spent',
+                'Total spent'.tr(),
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -215,7 +249,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                     const Icon(Icons.arrow_upward_rounded, size: 12, color: Colors.white),
                     const SizedBox(width: 4),
                     Text(
-                      '12% vs Sep',
+                      '${_periodChange.abs().toStringAsFixed(0)}% vs previous',
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -242,14 +276,14 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Daily pacing',
+                'Daily pacing'.tr(),
                 style: GoogleFonts.inter(
                   fontSize: 12,
                   color: Colors.white.withValues(alpha: 0.75),
                 ),
               ),
               Text(
-                'Avg ₹1,367/day',
+                'Avg ${CurrencyFormatter.formatPaise((_totalSpendPaise / _periodDays).round())}/day',
                 style: GoogleFonts.inter(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -273,7 +307,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Spending by category',
+              'Spending by category'.tr(),
               style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -289,7 +323,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                 _loadData();
               },
               child: Text(
-                'Details >',
+                'Details >'.tr(),
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -343,7 +377,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '31 days',
+                      '$_periodDays days',
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
@@ -438,7 +472,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
             Row(
               children: [
                 Text(
-                  'Smart insights',
+                  'Smart insights'.tr(),
                   style: GoogleFonts.inter(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -450,7 +484,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
               ],
             ),
             Text(
-              '${_insights.length} alerts',
+              '${_alerts.length} ${'alerts'.tr()}',
               style: GoogleFonts.inter(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -470,8 +504,8 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                 icon: Icons.warning_amber_rounded,
                 iconColor: const Color(0xFFFCAC12),
                 iconBg: const Color(0xFFFFF7E6),
-                title: 'You spent 20% more on Food this month.',
-                actionText: 'View food expenses →',
+                title: _foodInsightTitle,
+                actionText: 'View food expenses →'.tr(),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -488,8 +522,9 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                 icon: Icons.trending_up_rounded,
                 iconColor: const Color(0xFFFD3C4A),
                 iconBg: const Color(0xFFFFECEF),
-                title: 'Shopping is over budget for October.',
-                actionText: 'Adjust budget →',
+                title: '${'Shopping is over budget for'.tr()} '
+                    '${DateFormat('MMMM').format(_selectedDate)}.',
+                actionText: 'Adjust budget →'.tr(),
                 onTap: () {
                   final shoppingBudget = _budgets.where(
                     (b) => b.budget.categoryId == 'Shopping',
@@ -507,8 +542,8 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                 icon: Icons.repeat_rounded,
                 iconColor: const Color(0xFF7F3DFF),
                 iconBg: const Color(0xFFEEE5FF),
-                title: '6 subscriptions renew in next 12 days.',
-                actionText: 'View recurring →',
+                title: '${_recurring.length} ${'subscriptions renew soon'.tr()}.',
+                actionText: 'View recurring →'.tr(),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -595,7 +630,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Explore',
+          'Explore'.tr(),
           style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -613,8 +648,8 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
           children: [
             _exploreTile(
               icon: Icons.account_balance_wallet_outlined,
-              title: 'Budgets',
-              subtitle: '${_budgets.length} active',
+              title: 'Budgets'.tr(),
+              subtitle: '${_budgets.length} ${'active'.tr()}',
               onTap: () async {
                 await Navigator.push(
                   context,
@@ -625,8 +660,8 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
             ),
             _exploreTile(
               icon: Icons.repeat_rounded,
-              title: 'Recurring',
-              subtitle: '${_recurring.length} scheduled',
+              title: 'Recurring'.tr(),
+              subtitle: '${_recurring.length} ${'scheduled'.tr()}',
               onTap: () async {
                 await Navigator.push(
                   context,
@@ -637,8 +672,8 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
             ),
             _exploreTile(
               icon: Icons.storefront_outlined,
-              title: 'Merchants',
-              subtitle: '42 tracked',
+              title: 'Merchants'.tr(),
+              subtitle: 'Tap to view'.tr(),
               onTap: () async {
                 await Navigator.push(
                   context,
@@ -649,8 +684,8 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
             ),
             _exploreTile(
               icon: Icons.savings_outlined,
-              title: 'Savings goals',
-              subtitle: '₹1.5L saved',
+              title: 'Savings goals'.tr(),
+              subtitle: 'Tap to view'.tr(),
               onTap: () async {
                 await Navigator.push(
                   context,
@@ -754,7 +789,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Cashflow forecast',
+                    'Cashflow forecast'.tr(),
                     style: GoogleFonts.inter(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -763,7 +798,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Expected balance ₹21,300 on 30 Nov',
+                    'View projected balance and upcoming outflows'.tr(),
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       color: const Color(0xFF91919F),

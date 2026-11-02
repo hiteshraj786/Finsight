@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
+import '../../../../core/services/language_service.dart';
 import '../../data/insights_repository_provider.dart';
 import '../../domain/currency_formatter.dart';
 import '../../domain/models.dart';
@@ -66,7 +68,7 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Recurring Payments',
+          'Recurring Payments'.tr(),
           style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -92,7 +94,7 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                'Committed every month',
+                                'Committed every month'.tr(),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.inter(
@@ -114,7 +116,7 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                                   const Icon(Icons.calendar_today_outlined, size: 12, color: Colors.white),
                                   const SizedBox(width: 4),
                                   Text(
-                                    'November 2026',
+                                    DateFormat('MMMM yyyy').format(DateTime.now()),
                                     style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
                                   ),
                                 ],
@@ -138,7 +140,7 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              '/ month',
+                              '/ ${'month'.tr()}',
                               style: GoogleFonts.inter(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
@@ -160,7 +162,7 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                               const Icon(Icons.auto_awesome, size: 14, color: Colors.white),
                               const SizedBox(width: 6),
                               Text(
-                                '${_items.length} recurring payments detected',
+                                '${_items.length} ${'recurring payments detected'.tr()}',
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
@@ -253,7 +255,10 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Nov 1 – Nov 12',
+                        _filteredItems.isEmpty
+                            ? 'No upcoming dates'.tr()
+                            : '${DateFormat('d MMM').format(_filteredItems.first.nextExpectedDate)} – '
+                              '${DateFormat('d MMM').format(_filteredItems.last.nextExpectedDate)}',
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           color: const Color(0xFF91919F),
@@ -269,7 +274,7 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 36),
                         child: Text(
-                          'No recurring subscriptions detected',
+                          'No recurring subscriptions detected'.tr(),
                           style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF91919F)),
                         ),
                       ),
@@ -342,7 +347,7 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                     child: TextButton.icon(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Auto-scanning reads all bank mandates automatically')),
+                          SnackBar(content: Text('Auto-scanning reads all bank mandates automatically'.tr())),
                         );
                       },
                       icon: const Icon(Icons.add_circle_outline_rounded, color: Color(0xFF7F3DFF)),
@@ -565,7 +570,7 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Pattern matched', style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F))),
+                      Text('Pattern matched'.tr(), style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F))),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -580,11 +585,11 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Last debited', style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F))),
+                      Text('Last debited'.tr(), style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F))),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '${CurrencyFormatter.formatPaise(item.amountPaise)} on 3 Oct 2026',
+                          '${CurrencyFormatter.formatPaise(item.amountPaise)} on ${DateFormat('d MMM yyyy').format(item.nextExpectedDate)}',
                           textAlign: TextAlign.end,
                           style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF212325)),
                         ),
@@ -596,7 +601,7 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                     children: [
                       const Icon(Icons.check_circle_outline, size: 14, color: Color(0xFF7F3DFF)),
                       const SizedBox(width: 6),
-                      Text('Auto-detected recurring subscription', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: const Color(0xFF7F3DFF))),
+                      Text('Auto-detected recurring subscription'.tr(), style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: const Color(0xFF7F3DFF))),
                     ],
                   ),
                 ],

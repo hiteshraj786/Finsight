@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/services/currency_service.dart';
+import '../../../../core/services/language_service.dart';
 import '../../data/insights_repository_provider.dart';
 import '../../domain/category_colors.dart';
 import '../../domain/currency_formatter.dart';
@@ -67,7 +69,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
     final rupees = int.tryParse(_amountController.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
     if (rupees <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid budget amount')),
+        SnackBar(content: Text('Please enter a valid budget amount'.tr())),
       );
       return;
     }
@@ -212,7 +214,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '₹ ',
+                        '${CurrencyService.symbolFor(CurrencyService.current)} ',
                         style: GoogleFonts.inter(
                           fontSize: 36,
                           fontWeight: FontWeight.w800,
@@ -429,7 +431,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Setting ₹${_amountController.text} for $_selectedCategory is based on your last 3-month spending average of ₹12,400.',
+                          'Setting ${CurrencyService.symbolFor(CurrencyService.current)}${_amountController.text} for $_selectedCategory is based on your last 3-month spending average.',
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             color: const Color(0xFF91919F),
@@ -460,7 +462,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
                 child: _saving
                     ? const CircularProgressIndicator(color: Colors.white)
                     : Text(
-                        'Save budget',
+                        'Save budget'.tr(),
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -500,7 +502,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
           borderRadius: BorderRadius.circular(18),
         ),
         child: Text(
-          '+₹${CurrencyFormatter.formatRupees(rupees).replaceAll('₹', '')}',
+          '+${CurrencyFormatter.formatRupees(rupees)}',
           style: GoogleFonts.inter(
             fontSize: 13,
             fontWeight: FontWeight.w700,

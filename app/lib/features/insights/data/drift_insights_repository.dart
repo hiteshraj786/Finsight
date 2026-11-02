@@ -73,44 +73,11 @@ class DriftInsightsRepository implements InsightsRepository {
 
   @override
   Future<List<Budget>> getBudgets() async {
-    final list = (await _rows('SELECT * FROM budgets')).map((r) => Budget(
+    return (await _rows('SELECT * FROM budgets')).map((r) => Budget(
       id: r.read<int>('id'), categoryId: r.read<String>('category_id'), limitAmountPaise: r.read<int>('limit_amount'),
       period: BudgetPeriod.values.byName(r.read<String>('period')), alertThreshold: r.read<double>('alert_threshold'),
       notifyOnOver: (r.data['notify_on_over'] == 1 || r.data['notify_on_over'] == true), createdAt: _date(r, 'created_at'),
     )).toList();
-
-    if (list.isEmpty) {
-      await saveBudget(Budget(
-        categoryId: 'Food & Dining',
-        limitAmountPaise: 1500000,
-        period: BudgetPeriod.monthly,
-        alertThreshold: 0.8,
-        notifyOnOver: true,
-        createdAt: DateTime.now(),
-      ));
-      await saveBudget(Budget(
-        categoryId: 'Shopping',
-        limitAmountPaise: 1000000,
-        period: BudgetPeriod.monthly,
-        alertThreshold: 0.8,
-        notifyOnOver: true,
-        createdAt: DateTime.now(),
-      ));
-      await saveBudget(Budget(
-        categoryId: 'Bills & Utilities',
-        limitAmountPaise: 800000,
-        period: BudgetPeriod.monthly,
-        alertThreshold: 0.8,
-        notifyOnOver: true,
-        createdAt: DateTime.now(),
-      ));
-      return (await _rows('SELECT * FROM budgets')).map((r) => Budget(
-        id: r.read<int>('id'), categoryId: r.read<String>('category_id'), limitAmountPaise: r.read<int>('limit_amount'),
-        period: BudgetPeriod.values.byName(r.read<String>('period')), alertThreshold: r.read<double>('alert_threshold'),
-        notifyOnOver: (r.data['notify_on_over'] == 1 || r.data['notify_on_over'] == true), createdAt: _date(r, 'created_at'),
-      )).toList();
-    }
-    return list;
   }
 
   @override
@@ -146,25 +113,10 @@ class DriftInsightsRepository implements InsightsRepository {
 
   @override
   Future<List<SavingsGoal>> getSavingsGoals() async {
-    final list = (await _rows('SELECT * FROM savings_goals')).map((r) => SavingsGoal(
+    return (await _rows('SELECT * FROM savings_goals')).map((r) => SavingsGoal(
       id: r.read<int>('id'), name: r.read<String>('name'), targetAmountPaise: r.read<int>('target_amount'), savedAmountPaise: r.read<int>('saved_amount'),
       targetDate: _date(r, 'target_date'), createdAt: _date(r, 'created_at'),
     )).toList();
-
-    if (list.isEmpty) {
-      await saveSavingsGoal(SavingsGoal(
-        name: 'Emergency Fund',
-        targetAmountPaise: 5000000,
-        savedAmountPaise: 1500000,
-        targetDate: DateTime.now().add(const Duration(days: 180)),
-        createdAt: DateTime.now(),
-      ));
-      return (await _rows('SELECT * FROM savings_goals')).map((r) => SavingsGoal(
-        id: r.read<int>('id'), name: r.read<String>('name'), targetAmountPaise: r.read<int>('target_amount'), savedAmountPaise: r.read<int>('saved_amount'),
-        targetDate: _date(r, 'target_date'), createdAt: _date(r, 'created_at'),
-      )).toList();
-    }
-    return list;
   }
 
   @override
@@ -186,8 +138,11 @@ class DriftInsightsRepository implements InsightsRepository {
   Future<void> setUnusualStatus(int id, UnusualStatus status) => _db.customUpdate('UPDATE unusual_flags SET status=? WHERE id=?', variables: [_s(status.name), _i(id)]);
 
   @override
-  Future<List<GeneratedInsight>> getGeneratedInsights({bool unreadOnly = false}) async => (await _rows('SELECT * FROM insights${unreadOnly ? ' WHERE is_read=0' : ''}')).map((r) => GeneratedInsight(
-    type: r.read<String>('type'), message: r.read<String>('message'), generatedAt: _date(r, 'generated_at'), relatedTransactionIds: (jsonDecode(r.read<String>('related_txn_ids')) as List).whereType<num>().map((n) => n.toInt()).toList(),
+  Future<List<GeneratedInsight>> getGeneratedInsights({bool unreadOnly = false}) async => (await _rows('SELECT * FROM insights${unreadOnly ? ' WHERE is_read=0' : ''} ORDER BY generated_at DESC')).map((r) => GeneratedInsight(
+    id: r.read<int>('id'),
+    type: r.read<String>('type'), message: r.read<String>('message'), generatedAt: _date(r, 'generated_at'),
+    relatedTransactionIds: (jsonDecode(r.read<String>('related_txn_ids')) as List).whereType<num>().map((n) => n.toInt()).toList(),
+    isRead: r.data['is_read'] == 1 || r.data['is_read'] == true,
   )).toList();
 
   @override
@@ -273,12 +228,11 @@ class DriftInsightsRepository implements InsightsRepository {
 
   @override
   Future<List<CategorySpend>> getCategorySpend({String period = 'month', DateTime? date}) async {
-    final now = date ?? DateTime.now();
-    final start = DateTime(now.year, now.month);
-    final end = DateTime(now.year, now.month + 1);
-    final previousStart = DateTime(now.year, now.month - 1);
+    final selected = date ?? DateTime.now();
+    final (start, end) = _periodRange(period, selected);
+    final (previousStart, previousEnd) = _previousPeriodRange(period, selected);
     final current = await categorySpend(start, end);
-    final previous = await categorySpend(previousStart, start);
+    final previous = await categorySpend(previousStart, previousEnd);
     final prevMap = {for (final p in previous) p.category: p.amountPaise};
     final total = current.fold<int>(0, (sum, c) => sum + c.amountPaise);
     return current.map((c) {
@@ -313,13 +267,18 @@ class DriftInsightsRepository implements InsightsRepository {
   Future<List<AlertItem>> getAlerts({String filter = 'all'}) async {
     final list = await getGeneratedInsights();
     final alerts = list.map((g) => AlertItem(
-      id: g.message.hashCode.abs(),
+      id: g.id ?? g.message.hashCode.abs(),
       type: g.type.startsWith('budget')
           ? AlertType.budget
-          : (g.type.startsWith('recurring') ? AlertType.recurring : AlertType.trend),
+          : (g.type.startsWith('recurring')
+              ? AlertType.recurring
+              : (g.type.startsWith('unusual')
+                  ? AlertType.unusual
+                  : (g.type.startsWith('goal') ? AlertType.goal : AlertType.trend))),
       title: g.message,
       subtitle: 'FinSight insight',
       timeAgo: 'Recently',
+      isRead: g.isRead,
     )).toList();
 
     if (alerts.isEmpty) {
@@ -332,15 +291,23 @@ class DriftInsightsRepository implements InsightsRepository {
       ));
     }
 
-    if (filter == 'all') return alerts;
-    return alerts.where((a) => a.type.name == filter).toList();
+    final normalizedFilter = filter == 'budgets' ? 'budget' : filter;
+    if (normalizedFilter == 'all') return alerts;
+    return alerts.where((a) => a.type.name == normalizedFilter).toList();
   }
 
   @override
-  Future<void> markAlertRead(int id) async {}
+  Future<void> markAlertRead(int id) async {
+    await _db.customUpdate(
+      'UPDATE insights SET is_read=1 WHERE id=?',
+      variables: [_i(id)],
+    );
+  }
 
   @override
-  Future<void> markAllAlertsRead() async {}
+  Future<void> markAllAlertsRead() async {
+    await _db.customUpdate('UPDATE insights SET is_read=1');
+  }
 
   @override
   Future<List<InsightTransaction>> searchTransactions({TransactionFilter? filter, String? query}) async {
@@ -406,9 +373,7 @@ class DriftInsightsRepository implements InsightsRepository {
 
   @override
   Future<List<MerchantStat>> getTopMerchants({String period = 'month', String sortBy = 'amount'}) async {
-    final now = DateTime.now();
-    final from = DateTime(now.year, now.month, 1);
-    final to = DateTime(now.year, now.month + 1, 1);
+    final (from, to) = _periodRange(period, DateTime.now());
     final merchants = await topMerchants(from, to, limit: 20);
     if (sortBy == 'count') {
       merchants.sort((a, b) => b.transactionCount.compareTo(a.transactionCount));
@@ -440,4 +405,32 @@ class DriftInsightsRepository implements InsightsRepository {
   Variable<double> _d(double value) => Variable.withReal(value);
   Variable<int> _b(bool value) => Variable.withInt(value ? 1 : 0);
   Variable<int> _time(DateTime value) => Variable.withInt(value.toUtc().millisecondsSinceEpoch);
+
+  (DateTime, DateTime) _periodRange(String period, DateTime selected) {
+    final day = DateTime(selected.year, selected.month, selected.day);
+    switch (period.toLowerCase()) {
+      case 'week':
+        final start = day.subtract(Duration(days: day.weekday - 1));
+        return (start, start.add(const Duration(days: 7)));
+      case 'year':
+        return (DateTime(day.year), DateTime(day.year + 1));
+      case 'month':
+      default:
+        return (DateTime(day.year, day.month), DateTime(day.year, day.month + 1));
+    }
+  }
+
+  (DateTime, DateTime) _previousPeriodRange(String period, DateTime selected) {
+    final day = DateTime(selected.year, selected.month, selected.day);
+    switch (period.toLowerCase()) {
+      case 'week':
+        final currentStart = day.subtract(Duration(days: day.weekday - 1));
+        return (currentStart.subtract(const Duration(days: 7)), currentStart);
+      case 'year':
+        return (DateTime(day.year - 1), DateTime(day.year));
+      case 'month':
+      default:
+        return (DateTime(day.year, day.month - 1), DateTime(day.year, day.month));
+    }
+  }
 }

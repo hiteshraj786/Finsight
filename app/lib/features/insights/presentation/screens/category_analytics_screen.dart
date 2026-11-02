@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
+import '../../../../core/services/language_service.dart';
 import '../../data/insights_repository_provider.dart';
 import '../../domain/category_colors.dart';
 import '../../domain/currency_formatter.dart';
@@ -21,7 +23,7 @@ class CategoryAnalyticsScreen extends StatefulWidget {
 class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
   final _repo = InsightsRepositoryProvider.current;
   String _selectedPeriod = 'month';
-  DateTime _selectedDate = DateTime(2026, 10, 1);
+  DateTime _selectedDate = DateTime(DateTime.now().year, DateTime.now().month, 1);
 
   bool _loading = true;
   List<CategorySpend> _spends = [];
@@ -46,6 +48,28 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
   int get _totalSpendPaise =>
       _spends.fold<int>(0, (sum, item) => sum + item.amountPaise);
 
+  DateTime get _previousPeriodDate {
+    switch (_selectedPeriod) {
+      case 'week':
+        return _selectedDate.subtract(const Duration(days: 7));
+      case 'year':
+        return DateTime(_selectedDate.year - 1, _selectedDate.month, _selectedDate.day);
+      default:
+        return DateTime(_selectedDate.year, _selectedDate.month - 1, _selectedDate.day);
+    }
+  }
+
+  String get _previousPeriodLabel {
+    switch (_selectedPeriod) {
+      case 'week':
+        return DateFormat('d MMM').format(_previousPeriodDate);
+      case 'year':
+        return DateFormat('yyyy').format(_previousPeriodDate);
+      default:
+        return DateFormat('MMM').format(_previousPeriodDate);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,7 +82,7 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Category Analytics',
+          'Category Analytics'.tr(),
           style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -84,6 +108,7 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                   const SizedBox(height: 14),
                   MonthSwitcher(
                     selectedMonth: _selectedDate,
+                    period: _selectedPeriod,
                     onMonthChanged: (d) {
                       setState(() => _selectedDate = d);
                       _loadData();
@@ -95,7 +120,7 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                   _buildDonutCard(),
                   const SizedBox(height: 28),
 
-                  // vs September section
+                  // Previous-period comparison
                   _buildComparisonSection(),
                   const SizedBox(height: 28),
 
@@ -110,12 +135,16 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                     child: OutlinedButton.icon(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('October breakdown exported successfully')),
+                          SnackBar(
+                            content: Text(
+                              '${DateFormat('MMMM').format(_selectedDate)} ${'breakdown exported successfully'.tr()}',
+                            ),
+                          ),
                         );
                       },
                       icon: const Icon(Icons.file_upload_outlined, color: Color(0xFF7F3DFF)),
                       label: Text(
-                        'Export October Breakdown',
+                        '${'Export'.tr()} ${DateFormat('MMMM').format(_selectedDate)} ${'Breakdown'.tr()}',
                         style: GoogleFonts.inter(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -165,7 +194,7 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Total spent in Oct',
+                  '${'Total spent in'.tr()} ${DateFormat('MMM').format(_selectedDate)}',
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: const Color(0xFF91919F),
@@ -228,7 +257,7 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'vs September',
+                  '${'vs'.tr()} ${_previousPeriodLabel}',
                   style: GoogleFonts.inter(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -237,7 +266,7 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Top spend differences by period',
+                  'Top spend differences by period'.tr(),
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: const Color(0xFF91919F),
@@ -247,9 +276,9 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
             ),
             Row(
               children: [
-                _legendDot(const Color(0xFF7F3DFF), 'Oct'),
+                _legendDot(const Color(0xFF7F3DFF), DateFormat('MMM').format(_selectedDate)),
                 const SizedBox(width: 10),
-                _legendDot(const Color(0xFFD3BDFF), 'Sep'),
+                _legendDot(const Color(0xFFD3BDFF), _previousPeriodLabel),
               ],
             ),
           ],
@@ -258,8 +287,13 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
         ...comparisonItems.map((item) {
           final isHigher = (item.percentageChange ?? 0) >= 0;
           final pct = (item.percentageChange ?? 0).abs().toStringAsFixed(0);
-          final octStr = CurrencyFormatter.formatCompact(item.amountPaise);
-          final sepStr = CurrencyFormatter.formatCompact(item.previousAmountPaise ?? 0);
+          final currentAmount = item.amountPaise;
+          final previousAmount = item.previousAmountPaise ?? 0;
+          final maxAmount = [currentAmount, previousAmount].reduce((a, b) => a > b ? a : b);
+          final currentBar = maxAmount == 0 ? 0.0 : currentAmount / maxAmount;
+          final previousBar = maxAmount == 0 ? 0.0 : previousAmount / maxAmount;
+          final currentStr = CurrencyFormatter.formatCompact(currentAmount);
+          final previousStr = CurrencyFormatter.formatCompact(previousAmount);
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
@@ -293,7 +327,7 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                           ),
                           const SizedBox(width: 2),
                           Text(
-                            '$pct% ${isHigher ? 'higher' : 'lower'}',
+                            '$pct% ${(isHigher ? 'higher' : 'lower').tr()}',
                             style: GoogleFonts.inter(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -311,22 +345,20 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                     Expanded(
                       child: Column(
                         children: [
-                          // Oct bar
                           ClipRRect(
                             borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
-                              value: 0.85,
+                              value: currentBar,
                               minHeight: 6,
                               backgroundColor: const Color(0xFFF1F1FA),
                               valueColor: const AlwaysStoppedAnimation(Color(0xFF7F3DFF)),
                             ),
                           ),
                           const SizedBox(height: 4),
-                          // Sep bar
                           ClipRRect(
                             borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
-                              value: isHigher ? 0.72 : 0.90,
+                              value: previousBar,
                               minHeight: 6,
                               backgroundColor: const Color(0xFFF1F1FA),
                               valueColor: const AlwaysStoppedAnimation(Color(0xFFD3BDFF)),
@@ -340,11 +372,11 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          octStr,
+                          currentStr,
                           style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF212325)),
                         ),
                         Text(
-                          sepStr,
+                          previousStr,
                           style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F)),
                         ),
                       ],
@@ -385,7 +417,7 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'All categories',
+              'All categories'.tr(),
               style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/services/language_service.dart';
 import '../../data/insights_repository_provider.dart';
 import '../../domain/currency_formatter.dart';
 import '../../domain/models.dart';
@@ -50,6 +51,19 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
   double get _overallProgress =>
       _totalBudgetPaise == 0 ? 0.0 : (_totalUsedPaise / _totalBudgetPaise);
 
+  int get _safeDailyPaise => _budgets.isEmpty
+      ? 0
+      : _budgets
+            .map((budget) => budget.safeDailySpendPaise)
+            .reduce((a, b) => a + b) ~/
+          _budgets.length;
+
+  int get _daysRemaining {
+    final now = DateTime.now();
+    final end = DateTime(now.year, now.month + 1);
+    return end.difference(DateTime(now.year, now.month, now.day)).inDays;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,7 +76,7 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Budgets',
+          'Budgets'.tr(),
           style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -97,7 +111,7 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                         Row(
                           children: [
                             Text(
-                              'Category budgets',
+                              'Category budgets'.tr(),
                               style: GoogleFonts.inter(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
@@ -112,7 +126,7 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
-                                '${_budgets.length} active',
+                                '${_budgets.length} ${'active'.tr()}',
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
@@ -177,7 +191,7 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
             },
             icon: const Icon(Icons.add_rounded, color: Colors.white),
             label: Text(
-              'Create budget',
+              'Create budget'.tr(),
               style: GoogleFonts.inter(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -263,7 +277,8 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'of ${CurrencyFormatter.formatPaise(_totalBudgetPaise)} total · 11 days to go',
+            '${'of'.tr()} ${CurrencyFormatter.formatPaise(_totalBudgetPaise)} '
+            '${'total'.tr()} · $_daysRemaining ${'days to go'.tr()}',
             style: GoogleFonts.inter(
               fontSize: 13,
               color: Colors.white.withValues(alpha: 0.85),
@@ -333,12 +348,12 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
               text: TextSpan(
                 style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF212325)),
                 children: [
-                  const TextSpan(text: 'Daily safe spend is '),
+                  TextSpan(text: 'Daily safe spend is '.tr()),
                   TextSpan(
-                    text: '₹320/day',
+                    text: '${CurrencyFormatter.formatPaise(_safeDailyPaise)}/day',
                     style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: const Color(0xFF7F3DFF)),
                   ),
-                  const TextSpan(text: ' to last month-end.'),
+                  TextSpan(text: ' to last month-end.'.tr()),
                 ],
               ),
             ),

@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:drift/drift.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../features/sms/data/database.dart' as local;
+import '../../features/sms/models/transaction_status.dart';
 import 'auth_service.dart';
 import 'currency_service.dart';
 import 'language_service.dart';
@@ -183,6 +186,9 @@ class ProfileService {
       final transactions = List<Map<String, dynamic>>.from(
         (data[1] as List).map((row) => Map<String, dynamic>.from(row as Map)),
       );
+      if (scope != ExportScope.accounts) {
+        transactions.addAll(await _loadLocalTransactions(startedAt));
+      }
       final output = _encodeExport(scope, format, accounts, transactions);
       final directory = await getTemporaryDirectory();
       final stamp = DateTime.now()
@@ -205,6 +211,37 @@ class ProfileService {
       throw const ProfileException(
         'Unable to create the export file on this device.',
       );
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> _loadLocalTransactions(
+    DateTime startedAt,
+  ) async {
+    final database = local.AppDatabase();
+    try {
+      final rows = await database.customSelect(
+        'SELECT amount_paise, type, party, category, date FROM transactions '
+        'WHERE status = ? AND date >= ? ORDER BY date DESC',
+        variables: [
+          Variable.withString(TransactionStatus.confirmed.name),
+          Variable.withInt(startedAt.toUtc().millisecondsSinceEpoch),
+        ],
+      ).get();
+      return rows
+          .map(
+            (row) => <String, dynamic>{
+              'amount': row.read<int>('amount_paise') / 100,
+              'direction': row.read<String>('type'),
+              'merchant': row.read<String>('party'),
+              'category': row.read<String>('category'),
+              'occurred_at': row.read<int>('date'),
+              'source': 'local_drift',
+              'account_id': null,
+            },
+          )
+          .toList();
+    } finally {
+      await database.close();
     }
   }
 
