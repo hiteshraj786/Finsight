@@ -327,36 +327,6 @@ class _MainShellScreenState extends State<MainShellScreen> {
       return;
     }
 
-    Future<void> _maybeOfferPaymentPopups() async {
-      if (!await Permission.sms.isGranted) return;
-      if (!await PaymentPopup.isEnabled() || await PaymentPopup.hasPermission()) {
-        return;
-      }
-      if (!await PaymentPopup.takePromptTurn() || !mounted) return;
-      final allow = await showDialog<bool>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          icon: const Icon(Icons.picture_in_picture_alt_rounded),
-          title: const Text('Show payment popups?'),
-          content: const Text(
-            'After a bank SMS arrives, FinSight can show a small card over GPay '
-            'or another app after five seconds so you can categorise it.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Not now'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Allow'),
-            ),
-          ],
-        ),
-      );
-      if (allow == true) await PaymentPopup.requestPermission();
-    }
-
     final tx = _syncService.popups.currentPopup!;
     _popupModalOpen = true;
     NewTransactionPopupSheet.show(
@@ -397,6 +367,36 @@ class _MainShellScreenState extends State<MainShellScreen> {
       _popupModalOpen = false;
       WidgetsBinding.instance.addPostFrameCallback((_) => _showQueuedPopup());
     });
+  }
+
+  Future<void> _maybeOfferPaymentPopups() async {
+    if (!await Permission.sms.isGranted) return;
+    if (!await PaymentPopup.isEnabled() || await PaymentPopup.hasPermission()) {
+      return;
+    }
+    if (!await PaymentPopup.takePromptTurn() || !mounted) return;
+    final allow = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(Icons.picture_in_picture_alt_rounded),
+        title: const Text('Show payment popups?'),
+        content: const Text(
+          'After a bank SMS arrives, FinSight can show a small card over GPay '
+          'or another app after five seconds so you can categorise it.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Not now'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Allow'),
+          ),
+        ],
+      ),
+    );
+    if (allow == true) await PaymentPopup.requestPermission();
   }
 
   @override

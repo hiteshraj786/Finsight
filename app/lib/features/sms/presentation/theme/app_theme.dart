@@ -1,58 +1,45 @@
 import 'package:flutter/material.dart';
-import 'dart:ui' show PlatformDispatcher;
-
-import '../../../../core/theme/app_theme.dart' as core;
-
 class AppColors {
   AppColors._();
 
-  static bool get isDark => switch (core.AppTheme.themeMode.value) {
-    ThemeMode.dark => true,
-    ThemeMode.light => false,
-    ThemeMode.system =>
-      PlatformDispatcher.instance.platformBrightness == Brightness.dark,
-  };
-
-  static Color _pick(Color light, Color dark) => isDark ? dark : light;
-
   // Brand
-  static Color get primary => _pick(const Color(0xFF7F3DFF), const Color(0xFFA475FF));
-  static Color get primaryDark => _pick(const Color(0xFF660FE6), const Color(0xFF8B5CF6));
-  static Color get primaryContainer => _pick(const Color(0xFFEEE5FF), const Color(0xFF2E2347));
-  static Color get accentGold => _pick(const Color(0xFFFCAC12), const Color(0xFFFFC04D));
-  static Color get accentGoldLight => _pick(const Color(0xFFFEF4E4), const Color(0xFF3A2E14));
+  static const primary = Color(0xFF7F3DFF);
+  static const primaryDark = Color(0xFF660FE6);
+  static const primaryContainer = Color(0xFFEEE5FF);
+  static const accentGold = Color(0xFFFCAC12);
+  static const accentGoldLight = Color(0xFFFEF4E4);
 
   // Surfaces & Backgrounds
-  static Color get background => _pick(const Color(0xFFFBF9FE), const Color(0xFF15121B));
-  static Color get surface => _pick(const Color(0xFFFFFFFF), const Color(0xFF1F1B26));
-  static Color get surfaceContainer => _pick(const Color(0xFFF5F3F8), const Color(0xFF2A2633));
+  static const background = Color(0xFFFBF9FE);
+  static const surface = Color(0xFFFFFFFF);
+  static const surfaceContainer = Color(0xFFF5F3F8);
 
   // Borders & Dividers
-  static Color get border => _pick(const Color(0xFFF0ECFC), const Color(0xFF2F2A3A));
-  static Color get borderLight => _pick(const Color(0xFFE9E3F8), const Color(0xFF3B3548));
+  static const border = Color(0xFFF0ECFC);
+  static const borderLight = Color(0xFFE9E3F8);
 
   // Transaction Dynamics
-  static Color get debit => _pick(const Color(0xFFFD3C4A), const Color(0xFFFF6B76));
-  static Color get debitLight => _pick(const Color(0xFFFFF1F2), const Color(0xFF3A1D22));
-  static Color get credit => _pick(const Color(0xFF00A86B), const Color(0xFF3DD69C));
-  static Color get creditLight => _pick(const Color(0xFFE6F7F0), const Color(0xFF15302A));
+  static const debit = Color(0xFFFD3C4A);
+  static const debitLight = Color(0xFFFFF1F2);
+  static const credit = Color(0xFF00A86B);
+  static const creditLight = Color(0xFFE6F7F0);
 
   // Status & Badges
-  static Color get pendingText => accentGold;
-  static Color get pendingBg => accentGoldLight;
-  static Color get needsCheckText => accentGold;
-  static Color get needsCheckBg => accentGoldLight;
-  static Color get confirmedText => credit;
-  static Color get confirmedBg => creditLight;
-  static Color get ignoredText => _pick(const Color(0xFF91919F), const Color(0xFF9A98A8));
-  static Color get ignoredBg => _pick(const Color(0xFFF1F1F3), const Color(0xFF2A2830));
-  static Color get autoTagText => primary;
-  static Color get autoTagBg => primaryContainer;
+  static const pendingText = accentGold;
+  static const pendingBg = accentGoldLight;
+  static const needsCheckText = accentGold;
+  static const needsCheckBg = accentGoldLight;
+  static const confirmedText = credit;
+  static const confirmedBg = creditLight;
+  static const ignoredText = Color(0xFF91919F);
+  static const ignoredBg = Color(0xFFF1F1F3);
+  static const autoTagText = primary;
+  static const autoTagBg = primaryContainer;
 
   // Typography Colors
-  static Color get textPrimary => _pick(const Color(0xFF1B1B1F), const Color(0xFFF2F0F7));
-  static Color get textSecondary => _pick(const Color(0xFF6C6A7B), const Color(0xFFB4B1C2));
-  static Color get textMuted => _pick(const Color(0xFF91919F), const Color(0xFF8A8799));
+  static const textPrimary = Color(0xFF1B1B1F);
+  static const textSecondary = Color(0xFF6C6A7B);
+  static const textMuted = Color(0xFF91919F);
 
   static void rebuildOnThemeChange(BuildContext context) => Theme.of(context);
 }
@@ -64,20 +51,7 @@ class AppTheme {
   static const double pillRadius = 9999.0;
 
   static ThemeData get current {
-    final brightness = AppColors.isDark ? Brightness.dark : Brightness.light;
-    return lightTheme.copyWith(
-      brightness: brightness,
-      scaffoldBackgroundColor: AppColors.background,
-      canvasColor: AppColors.surface,
-      colorScheme: lightTheme.colorScheme.copyWith(
-        brightness: brightness,
-        primary: AppColors.primary,
-        primaryContainer: AppColors.primaryContainer,
-        surface: AppColors.surface,
-        onSurface: AppColors.textPrimary,
-        onSurfaceVariant: AppColors.textSecondary,
-      ),
-    );
+    return lightTheme;
   }
 
   static ThemeData get lightTheme {

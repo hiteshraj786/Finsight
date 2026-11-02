@@ -4,7 +4,7 @@ import '../../models/parsed_transaction.dart';
 import '../../models/transaction_status.dart';
 import '../../models/transaction_type.dart';
 import '../../utils/currency_formatter.dart';
-import '../../../core/services/finance_data_service.dart';
+import '../../../../core/services/finance_data_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/category_widgets.dart';
 import '../widgets/finsight_app_bar.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/widgets/bank_logo.dart';
+import '../../../../core/widgets/bank_logo.dart';
 import '../filters/transaction_filter.dart';
 import '../../models/payment_method.dart';
 import '../../models/transaction_status.dart';
