@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -158,34 +159,34 @@ class ProfileService {
     required ExportRange range,
     required ExportFormat format,
   }) async {
-    final user = AuthService.currentUser;
-    if (user == null) throw const ProfileException('Your session has expired.');
     try {
       final now = DateTime.now().toUtc();
       final startedAt = range.startDate(now);
-      final accountsFuture = _client
-          .from('finance_accounts')
-          .select(
-            'provider_name, masked_account_number, account_type, currency, latest_balance, is_active, created_at',
-          )
-          .eq('is_active', true);
-      final transactionsFuture = _client
-          .from('finance_transactions')
-          .select(
-            'amount, direction, merchant, category, occurred_at, source, account_id',
-          )
-          .gte('occurred_at', startedAt.toIso8601String())
-          .order('occurred_at', ascending: false);
-      final data = await Future.wait<dynamic>([
-        accountsFuture,
-        transactionsFuture,
-      ]);
-      final accounts = List<Map<String, dynamic>>.from(
-        (data[0] as List).map((row) => Map<String, dynamic>.from(row as Map)),
-      );
-      final transactions = List<Map<String, dynamic>>.from(
-        (data[1] as List).map((row) => Map<String, dynamic>.from(row as Map)),
-      );
+      var accounts = <Map<String, dynamic>>[];
+      var transactions = <Map<String, dynamic>>[];
+      if (AuthService.currentUser != null) {
+        try {
+          final data = await Future.wait<dynamic>([
+            _client.from('finance_accounts').select(
+              'provider_name, masked_account_number, account_type, currency, latest_balance, is_active, created_at',
+            ).eq('is_active', true),
+            _client.from('finance_transactions').select(
+              'amount, direction, merchant, category, occurred_at, source, account_id',
+            ).gte('occurred_at', startedAt.toIso8601String()).order(
+              'occurred_at',
+              ascending: false,
+            ),
+          ]);
+          accounts = List<Map<String, dynamic>>.from(
+            (data[0] as List).map((row) => Map<String, dynamic>.from(row as Map)),
+          );
+          transactions = List<Map<String, dynamic>>.from(
+            (data[1] as List).map((row) => Map<String, dynamic>.from(row as Map)),
+          );
+        } catch (error) {
+          debugPrint('Cloud export unavailable; using local data: $error');
+        }
+      }
       if (scope != ExportScope.accounts) {
         transactions.addAll(await _loadLocalTransactions(startedAt));
       }
@@ -415,9 +416,14 @@ enum ExportRange {
 
 enum ExportFormat {
   csv,
-  json;
+  json,
+  encryptedBackup;
 
-  String get extension => this == ExportFormat.csv ? 'csv' : 'json';
+  String get extension => switch (this) {
+    ExportFormat.csv => 'csv',
+    ExportFormat.json => 'json',
+    ExportFormat.encryptedBackup => 'finsight',
+  };
 }
 
 class ProfileException implements Exception {

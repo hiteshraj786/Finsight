@@ -7,6 +7,8 @@ import 'insight_notification_service.dart';
 
 const _dailyTask = 'finsight-daily-insights';
 const _periodicTask = 'finsight-periodic-insights';
+const _weeklyDigestTask = 'finsight-weekly-digest';
+const _monthlyDigestTask = 'finsight-monthly-digest';
 
 @pragma('vm:entry-point')
 void insightWorkmanagerDispatcher() {
@@ -16,12 +18,33 @@ void insightWorkmanagerDispatcher() {
       repository: DriftInsightsRepository(),
       clock: DateTime.now,
     );
-    if (task == _dailyTask) {
-      await runner.runDaily();
-    } else if (task == _periodicTask) {
-      await runner.runPeriodicInsights();
+    try {
+      if (task == _dailyTask) {
+        await runner.runDaily();
+        await runner.runDigest(
+          window: const Duration(days: 1),
+          label: 'Daily',
+        );
+      } else if (task == _periodicTask) {
+        await runner.runPeriodicInsights();
+      } else if (task == _weeklyDigestTask) {
+        await runner.runDigest(
+          window: const Duration(days: 7),
+          label: 'Weekly',
+        );
+      } else if (task == _monthlyDigestTask) {
+        await runner.runDigest(
+          window: const Duration(days: 30),
+          label: 'Monthly',
+        );
+      } else {
+        return false;
+      }
+      return true;
+    } catch (error) {
+      debugPrint('Insights background task failed: $task $error');
+      return false;
     }
-    return true;
   });
 }
 
@@ -38,6 +61,18 @@ class InsightBackgroundJobs {
       _periodicTask,
       _periodicTask,
       frequency: const Duration(days: 7),
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
+    );
+    await Workmanager().registerPeriodicTask(
+      _weeklyDigestTask,
+      _weeklyDigestTask,
+      frequency: const Duration(days: 7),
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
+    );
+    await Workmanager().registerPeriodicTask(
+      _monthlyDigestTask,
+      _monthlyDigestTask,
+      frequency: const Duration(days: 30),
       existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
     );
   }

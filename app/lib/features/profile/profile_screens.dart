@@ -9,6 +9,7 @@ import '../../core/services/finance_data_service.dart';
 import '../../core/services/pin_service.dart';
 import '../../core/services/profile_service.dart';
 import '../../core/services/language_service.dart';
+import '../../core/services/local_backup_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/bank_logo.dart';
@@ -1093,11 +1094,15 @@ class _ExportDataScreenState extends State<ExportDataScreen> {
     if (_exporting) return;
     setState(() => _exporting = true);
     try {
-      await ProfileService.exportData(
-        scope: _scope,
-        range: _range,
-        format: _format,
-      );
+      if (_format == ExportFormat.encryptedBackup) {
+        await LocalBackupService.shareEncryptedBackup();
+      } else {
+        await ProfileService.exportData(
+          scope: _scope,
+          range: _range,
+          format: _format,
+        );
+      }
       if (mounted)
         Navigator.pushReplacement(
           context,

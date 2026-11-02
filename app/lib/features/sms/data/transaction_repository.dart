@@ -7,6 +7,7 @@ import '../models/payment_method.dart';
 import '../../../data/models/category_definition.dart';
 import '../../../data/catalogs/predefined_categories.dart';
 import '../services/sms_categorizer.dart';
+import '../services/dedupe.dart';
 import 'database.dart';
 
 class ScanInsertResult {
@@ -155,9 +156,7 @@ class TransactionRepository {
     await _db.transaction(() async {
       for (final tx in list) {
         final key = computeDedupeKey(tx);
-        final existing = await (_db.select(
-          _db.transactions,
-        )..where((t) => t.dedupeKey.equals(key))).getSingleOrNull();
+        final existing = await _findExisting(tx, key);
 
         if (existing != null) {
           existingCount++;
@@ -202,6 +201,7 @@ class TransactionRepository {
               );
           insertedCount++;
         }
+
       }
     });
 
@@ -209,6 +209,28 @@ class TransactionRepository {
       inserted: insertedCount,
       alreadyExisting: existingCount,
     );
+  }
+
+  Future<Transaction?> _findExisting(ParsedTransaction tx, String key) async {
+    final exact = await (_db.select(_db.transactions)
+          ..where((row) => row.dedupeKey.equals(key)))
+        .getSingleOrNull();
+    if (exact != null) return exact;
+    final lower = tx.date.toUtc().subtract(
+      TransactionDeduplicator.timestampWindow,
+    );
+    final upper = tx.date.toUtc().add(
+      TransactionDeduplicator.timestampWindow,
+    );
+    final candidates = await (_db.select(_db.transactions)
+          ..where((row) =>
+              row.amountPaise.equals(tx.amountPaise) &
+              row.type.equals(tx.type.name) &
+              row.party.equals(tx.party) &
+              row.date.isBiggerOrEqualValue(lower) &
+              row.date.isSmallerOrEqualValue(upper)))
+        .get();
+    return candidates.isEmpty ? null : candidates.first;
   }
 
   Stream<List<ParsedTransaction>> watchAll({

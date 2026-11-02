@@ -223,7 +223,19 @@ class DriftInsightsRepository implements InsightsRepository {
   @override
   Future<List<SavingsGoalEvaluation>> getSavingsGoalEvaluations() async {
     final goals = await getSavingsGoals();
-    return [for (final g in goals) SavingsGoalEngine(clock: DateTime.now).evaluate(g, 0)];
+    final now = DateTime.now();
+    final monthStart = DateTime(now.year, now.month);
+    final nextMonth = DateTime(now.year, now.month + 1);
+    final contribution = (await confirmedTransactions(
+      from: monthStart,
+      to: nextMonth,
+    ))
+        .where((transaction) => !transaction.isDebit)
+        .fold<int>(0, (sum, transaction) => sum + transaction.amountPaise);
+    return [
+      for (final g in goals)
+        SavingsGoalEngine(clock: DateTime.now).evaluate(g, contribution),
+    ];
   }
 
   @override
@@ -234,15 +246,19 @@ class DriftInsightsRepository implements InsightsRepository {
     final current = await categorySpend(start, end);
     final previous = await categorySpend(previousStart, previousEnd);
     final prevMap = {for (final p in previous) p.category: p.amountPaise};
+    final currentMap = {for (final c in current) c.category: c};
+    final categories = {...currentMap.keys, ...prevMap.keys};
     final total = current.fold<int>(0, (sum, c) => sum + c.amountPaise);
-    return current.map((c) {
-      final prev = prevMap[c.category];
-      final change = prev != null && prev > 0 ? ((c.amountPaise - prev) / prev * 100) : null;
-      final share = total > 0 ? (c.amountPaise / total * 100) : 0.0;
+    return categories.map((category) {
+      final item = currentMap[category];
+      final prev = prevMap[category];
+      final amount = item?.amountPaise ?? 0;
+      final change = prev != null && prev > 0 ? ((amount - prev) / prev * 100) : null;
+      final share = total > 0 ? (amount / total * 100) : 0.0;
       return CategorySpend(
-        category: c.category,
-        amountPaise: c.amountPaise,
-        transactionCount: c.transactionCount,
+        category: category,
+        amountPaise: amount,
+        transactionCount: item?.transactionCount ?? 0,
         sharePercentage: share,
         previousAmountPaise: prev,
         percentageChange: change,

@@ -49,6 +49,25 @@ class InsightJobRunner {
     await repository.confirmedTransactions(),
   );
 
+  Future<void> runDigest({required Duration window, required String label}) async {
+    final now = clock();
+    final transactions = (await repository.confirmedTransactions(
+      from: now.subtract(window),
+      to: now.add(const Duration(seconds: 1)),
+    )).where((transaction) => transaction.isDebit);
+    final total = transactions.fold<int>(
+      0,
+      (sum, transaction) => sum + transaction.amountPaise,
+    );
+    if (total == 0) return;
+    await InsightNotificationService.show(
+      id: 700000 + now.toLocal().year * 10000 + now.month * 100 + now.day,
+      title: '$label spending summary',
+      body: '${transactions.length} payments · ${CurrencyFormatter.formatPaise(total)}',
+      route: AppRoutes.insights,
+    );
+  }
+
   Future<List<GeneratedInsight>> _generate(List<InsightTransaction> all) async {
     final now = clock();
     final budgets = await repository.getBudgets();

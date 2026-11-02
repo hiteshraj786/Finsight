@@ -1,12 +1,13 @@
 import '../models/parsed_transaction.dart';
 
 class TransactionDeduplicator {
+  static const timestampWindow = Duration(minutes: 10);
   final Set<String> _seenReferences = {};
-  final Set<String> _seenFingerprints = {};
+  final List<ParsedTransaction> _seenTransactions = [];
 
   void reset() {
     _seenReferences.clear();
-    _seenFingerprints.clear();
+    _seenTransactions.clear();
   }
 
   bool isDuplicate(ParsedTransaction tx) {
@@ -18,15 +19,14 @@ class TransactionDeduplicator {
       }
     }
 
-    // 2. Same amountPaise + type + accountLast4 + party + calendar day
-    final dayKey =
-        '${tx.date.year}-${tx.date.month.toString().padLeft(2, '0')}-${tx.date.day.toString().padLeft(2, '0')}';
-    final partyKey = tx.party.trim().toLowerCase();
-    final accountKey = (tx.accountLast4 ?? '').trim();
-    final fingerprint =
-        '${tx.amountPaise}|${tx.type.name}|$accountKey|$partyKey|$dayKey';
-
-    if (_seenFingerprints.contains(fingerprint)) {
+    // 2. Same amount/type/account/party within a short delivery window.
+    final duplicate = _seenTransactions.any((other) =>
+        other.amountPaise == tx.amountPaise &&
+        other.type == tx.type &&
+        (other.accountLast4 ?? '').trim() == (tx.accountLast4 ?? '').trim() &&
+        other.party.trim().toLowerCase() == tx.party.trim().toLowerCase() &&
+        other.date.difference(tx.date).abs() <= timestampWindow);
+    if (duplicate) {
       return true;
     }
 
@@ -34,7 +34,7 @@ class TransactionDeduplicator {
     if (tx.reference != null && tx.reference!.trim().isNotEmpty) {
       _seenReferences.add(tx.reference!.trim().toLowerCase());
     }
-    _seenFingerprints.add(fingerprint);
+    _seenTransactions.add(tx);
 
     return false;
   }
