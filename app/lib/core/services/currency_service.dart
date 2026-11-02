@@ -42,7 +42,11 @@ class CurrencyService {
     _ => '₹',
   };
 
-  static String format(double value, {int fractionDigits = 2, String? currency}) {
+  static String format(
+    double value, {
+    int fractionDigits = 2,
+    String? currency,
+  }) {
     final activeCurrency = currency ?? current;
     return '${symbolFor(activeCurrency)} ${value.toStringAsFixed(fractionDigits)}';
   }

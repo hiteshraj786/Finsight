@@ -90,7 +90,9 @@ class _ManualAddSheetState extends State<ManualAddSheet> {
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.cardRadius)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppTheme.cardRadius),
+        ),
       ),
       padding: EdgeInsets.only(
         left: 20,
@@ -131,7 +133,8 @@ class _ManualAddSheetState extends State<ManualAddSheet> {
                 children: [
                   Expanded(
                     child: InkWell(
-                      onTap: () => setState(() => _type = TransactionType.debit),
+                      onTap: () =>
+                          setState(() => _type = TransactionType.debit),
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -164,7 +167,8 @@ class _ManualAddSheetState extends State<ManualAddSheet> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: InkWell(
-                      onTap: () => setState(() => _type = TransactionType.credit),
+                      onTap: () =>
+                          setState(() => _type = TransactionType.credit),
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -200,7 +204,9 @@ class _ManualAddSheetState extends State<ManualAddSheet> {
               // Amount
               TextField(
                 controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 style: const TextStyle(fontFamily: 'Inter', fontSize: 16),
                 decoration: const InputDecoration(
                   labelText: 'Amount (₹)',
@@ -210,9 +216,15 @@ class _ManualAddSheetState extends State<ManualAddSheet> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(12)),
-                    borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+                    borderSide: BorderSide(
+                      color: AppColors.primary,
+                      width: 1.5,
+                    ),
                   ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -227,9 +239,15 @@ class _ManualAddSheetState extends State<ManualAddSheet> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(12)),
-                    borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+                    borderSide: BorderSide(
+                      color: AppColors.primary,
+                      width: 1.5,
+                    ),
                   ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -243,9 +261,15 @@ class _ManualAddSheetState extends State<ManualAddSheet> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(12)),
-                    borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+                    borderSide: BorderSide(
+                      color: AppColors.primary,
+                      width: 1.5,
+                    ),
                   ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
                 items: CategoryMeta.validCategories.map((c) {
                   return DropdownMenuItem(
@@ -254,7 +278,13 @@ class _ManualAddSheetState extends State<ManualAddSheet> {
                       children: [
                         CategoryIcon(category: c, size: 22, iconSize: 13),
                         const SizedBox(width: 8),
-                        Text(c, style: const TextStyle(fontFamily: 'Inter', fontSize: 14)),
+                        Text(
+                          c,
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 14,
+                          ),
+                        ),
                       ],
                     ),
                   );
@@ -275,9 +305,15 @@ class _ManualAddSheetState extends State<ManualAddSheet> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(12)),
-                    borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+                    borderSide: BorderSide(
+                      color: AppColors.primary,
+                      width: 1.5,
+                    ),
                   ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -287,7 +323,9 @@ class _ManualAddSheetState extends State<ManualAddSheet> {
                   final paise = _parseAmountToPaise(_amountController.text);
                   if (paise == null || paise <= 0) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please enter a valid amount')),
+                      const SnackBar(
+                        content: Text('Please enter a valid amount'),
+                      ),
                     );
                     return;
                   }

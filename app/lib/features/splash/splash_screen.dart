@@ -92,9 +92,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     final hasPin = await PinService.hasPin();
     if (!mounted) return;
-    Navigator.of(
-      context,
-    ).pushReplacementNamed(
+    Navigator.of(context).pushReplacementNamed(
       hasPin ? AppRoutes.unlockPin : AppRoutes.setupAccount,
     );
   }

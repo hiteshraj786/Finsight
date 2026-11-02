@@ -83,11 +83,7 @@ class CategoryIcon extends StatelessWidget {
         shape: BoxShape.circle,
       ),
       alignment: Alignment.center,
-      child: Icon(
-        icon,
-        size: iconSize,
-        color: iconColor ?? AppColors.primary,
-      ),
+      child: Icon(icon, size: iconSize, color: iconColor ?? AppColors.primary),
     );
   }
 }
@@ -108,7 +104,8 @@ class CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cleanName = CategoryRegistry.instance.find(category)?.name ??
+    final cleanName =
+        CategoryRegistry.instance.find(category)?.name ??
         CategoryMeta.sanitize(category);
     final icon = CategoryMeta.getIcon(cleanName);
 

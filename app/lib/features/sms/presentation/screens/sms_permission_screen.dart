@@ -142,4 +142,3 @@ class SmsPermissionScreen extends StatelessWidget {
     );
   }
 }
-

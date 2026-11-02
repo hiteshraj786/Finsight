@@ -119,7 +119,9 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.cardRadius)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppTheme.cardRadius),
+        ),
       ),
       padding: EdgeInsets.only(
         left: 20,
@@ -163,8 +165,7 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
                     children: [
                       if (tx.status == TransactionStatus.pending)
                         const StatusTag.pending(),
-                      if (tx.lowConfidence)
-                        const StatusTag.needsCheck(),
+                      if (tx.lowConfidence) const StatusTag.needsCheck(),
                     ],
                   ),
                 ],
@@ -190,9 +191,15 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(12)),
-                    borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+                    borderSide: BorderSide(
+                      color: AppColors.primary,
+                      width: 1.5,
+                    ),
                   ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
               ),
               const SizedBox(height: 14),
@@ -214,9 +221,15 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(12)),
-                          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+                          borderSide: BorderSide(
+                            color: AppColors.primary,
+                            width: 1.5,
+                          ),
                         ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
                       ),
                       items: CategoryMeta.validCategories.map((c) {
                         return DropdownMenuItem(
@@ -225,7 +238,13 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
                             children: [
                               CategoryIcon(category: c, size: 24, iconSize: 14),
                               const SizedBox(width: 8),
-                              Text(c, style: const TextStyle(fontFamily: 'Inter', fontSize: 14)),
+                              Text(
+                                c,
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 14,
+                                ),
+                              ),
                             ],
                           ),
                         );
@@ -240,7 +259,10 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
                   if (isAuto) ...[
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primaryContainer,
                         borderRadius: BorderRadius.circular(8),
@@ -295,9 +317,15 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(12)),
-                    borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+                    borderSide: BorderSide(
+                      color: AppColors.primary,
+                      width: 1.5,
+                    ),
                   ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
               ),
               // Checkbox for past transactions (hidden if n == 0)
@@ -333,7 +361,10 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
                       outlined: true,
                       onPressed: () async {
                         if (tx.id != null) {
-                          await widget.repository.updateStatus(tx.id!, TransactionStatus.ignored);
+                          await widget.repository.updateStatus(
+                            tx.id!,
+                            TransactionStatus.ignored,
+                          );
                         }
                         if (context.mounted) {
                           Navigator.of(context).pop();
@@ -357,7 +388,10 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
                             category: _selectedCategory,
                             applyToPast: _applyToPast,
                           );
-                          await widget.repository.updateStatus(tx.id!, TransactionStatus.confirmed);
+                          await widget.repository.updateStatus(
+                            tx.id!,
+                            TransactionStatus.confirmed,
+                          );
                         }
                         if (context.mounted) {
                           Navigator.of(context).pop();

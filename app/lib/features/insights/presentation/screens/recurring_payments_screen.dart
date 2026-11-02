@@ -14,7 +14,8 @@ class RecurringPaymentsScreen extends StatefulWidget {
   const RecurringPaymentsScreen({super.key});
 
   @override
-  State<RecurringPaymentsScreen> createState() => _RecurringPaymentsScreenState();
+  State<RecurringPaymentsScreen> createState() =>
+      _RecurringPaymentsScreenState();
 }
 
 class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
@@ -40,23 +41,30 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
     }
   }
 
-  int get _totalCommittedPaise =>
-      _items.where((i) => i.status != RecurringStatus.ignored).fold<int>(0, (sum, i) => sum + i.amountPaise);
+  int get _totalCommittedPaise => _items
+      .where((i) => i.status != RecurringStatus.ignored)
+      .fold<int>(0, (sum, i) => sum + i.amountPaise);
 
   List<RecurringPattern> get _filteredItems {
     if (_selectedFilter == 'needs_review') {
       return _items.where((i) => i.status == RecurringStatus.detected).toList();
     }
     if (_selectedFilter == 'auto_debited') {
-      return _items.where((i) => i.status == RecurringStatus.confirmed).toList();
+      return _items
+          .where((i) => i.status == RecurringStatus.confirmed)
+          .toList();
     }
     return _items.where((i) => i.status != RecurringStatus.ignored).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    final needsReviewCount = _items.where((i) => i.status == RecurringStatus.detected).length;
-    final autoDebitedCount = _items.where((i) => i.status == RecurringStatus.confirmed).length;
+    final needsReviewCount = _items
+        .where((i) => i.status == RecurringStatus.detected)
+        .length;
+    final autoDebitedCount = _items
+        .where((i) => i.status == RecurringStatus.confirmed)
+        .length;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -78,7 +86,9 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
         centerTitle: true,
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF7F3DFF)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF7F3DFF)),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Column(
@@ -105,7 +115,10 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
@@ -113,11 +126,21 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.calendar_today_outlined, size: 12, color: Colors.white),
+                                  const Icon(
+                                    Icons.calendar_today_outlined,
+                                    size: 12,
+                                    color: Colors.white,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    DateFormat('MMMM yyyy').format(DateTime.now()),
-                                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
+                                    DateFormat(
+                                      'MMMM yyyy',
+                                    ).format(DateTime.now()),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -130,7 +153,9 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                           textBaseline: TextBaseline.alphabetic,
                           children: [
                             Text(
-                              CurrencyFormatter.formatPaise(_totalCommittedPaise),
+                              CurrencyFormatter.formatPaise(
+                                _totalCommittedPaise,
+                              ),
                               style: GoogleFonts.inter(
                                 fontSize: 34,
                                 fontWeight: FontWeight.w800,
@@ -151,7 +176,10 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                         ),
                         const SizedBox(height: 14),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.18),
                             borderRadius: BorderRadius.circular(20),
@@ -159,7 +187,11 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.auto_awesome, size: 14, color: Colors.white),
+                              const Icon(
+                                Icons.auto_awesome,
+                                size: 14,
+                                color: Colors.white,
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 '${_items.length} ${'recurring payments detected'.tr()}',
@@ -183,10 +215,16 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const CashflowScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const CashflowScreen(),
+                          ),
                         );
                       },
-                      icon: const Icon(Icons.trending_down_rounded, size: 16, color: Color(0xFF7F3DFF)),
+                      icon: const Icon(
+                        Icons.trending_down_rounded,
+                        size: 16,
+                        color: Color(0xFF7F3DFF),
+                      ),
                       label: Text(
                         'View cashflow forecast',
                         style: GoogleFonts.inter(
@@ -206,9 +244,16 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                       children: [
                         _filterChip('All (${_items.length})', 'all'),
                         const SizedBox(width: 10),
-                        _filterChip('Needs Review', 'needs_review', badgeCount: needsReviewCount),
+                        _filterChip(
+                          'Needs Review',
+                          'needs_review',
+                          badgeCount: needsReviewCount,
+                        ),
                         const SizedBox(width: 10),
-                        _filterChip('Auto-Debited ($autoDebitedCount)', 'auto_debited'),
+                        _filterChip(
+                          'Auto-Debited ($autoDebitedCount)',
+                          'auto_debited',
+                        ),
                       ],
                     ),
                   ),
@@ -236,7 +281,10 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFEEE5FF),
                                 borderRadius: BorderRadius.circular(10),
@@ -258,7 +306,7 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                         _filteredItems.isEmpty
                             ? 'No upcoming dates'.tr()
                             : '${DateFormat('d MMM').format(_filteredItems.first.nextExpectedDate)} – '
-                              '${DateFormat('d MMM').format(_filteredItems.last.nextExpectedDate)}',
+                                  '${DateFormat('d MMM').format(_filteredItems.last.nextExpectedDate)}',
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           color: const Color(0xFF91919F),
@@ -275,7 +323,10 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 36),
                         child: Text(
                           'No recurring subscriptions detected'.tr(),
-                          style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF91919F)),
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: const Color(0xFF91919F),
+                          ),
                         ),
                       ),
                     )
@@ -310,7 +361,11 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                             color: Color(0xFFEEE5FF),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.info_outline_rounded, color: Color(0xFF7F3DFF), size: 18),
+                          child: const Icon(
+                            Icons.info_outline_rounded,
+                            color: Color(0xFF7F3DFF),
+                            size: 18,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -347,10 +402,18 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                     child: TextButton.icon(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Auto-scanning reads all bank mandates automatically'.tr())),
+                          SnackBar(
+                            content: Text(
+                              'Auto-scanning reads all bank mandates automatically'
+                                  .tr(),
+                            ),
+                          ),
                         );
                       },
-                      icon: const Icon(Icons.add_circle_outline_rounded, color: Color(0xFF7F3DFF)),
+                      icon: const Icon(
+                        Icons.add_circle_outline_rounded,
+                        color: Color(0xFF7F3DFF),
+                      ),
                       label: Text(
                         'Add recurring payment manually',
                         style: GoogleFonts.inter(
@@ -389,7 +452,9 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
               style: GoogleFonts.inter(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? const Color(0xFF7F3DFF) : const Color(0xFF212325),
+                color: isSelected
+                    ? const Color(0xFF7F3DFF)
+                    : const Color(0xFF212325),
               ),
             ),
             if (badgeCount > 0) ...[
@@ -418,7 +483,9 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isNeedsReview ? const Color(0xFF7F3DFF) : const Color(0xFFF1F1FA),
+          color: isNeedsReview
+              ? const Color(0xFF7F3DFF)
+              : const Color(0xFFF1F1FA),
           width: isNeedsReview ? 1.5 : 1,
         ),
         boxShadow: [
@@ -488,18 +555,29 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        const Icon(Icons.auto_awesome, size: 12, color: Color(0xFF7F3DFF)),
+                        const Icon(
+                          Icons.auto_awesome,
+                          size: 12,
+                          color: Color(0xFF7F3DFF),
+                        ),
                         if (isNeedsReview) ...[
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFEEE5FF),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               'Detected',
-                              style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: const Color(0xFF7F3DFF)),
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF7F3DFF),
+                              ),
                             ),
                           ),
                         ],
@@ -509,21 +587,30 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 1,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF1F1FA),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             'Monthly',
-                            style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF91919F)),
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              color: const Color(0xFF91919F),
+                            ),
                           ),
                         ),
                         if (item.paymentMethod != null) ...[
                           const SizedBox(width: 6),
                           Text(
                             item.paymentMethod!,
-                            style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF91919F)),
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              color: const Color(0xFF91919F),
+                            ),
                           ),
                         ],
                       ],
@@ -546,8 +633,12 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                     isNeedsReview ? 'Review' : 'Due in 2d',
                     style: GoogleFonts.inter(
                       fontSize: 11,
-                      fontWeight: isNeedsReview ? FontWeight.w700 : FontWeight.w500,
-                      color: isNeedsReview ? const Color(0xFF7F3DFF) : const Color(0xFF91919F),
+                      fontWeight: isNeedsReview
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                      color: isNeedsReview
+                          ? const Color(0xFF7F3DFF)
+                          : const Color(0xFF91919F),
                     ),
                   ),
                 ],
@@ -570,13 +661,23 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Pattern matched'.tr(), style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F))),
+                      Text(
+                        'Pattern matched'.tr(),
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: const Color(0xFF91919F),
+                        ),
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           item.patternDescription ?? '3rd of every month',
                           textAlign: TextAlign.end,
-                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF212325)),
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF212325),
+                          ),
                         ),
                       ),
                     ],
@@ -585,13 +686,23 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Last debited'.tr(), style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F))),
+                      Text(
+                        'Last debited'.tr(),
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: const Color(0xFF91919F),
+                        ),
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           '${CurrencyFormatter.formatPaise(item.amountPaise)} on ${DateFormat('d MMM yyyy').format(item.nextExpectedDate)}',
                           textAlign: TextAlign.end,
-                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF212325)),
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF212325),
+                          ),
                         ),
                       ),
                     ],
@@ -599,9 +710,20 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.check_circle_outline, size: 14, color: Color(0xFF7F3DFF)),
+                      const Icon(
+                        Icons.check_circle_outline,
+                        size: 14,
+                        color: Color(0xFF7F3DFF),
+                      ),
                       const SizedBox(width: 6),
-                      Text('Auto-detected recurring subscription'.tr(), style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: const Color(0xFF7F3DFF))),
+                      Text(
+                        'Auto-detected recurring subscription'.tr(),
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF7F3DFF),
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -621,12 +743,18 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                     style: OutlinedButton.styleFrom(
                       backgroundColor: const Color(0xFFEEE5FF),
                       side: BorderSide.none,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(
                       '✕ Not recurring',
-                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF7F3DFF)),
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF7F3DFF),
+                      ),
                     ),
                   ),
                 ),
@@ -641,13 +769,19 @@ class _RecurringPaymentsScreenState extends State<RecurringPaymentsScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF7F3DFF),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       elevation: 0,
                     ),
                     child: Text(
                       '✓ Confirm',
-                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

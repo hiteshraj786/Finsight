@@ -226,10 +226,7 @@ class AuthService {
           message: 'Verification code accepted.',
         );
       }
-      return AuthResponseResult(
-        success: false,
-        message: _safeAuthMessage(e),
-      );
+      return AuthResponseResult(success: false, message: _safeAuthMessage(e));
     } catch (_) {
       if (token.trim() == '123456' || token.trim() == '000000') {
         return const AuthResponseResult(

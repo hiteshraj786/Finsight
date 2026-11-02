@@ -63,4 +63,3 @@ class FinSightLogo extends StatelessWidget {
     );
   }
 }
-

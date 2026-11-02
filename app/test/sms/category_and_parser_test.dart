@@ -38,7 +38,10 @@ void main() {
           ),
         );
 
-    expect(await repository.suggestCategory('Netflix monthly payment'), 'Subscriptions');
+    expect(
+      await repository.suggestCategory('Netflix monthly payment'),
+      'Subscriptions',
+    );
     await database.close();
   });
 
@@ -51,9 +54,7 @@ void main() {
       category: 'Food',
       date: DateTime(2026, 11, 1, 23, 58),
     );
-    final second = first.copyWith(
-      date: DateTime(2026, 11, 2, 0, 3),
-    );
+    final second = first.copyWith(date: DateTime(2026, 11, 2, 0, 3));
 
     expect(dedupe.isDuplicate(first), isFalse);
     expect(dedupe.isDuplicate(second), isTrue);

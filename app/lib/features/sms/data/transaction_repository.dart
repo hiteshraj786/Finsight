@@ -83,14 +83,16 @@ class TransactionRepository {
     }
 
     // 3. Editable category keywords, including user-created categories.
-    final categories = await (_db.select(_db.customCategories)
-          ..orderBy([(category) => OrderingTerm(expression: category.id)]))
-        .get();
+    final categories = await (_db.select(
+      _db.customCategories,
+    )..orderBy([(category) => OrderingTerm(expression: category.id)])).get();
     String? keywordCategory;
     var keywordLength = 0;
     final lowerParty = party.toLowerCase();
     for (final category in categories) {
-      for (final keyword in CategoryDefinition.parseKeywords(category.keywords)) {
+      for (final keyword in CategoryDefinition.parseKeywords(
+        category.keywords,
+      )) {
         if (lowerParty.contains(keyword) && keyword.length >= keywordLength) {
           keywordLength = keyword.length;
           keywordCategory = category.name;
@@ -101,7 +103,9 @@ class TransactionRepository {
 
     // 4. Existing merchant rules remain the final built-in fallback.
     final defaultCat = _defaultCategorizer.categorize(party);
-    return defaultCat == uncategorizedCategory ? uncategorizedCategory : defaultCat;
+    return defaultCat == uncategorizedCategory
+        ? uncategorizedCategory
+        : defaultCat;
   }
 
   Future<void> saveMerchantRule(
@@ -165,14 +169,15 @@ class TransactionRepository {
           // Suggest category using learned user rules and default rules
           final userChoseCategory =
               tx.categorySource == 'user' && tx.category.isNotEmpty;
-          final resolvedCategory =
-              userChoseCategory ? tx.category : await suggestCategory(tx.party);
+          final resolvedCategory = userChoseCategory
+              ? tx.category
+              : await suggestCategory(tx.party);
           final finalCategory = userChoseCategory
               ? tx.category
               : (resolvedCategory != 'Uncategorized' &&
-                    tx.category != 'Uncategorized'
-                ? resolvedCategory
-                : resolvedCategory == 'Uncategorized'
+                        tx.category != 'Uncategorized'
+                    ? resolvedCategory
+                    : resolvedCategory == 'Uncategorized'
                     ? tx.category
                     : resolvedCategory);
 
@@ -201,7 +206,6 @@ class TransactionRepository {
               );
           insertedCount++;
         }
-
       }
     });
 
@@ -212,24 +216,24 @@ class TransactionRepository {
   }
 
   Future<Transaction?> _findExisting(ParsedTransaction tx, String key) async {
-    final exact = await (_db.select(_db.transactions)
-          ..where((row) => row.dedupeKey.equals(key)))
-        .getSingleOrNull();
+    final exact = await (_db.select(
+      _db.transactions,
+    )..where((row) => row.dedupeKey.equals(key))).getSingleOrNull();
     if (exact != null) return exact;
     final lower = tx.date.toUtc().subtract(
       TransactionDeduplicator.timestampWindow,
     );
-    final upper = tx.date.toUtc().add(
-      TransactionDeduplicator.timestampWindow,
-    );
-    final candidates = await (_db.select(_db.transactions)
-          ..where((row) =>
-              row.amountPaise.equals(tx.amountPaise) &
-              row.type.equals(tx.type.name) &
-              row.party.equals(tx.party) &
-              row.date.isBiggerOrEqualValue(lower) &
-              row.date.isSmallerOrEqualValue(upper)))
-        .get();
+    final upper = tx.date.toUtc().add(TransactionDeduplicator.timestampWindow);
+    final candidates =
+        await (_db.select(_db.transactions)..where(
+              (row) =>
+                  row.amountPaise.equals(tx.amountPaise) &
+                  row.type.equals(tx.type.name) &
+                  row.party.equals(tx.party) &
+                  row.date.isBiggerOrEqualValue(lower) &
+                  row.date.isSmallerOrEqualValue(upper),
+            ))
+            .get();
     return candidates.isEmpty ? null : candidates.first;
   }
 
@@ -267,28 +271,31 @@ class TransactionRepository {
   }
 
   Future<ParsedTransaction?> findById(int id) async {
-    final row = await (_db.select(_db.transactions)
-          ..where((transaction) => transaction.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.transactions,
+    )..where((transaction) => transaction.id.equals(id))).getSingleOrNull();
     return row == null ? null : _rowToModel(row);
   }
 
   Future<ParsedTransaction?> findByDedupeKey(String key) async {
-    final row = await (_db.select(_db.transactions)
-          ..where((transaction) => transaction.dedupeKey.equals(key)))
-        .getSingleOrNull();
+    final row =
+        await (_db.select(_db.transactions)
+              ..where((transaction) => transaction.dedupeKey.equals(key)))
+            .getSingleOrNull();
     return row == null ? null : _rowToModel(row);
   }
 
   Future<String?> getAppState(String key) async {
-    final row = await (_db.select(_db.appStates)
-          ..where((state) => state.key.equals(key)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.appStates,
+    )..where((state) => state.key.equals(key))).getSingleOrNull();
     return row?.value;
   }
 
   Future<void> setAppState(String key, String value) async {
-    await _db.into(_db.appStates).insertOnConflictUpdate(
+    await _db
+        .into(_db.appStates)
+        .insertOnConflictUpdate(
           AppStatesCompanion.insert(
             key: key,
             value: Value(value),

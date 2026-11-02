@@ -32,7 +32,10 @@ class _TopMerchantsScreenState extends State<TopMerchantsScreen> {
 
   Future<void> _loadData() async {
     setState(() => _loading = true);
-    final data = await _repo.getTopMerchants(period: _selectedPeriod, sortBy: _sortBy);
+    final data = await _repo.getTopMerchants(
+      period: _selectedPeriod,
+      sortBy: _sortBy,
+    );
     if (mounted) {
       setState(() {
         _merchants = data;
@@ -63,7 +66,9 @@ class _TopMerchantsScreenState extends State<TopMerchantsScreen> {
         centerTitle: true,
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF7F3DFF)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF7F3DFF)),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Column(
@@ -89,7 +94,10 @@ class _TopMerchantsScreenState extends State<TopMerchantsScreen> {
                           _loadData();
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 11,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFEEE5FF),
                             borderRadius: BorderRadius.circular(22),
@@ -97,7 +105,11 @@ class _TopMerchantsScreenState extends State<TopMerchantsScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.swap_vert_rounded, size: 16, color: Color(0xFF7F3DFF)),
+                              const Icon(
+                                Icons.swap_vert_rounded,
+                                size: 16,
+                                color: Color(0xFF7F3DFF),
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 _sortBy == 'amount' ? 'By amount' : 'By count',
@@ -133,7 +145,11 @@ class _TopMerchantsScreenState extends State<TopMerchantsScreen> {
                             color: const Color(0xFFEEE5FF),
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: const Icon(Icons.storefront_outlined, color: Color(0xFF7F3DFF), size: 24),
+                          child: const Icon(
+                            Icons.storefront_outlined,
+                            color: Color(0xFF7F3DFF),
+                            size: 24,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -153,14 +169,21 @@ class _TopMerchantsScreenState extends State<TopMerchantsScreen> {
                                 Row(
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 2,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFEEE5FF),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Row(
                                         children: [
-                                          const Icon(Icons.trending_up, size: 12, color: Color(0xFF7F3DFF)),
+                                          const Icon(
+                                            Icons.trending_up,
+                                            size: 12,
+                                            color: Color(0xFF7F3DFF),
+                                          ),
                                           const SizedBox(width: 4),
                                           Text(
                                             'Top: ${_merchants.first.merchant}',
@@ -205,7 +228,10 @@ class _TopMerchantsScreenState extends State<TopMerchantsScreen> {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF1F1FA),
                           borderRadius: BorderRadius.circular(10),
@@ -230,7 +256,10 @@ class _TopMerchantsScreenState extends State<TopMerchantsScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 36),
                         child: Text(
                           'No merchant transactions recorded yet'.tr(),
-                          style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF91919F)),
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: const Color(0xFF91919F),
+                          ),
                         ),
                       ),
                     )
@@ -257,7 +286,11 @@ class _TopMerchantsScreenState extends State<TopMerchantsScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.shield_outlined, color: Color(0xFF7F3DFF), size: 18),
+                        const Icon(
+                          Icons.shield_outlined,
+                          color: Color(0xFF7F3DFF),
+                          size: 18,
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
@@ -285,9 +318,8 @@ class _TopMerchantsScreenState extends State<TopMerchantsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => TransactionSearchScreen(
-              initialMerchant: item.merchant,
-            ),
+            builder: (_) =>
+                TransactionSearchScreen(initialMerchant: item.merchant),
           ),
         );
       },

@@ -1,8 +1,11 @@
 import 'dart:convert';
 
 enum BudgetPeriod { weekly, monthly, yearly }
+
 enum BudgetStatus { onTrack, nearLimit, over }
+
 enum RecurringStatus { detected, confirmed, ignored }
+
 enum UnusualStatus { open, dismissed }
 
 /// A database-independent transaction shape used by all insight engines.
@@ -81,9 +84,8 @@ class BudgetEvaluation {
     required this.safeDailySpendPaise,
   });
 
-  double get progress => budget.limitAmountPaise == 0
-      ? 0
-      : actualPaise / budget.limitAmountPaise;
+  double get progress =>
+      budget.limitAmountPaise == 0 ? 0 : actualPaise / budget.limitAmountPaise;
 }
 
 class RecurringPattern {

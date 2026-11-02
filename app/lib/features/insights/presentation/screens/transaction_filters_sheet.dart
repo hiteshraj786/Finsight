@@ -7,13 +7,11 @@ import '../../domain/models.dart';
 class TransactionFiltersSheet extends StatefulWidget {
   final TransactionFilter initialFilter;
 
-  const TransactionFiltersSheet({
-    super.key,
-    required this.initialFilter,
-  });
+  const TransactionFiltersSheet({super.key, required this.initialFilter});
 
   @override
-  State<TransactionFiltersSheet> createState() => _TransactionFiltersSheetState();
+  State<TransactionFiltersSheet> createState() =>
+      _TransactionFiltersSheetState();
 }
 
 class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
@@ -145,13 +143,22 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                     children: [
                       Text(
                         'Date range',
-                        style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFF212325)),
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF212325),
+                        ),
                       ),
                       Text(
                         _dateRange == 'today'
                             ? 'Today'
-                            : (_dateRange == '7days' ? 'Last 7 days' : 'Last 30 days'),
-                        style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F)),
+                            : (_dateRange == '7days'
+                                  ? 'Last 7 days'
+                                  : 'Last 30 days'),
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: const Color(0xFF91919F),
+                        ),
                       ),
                     ],
                   ),
@@ -166,7 +173,11 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                         const SizedBox(width: 8),
                         _datePill('30 days', '30days'),
                         const SizedBox(width: 8),
-                        _datePill('Custom', 'custom', icon: Icons.calendar_today_outlined),
+                        _datePill(
+                          'Custom',
+                          'custom',
+                          icon: Icons.calendar_today_outlined,
+                        ),
                       ],
                     ),
                   ),
@@ -183,7 +194,12 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                 children: [
                   Text(
                     'Category (MULTI-SELECT)',
-                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF91919F), letterSpacing: 0.5),
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF91919F),
+                      letterSpacing: 0.5,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Wrap(
@@ -203,27 +219,46 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
-                            color: selected ? const Color(0xFF7F3DFF) : const Color(0xFFF1F1FA),
+                            color: selected
+                                ? const Color(0xFF7F3DFF)
+                                : const Color(0xFFF1F1FA),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(icon, size: 14, color: selected ? Colors.white : const Color(0xFF7F3DFF)),
+                              Icon(
+                                icon,
+                                size: 14,
+                                color: selected
+                                    ? Colors.white
+                                    : const Color(0xFF7F3DFF),
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 cat,
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
-                                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                                  color: selected ? Colors.white : const Color(0xFF212325),
+                                  fontWeight: selected
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                  color: selected
+                                      ? Colors.white
+                                      : const Color(0xFF212325),
                                 ),
                               ),
                               if (selected) ...[
                                 const SizedBox(width: 4),
-                                const Icon(Icons.check, size: 14, color: Colors.white),
+                                const Icon(
+                                  Icons.check,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
                               ],
                             ],
                           ),
@@ -244,7 +279,11 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                 children: [
                   Text(
                     'Account',
-                    style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFF212325)),
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF212325),
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Wrap(
@@ -263,27 +302,46 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
-                            color: selected ? const Color(0xFF7F3DFF) : const Color(0xFFF1F1FA),
+                            color: selected
+                                ? const Color(0xFF7F3DFF)
+                                : const Color(0xFFF1F1FA),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.account_balance_outlined, size: 14, color: selected ? Colors.white : const Color(0xFF7F3DFF)),
+                              Icon(
+                                Icons.account_balance_outlined,
+                                size: 14,
+                                color: selected
+                                    ? Colors.white
+                                    : const Color(0xFF7F3DFF),
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 acc,
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
-                                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                                  color: selected ? Colors.white : const Color(0xFF212325),
+                                  fontWeight: selected
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                  color: selected
+                                      ? Colors.white
+                                      : const Color(0xFF212325),
                                 ),
                               ),
                               if (selected) ...[
                                 const SizedBox(width: 4),
-                                const Icon(Icons.check, size: 14, color: Colors.white),
+                                const Icon(
+                                  Icons.check,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
                               ],
                             ],
                           ),
@@ -304,7 +362,11 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                 children: [
                   Text(
                     'Merchant',
-                    style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFF212325)),
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF212325),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Container(
@@ -316,7 +378,11 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.search_rounded, size: 18, color: Color(0xFF91919F)),
+                        const Icon(
+                          Icons.search_rounded,
+                          size: 18,
+                          color: Color(0xFF91919F),
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: TextField(
@@ -347,7 +413,10 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                       runSpacing: 8,
                       children: _merchants.map((m) {
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFEEE5FF),
                             borderRadius: BorderRadius.circular(16),
@@ -365,8 +434,13 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                               ),
                               const SizedBox(width: 6),
                               GestureDetector(
-                                onTap: () => setState(() => _merchants.remove(m)),
-                                child: const Icon(Icons.close_rounded, size: 14, color: Color(0xFF7F3DFF)),
+                                onTap: () =>
+                                    setState(() => _merchants.remove(m)),
+                                child: const Icon(
+                                  Icons.close_rounded,
+                                  size: 14,
+                                  color: Color(0xFF7F3DFF),
+                                ),
                               ),
                             ],
                           ),
@@ -387,7 +461,11 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                 children: [
                   Text(
                     'Transaction Type',
-                    style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFF212325)),
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF212325),
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Container(
@@ -424,7 +502,9 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                         style: OutlinedButton.styleFrom(
                           backgroundColor: const Color(0xFFEEE5FF),
                           side: BorderSide.none,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                         child: Text(
                           'Reset',
@@ -448,7 +528,9 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF7F3DFF),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                           elevation: 0,
                         ),
                         child: Row(
@@ -463,7 +545,11 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                               ),
                             ),
                             const SizedBox(width: 6),
-                            const Icon(Icons.arrow_forward_rounded, size: 16, color: Colors.white),
+                            const Icon(
+                              Icons.arrow_forward_rounded,
+                              size: 16,
+                              color: Colors.white,
+                            ),
                           ],
                         ),
                       ),
@@ -492,7 +578,11 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 14, color: selected ? Colors.white : const Color(0xFF212325)),
+              Icon(
+                icon,
+                size: 14,
+                color: selected ? Colors.white : const Color(0xFF212325),
+              ),
               const SizedBox(width: 4),
             ],
             Text(

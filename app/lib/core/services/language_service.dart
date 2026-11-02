@@ -6,8 +6,9 @@ class LanguageService {
 
   static const String _prefKey = 'finsight_selected_language';
 
-  static final ValueNotifier<String> selectedLanguage =
-      ValueNotifier<String>('English (EN)');
+  static final ValueNotifier<String> selectedLanguage = ValueNotifier<String>(
+    'English (EN)',
+  );
 
   static String get current => selectedLanguage.value;
 
@@ -77,7 +78,8 @@ class LanguageService {
       'Cancel': 'रद्द करें',
       'Save': 'सहेजें',
       'Logout?': 'लॉग आउट करें?',
-      'Are you sure you want to log out?': 'क्या आप वाकई लॉग आउट करना चाहते हैं?',
+      'Are you sure you want to log out?':
+          'क्या आप वाकई लॉग आउट करना चाहते हैं?',
       'No': 'नहीं',
       'Yes': 'हाँ',
       'Account Balance': 'खाता शेष',
@@ -109,9 +111,11 @@ class LanguageService {
       'Select a provider': 'एक प्रदाता चुनें',
       'Expense Alert': 'व्यय चेतावनी',
       'Tips & Articles': 'सुझाव और लेख',
-      'What data do you want to export?': 'आप कौन सा डेटा निर्यात करना चाहते हैं?',
+      'What data do you want to export?':
+          'आप कौन सा डेटा निर्यात करना चाहते हैं?',
       'When date range?': 'किस समयावधि का?',
-      'What format do you want to export?': 'किस प्रारूप में निर्यात करना चाहते हैं?',
+      'What format do you want to export?':
+          'किस प्रारूप में निर्यात करना चाहते हैं?',
       'Export': 'निर्यात करें',
       'Your export is ready': 'आपका निर्यात तैयार है',
       'Back to Profile': 'प्रोफ़ाइल पर वापस जाएं',
@@ -121,7 +125,8 @@ class LanguageService {
       'Expense': 'खर्च',
       'See all': 'सभी देखें',
       'Your transactions will appear here': 'आपके लेन-देन यहाँ दिखाई देंगे',
-      'Your budget insights will appear here': 'आपकी बजट अंतर्दृष्टि यहाँ दिखाई देगी',
+      'Your budget insights will appear here':
+          'आपकी बजट अंतर्दृष्टि यहाँ दिखाई देगी',
       'Your finances': 'आपका वित्त',
       'Hi,': 'नमस्ते,',
       'App lock': 'ऐप लॉक',
@@ -165,7 +170,8 @@ class LanguageService {
       'Ranked by spend': 'खर्च के अनुसार क्रम',
       'No merchant transactions recorded yet':
           'अभी तक कोई व्यापारी लेन-देन दर्ज नहीं है',
-      'Marked as normal. Baseline updated.': 'सामान्य चिह्नित किया गया। आधार अपडेट हुआ।',
+      'Marked as normal. Baseline updated.':
+          'सामान्य चिह्नित किया गया। आधार अपडेट हुआ।',
       'Search transactions...': 'लेन-देन खोजें...',
       'Save budget': 'बजट सहेजें',
       'Savings goals': 'बचत लक्ष्य',
@@ -192,7 +198,8 @@ class LanguageService {
           'ऑटो-स्कैनिंग सभी बैंक मैंडेट अपने आप पढ़ती है',
       'Pattern matched': 'पैटर्न मिला',
       'Last debited': 'अंतिम डेबिट',
-      'Auto-detected recurring subscription': 'ऑटो-डिटेक्टेड नियमित सब्सक्रिप्शन',
+      'Auto-detected recurring subscription':
+          'ऑटो-डिटेक्टेड नियमित सब्सक्रिप्शन',
       'Please enter a valid budget amount': 'कृपया मान्य बजट राशि दर्ज करें',
     },
 
@@ -266,7 +273,8 @@ class LanguageService {
       'Cancel': 'Cancelar',
       'Save': 'Guardar',
       'Logout?': '¿Cerrar sesión?',
-      'Are you sure you want to log out?': '¿Estás seguro de que quieres cerrar sesión?',
+      'Are you sure you want to log out?':
+          '¿Estás seguro de que quieres cerrar sesión?',
       'No': 'No',
       'Yes': 'Sí',
       'Account Balance': 'Saldo de cuenta',

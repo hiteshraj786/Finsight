@@ -5,11 +5,7 @@ class CategoryIconTile extends StatelessWidget {
   final String category;
   final double size;
 
-  const CategoryIconTile({
-    super.key,
-    required this.category,
-    this.size = 46,
-  });
+  const CategoryIconTile({super.key, required this.category, this.size = 46});
 
   @override
   Widget build(BuildContext context) {
@@ -23,11 +19,7 @@ class CategoryIconTile extends StatelessWidget {
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(size / 3),
       ),
-      child: Icon(
-        icon,
-        color: color,
-        size: size * 0.52,
-      ),
+      child: Icon(icon, color: color, size: size * 0.52),
     );
   }
 }

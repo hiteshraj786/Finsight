@@ -48,10 +48,13 @@ class TransactionCard extends StatelessWidget {
     final isIgnored = tx.status == TransactionStatus.ignored;
     final maskedAcct = maskAccount(tx.accountLast4);
     final dateStr = _formatDate(tx.date);
-    final isAuto = tx.categorySource == 'auto' &&
+    final isAuto =
+        tx.categorySource == 'auto' &&
         tx.category.trim().isNotEmpty &&
         tx.category.toLowerCase() != 'uncategorized';
-    final categoryName = isAuto ? CategoryMeta.sanitize(tx.category) : 'Uncategorized';
+    final categoryName = isAuto
+        ? CategoryMeta.sanitize(tx.category)
+        : 'Uncategorized';
 
     return Container(
       decoration: BoxDecoration(
@@ -72,7 +75,10 @@ class TransactionCard extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppTheme.cardRadius),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14.0,
+              vertical: 12.0,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -98,8 +104,9 @@ class TransactionCard extends StatelessWidget {
                           color: isIgnored
                               ? AppColors.ignoredText
                               : AppColors.textPrimary,
-                          decoration:
-                              isIgnored ? TextDecoration.lineThrough : null,
+                          decoration: isIgnored
+                              ? TextDecoration.lineThrough
+                              : null,
                         ),
                       ),
                       const SizedBox(height: 3),
@@ -108,8 +115,12 @@ class TransactionCard extends StatelessWidget {
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 12,
-                          color: isAuto ? AppColors.primary : AppColors.textSecondary,
-                          fontWeight: isAuto ? FontWeight.w600 : FontWeight.w500,
+                          color: isAuto
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                          fontWeight: isAuto
+                              ? FontWeight.w600
+                              : FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -120,8 +131,7 @@ class TransactionCard extends StatelessWidget {
                           if (isAuto) const StatusTag.auto(),
                           if (tx.status == TransactionStatus.pending)
                             const StatusTag.pending(),
-                          if (tx.lowConfidence)
-                            const StatusTag.needsCheck(),
+                          if (tx.lowConfidence) const StatusTag.needsCheck(),
                           if (isIgnored) const StatusTag.ignored(),
                         ],
                       ),
@@ -149,15 +159,15 @@ class TransactionCard extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             InkWell(
-                              onTap: () => onStatusChanged!(
-                                TransactionStatus.confirmed,
-                              ),
+                              onTap: () =>
+                                  onStatusChanged!(TransactionStatus.confirmed),
                               borderRadius: BorderRadius.circular(16),
                               child: Padding(
                                 padding: const EdgeInsets.all(4.0),
                                 child: Icon(
                                   Icons.check_circle_rounded,
-                                  color: tx.status == TransactionStatus.confirmed
+                                  color:
+                                      tx.status == TransactionStatus.confirmed
                                       ? AppColors.credit
                                       : const Color(0xFFD4CFE2),
                                   size: 22,
@@ -166,9 +176,8 @@ class TransactionCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             InkWell(
-                              onTap: () => onStatusChanged!(
-                                TransactionStatus.ignored,
-                              ),
+                              onTap: () =>
+                                  onStatusChanged!(TransactionStatus.ignored),
                               borderRadius: BorderRadius.circular(16),
                               child: Padding(
                                 padding: const EdgeInsets.all(4.0),
@@ -195,4 +204,3 @@ class TransactionCard extends StatelessWidget {
     );
   }
 }
-

@@ -16,9 +16,7 @@ class ThemeToggleButton extends StatelessWidget {
           tooltip: dark ? 'Switch to light mode' : 'Switch to dark mode',
           onPressed: () => AppTheme.setPreference(dark ? 'light' : 'dark'),
           style: IconButton.styleFrom(backgroundColor: scheme.surfaceContainer),
-          icon: Icon(
-            dark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-          ),
+          icon: Icon(dark ? Icons.light_mode_rounded : Icons.dark_mode_rounded),
         );
       },
     );

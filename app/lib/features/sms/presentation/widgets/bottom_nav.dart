@@ -18,9 +18,7 @@ class FinSightBottomNav extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(
-          top: BorderSide(color: AppColors.border, width: 1.0),
-        ),
+        border: Border(top: BorderSide(color: AppColors.border, width: 1.0)),
         boxShadow: [
           BoxShadow(
             color: Color(0x0F7F3DFF),
@@ -123,4 +121,3 @@ class FinSightBottomNav extends StatelessWidget {
     );
   }
 }
-

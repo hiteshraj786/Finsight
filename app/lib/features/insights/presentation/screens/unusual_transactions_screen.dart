@@ -13,7 +13,8 @@ class UnusualTransactionsScreen extends StatefulWidget {
   const UnusualTransactionsScreen({super.key});
 
   @override
-  State<UnusualTransactionsScreen> createState() => _UnusualTransactionsScreenState();
+  State<UnusualTransactionsScreen> createState() =>
+      _UnusualTransactionsScreenState();
 }
 
 class _UnusualTransactionsScreenState extends State<UnusualTransactionsScreen> {
@@ -70,7 +71,9 @@ class _UnusualTransactionsScreenState extends State<UnusualTransactionsScreen> {
         centerTitle: true,
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF7F3DFF)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF7F3DFF)),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Column(
@@ -81,14 +84,21 @@ class _UnusualTransactionsScreenState extends State<UnusualTransactionsScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFFECEF),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFFD3C4A)),
+                            const Icon(
+                              Icons.warning_amber_rounded,
+                              size: 14,
+                              color: Color(0xFFFD3C4A),
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '${_flags.length} FLAGGED THIS MONTH',
@@ -141,15 +151,26 @@ class _UnusualTransactionsScreenState extends State<UnusualTransactionsScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         child: Column(
                           children: [
-                            const Icon(Icons.check_circle_outline_rounded, size: 48, color: Color(0xFF00A86B)),
+                            const Icon(
+                              Icons.check_circle_outline_rounded,
+                              size: 48,
+                              color: Color(0xFF00A86B),
+                            ),
                             const SizedBox(height: 12),
                             Text(
                               'No unusual transactions',
-                              style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: const Color(0xFF212325)),
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF212325),
+                              ),
                             ),
                             Text(
                               'All spending aligns with your normal patterns.',
-                              style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF91919F)),
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: const Color(0xFF91919F),
+                              ),
                             ),
                           ],
                         ),
@@ -169,7 +190,11 @@ class _UnusualTransactionsScreenState extends State<UnusualTransactionsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.shield_outlined, size: 16, color: Color(0xFF91919F)),
+                      const Icon(
+                        Icons.shield_outlined,
+                        size: 16,
+                        color: Color(0xFF91919F),
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         'We compare each payment with your recent average.',
@@ -190,7 +215,9 @@ class _UnusualTransactionsScreenState extends State<UnusualTransactionsScreen> {
   Widget _buildUnusualCard(UnusualFlag flag) {
     final isDuplicate = flag.reason.toLowerCase().contains('duplicate');
     final isSpike = flag.reason.contains('3x');
-    final accentColor = isSpike ? const Color(0xFFFCAC12) : const Color(0xFFFD3C4A);
+    final accentColor = isSpike
+        ? const Color(0xFFFCAC12)
+        : const Color(0xFFFD3C4A);
 
     return Container(
       decoration: BoxDecoration(
@@ -236,7 +263,9 @@ class _UnusualTransactionsScreenState extends State<UnusualTransactionsScreen> {
                                   ),
                                 ),
                                 Text(
-                                  DateFormat('d MMM yyyy').format(flag.occurredAt ?? flag.createdAt),
+                                  DateFormat(
+                                    'd MMM yyyy',
+                                  ).format(flag.occurredAt ?? flag.createdAt),
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
                                     color: const Color(0xFF91919F),
@@ -246,7 +275,9 @@ class _UnusualTransactionsScreenState extends State<UnusualTransactionsScreen> {
                             ),
                           ),
                           Text(
-                            CurrencyFormatter.formatPaise(flag.amountPaise ?? 0),
+                            CurrencyFormatter.formatPaise(
+                              flag.amountPaise ?? 0,
+                            ),
                             style: GoogleFonts.inter(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
@@ -260,7 +291,10 @@ class _UnusualTransactionsScreenState extends State<UnusualTransactionsScreen> {
                       // Reason box
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF6F6F9),
                           borderRadius: BorderRadius.circular(12),
@@ -270,7 +304,9 @@ class _UnusualTransactionsScreenState extends State<UnusualTransactionsScreen> {
                             Icon(
                               isDuplicate
                                   ? Icons.copy_rounded
-                                  : (isSpike ? Icons.bar_chart_rounded : Icons.trending_up_rounded),
+                                  : (isSpike
+                                        ? Icons.bar_chart_rounded
+                                        : Icons.trending_up_rounded),
                               size: 16,
                               color: accentColor,
                             ),
@@ -301,8 +337,12 @@ class _UnusualTransactionsScreenState extends State<UnusualTransactionsScreen> {
                               style: OutlinedButton.styleFrom(
                                 backgroundColor: const Color(0xFFEEE5FF),
                                 side: BorderSide.none,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                               ),
                               child: Text(
                                 '✓ Looks right',
@@ -327,7 +367,11 @@ class _UnusualTransactionsScreenState extends State<UnusualTransactionsScreen> {
                                   ),
                                 );
                               },
-                              icon: const Icon(Icons.shield_outlined, size: 14, color: Colors.white),
+                              icon: const Icon(
+                                Icons.shield_outlined,
+                                size: 14,
+                                color: Colors.white,
+                              ),
                               label: Text(
                                 'Review',
                                 style: GoogleFonts.inter(
@@ -338,8 +382,12 @@ class _UnusualTransactionsScreenState extends State<UnusualTransactionsScreen> {
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF7F3DFF),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 elevation: 0,
                               ),
                             ),

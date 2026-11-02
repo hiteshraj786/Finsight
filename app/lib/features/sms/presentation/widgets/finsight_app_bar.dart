@@ -18,10 +18,14 @@ class FinSightAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final canPop = Navigator.canPop(context);
-    final effectiveLeading = leading ??
+    final effectiveLeading =
+        leading ??
         (canPop
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+                icon: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppColors.textPrimary,
+                ),
                 onPressed: () => Navigator.of(context).pop(),
               )
             : null);
@@ -49,4 +53,3 @@ class FinSightAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
-

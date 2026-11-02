@@ -264,7 +264,10 @@ class _CategoryEditorSheetState extends State<CategoryEditorSheet> {
         );
       }
       if (mounted) {
-        Navigator.pop(context, _name.text.trim().replaceAll(RegExp(r'\s+'), ' '));
+        Navigator.pop(
+          context,
+          _name.text.trim().replaceAll(RegExp(r'\s+'), ' '),
+        );
       }
     } on CategoryException catch (error) {
       setState(() => _error = error.message);

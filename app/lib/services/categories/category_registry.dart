@@ -13,11 +13,11 @@ class CategoryRegistry extends ChangeNotifier {
 
   List<CategoryDefinition> get editable => _stored;
   List<CategoryDefinition> get all => [
-        ..._stored,
-        predefinedCategories.firstWhere(
-          (category) => category.name == uncategorizedCategory,
-        ),
-      ];
+    ..._stored,
+    predefinedCategories.firstWhere(
+      (category) => category.name == uncategorizedCategory,
+    ),
+  ];
   List<String> get names => [for (final category in all) category.name];
 
   CategoryDefinition? find(String name) {

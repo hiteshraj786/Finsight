@@ -16,12 +16,18 @@ class InsightJobRunner {
   Future<List<GeneratedInsight>> runDaily() async {
     final all = await repository.confirmedTransactions();
     final patterns = await repository.getRecurringPatterns();
-    final existingFlags = (await repository.getUnusualFlags()).map((flag) => flag.txnId).toSet();
-    final detected = RecurringDetector(clock: clock).detect(all, existing: patterns);
+    final existingFlags = (await repository.getUnusualFlags())
+        .map((flag) => flag.txnId)
+        .toSet();
+    final detected = RecurringDetector(
+      clock: clock,
+    ).detect(all, existing: patterns);
     await repository.saveDetectedPatterns(detected);
     final flags = AnomalyDetector(clock: clock).detect(all);
     await repository.saveUnusualFlags(flags);
-    for (final flag in flags.where((flag) => !existingFlags.contains(flag.txnId))) {
+    for (final flag in flags.where(
+      (flag) => !existingFlags.contains(flag.txnId),
+    )) {
       await InsightNotificationService.show(
         id: 500000 + flag.txnId,
         title: 'Unusual transaction',
@@ -33,11 +39,17 @@ class InsightJobRunner {
     final tomorrow = DateTime(clock().year, clock().month, clock().day + 1);
     for (final pattern in await repository.getRecurringPatterns()) {
       if (pattern.status != RecurringStatus.ignored &&
-          DateTime(pattern.nextExpectedDate.year, pattern.nextExpectedDate.month, pattern.nextExpectedDate.day) == tomorrow) {
+          DateTime(
+                pattern.nextExpectedDate.year,
+                pattern.nextExpectedDate.month,
+                pattern.nextExpectedDate.day,
+              ) ==
+              tomorrow) {
         await InsightNotificationService.show(
           id: 600000 + (pattern.id ?? pattern.merchant.hashCode).abs(),
           title: 'Payment due tomorrow',
-          body: '${pattern.merchant} · ${CurrencyFormatter.formatPaise(pattern.amountPaise)}',
+          body:
+              '${pattern.merchant} · ${CurrencyFormatter.formatPaise(pattern.amountPaise)}',
           route: AppRoutes.insightsRecurring,
         );
       }
@@ -45,11 +57,13 @@ class InsightJobRunner {
     return generated;
   }
 
-  Future<List<GeneratedInsight>> runPeriodicInsights() async => _generate(
-    await repository.confirmedTransactions(),
-  );
+  Future<List<GeneratedInsight>> runPeriodicInsights() async =>
+      _generate(await repository.confirmedTransactions());
 
-  Future<void> runDigest({required Duration window, required String label}) async {
+  Future<void> runDigest({
+    required Duration window,
+    required String label,
+  }) async {
     final now = clock();
     final transactions = (await repository.confirmedTransactions(
       from: now.subtract(window),
@@ -63,7 +77,8 @@ class InsightJobRunner {
     await InsightNotificationService.show(
       id: 700000 + now.toLocal().year * 10000 + now.month * 100 + now.day,
       title: '$label spending summary',
-      body: '${transactions.length} payments · ${CurrencyFormatter.formatPaise(total)}',
+      body:
+          '${transactions.length} payments · ${CurrencyFormatter.formatPaise(total)}',
       route: AppRoutes.insights,
     );
   }
@@ -71,28 +86,53 @@ class InsightJobRunner {
   Future<List<GeneratedInsight>> _generate(List<InsightTransaction> all) async {
     final now = clock();
     final budgets = await repository.getBudgets();
-    final evaluations = [for (final budget in budgets) BudgetEngine(clock: clock).evaluate(budget, all)];
+    final evaluations = [
+      for (final budget in budgets)
+        BudgetEngine(clock: clock).evaluate(budget, all),
+    ];
     final start = DateTime(now.year, now.month);
     final previousStart = DateTime(now.year, now.month - 1);
-    final current = await repository.categorySpend(start, DateTime(now.year, now.month + 1));
+    final current = await repository.categorySpend(
+      start,
+      DateTime(now.year, now.month + 1),
+    );
     final previous = await repository.categorySpend(previousStart, start);
     final generated = InsightGenerator(clock: clock).generate(
       budgets: evaluations,
       recurring: await repository.getRecurringPatterns(),
-      currentCategorySpend: {for (final item in current) item.category: item.amountPaise},
-      previousCategorySpend: {for (final item in previous) item.category: item.amountPaise},
+      currentCategorySpend: {
+        for (final item in current) item.category: item.amountPaise,
+      },
+      previousCategorySpend: {
+        for (final item in previous) item.category: item.amountPaise,
+      },
     );
-    final prior = (await repository.getGeneratedInsights()).map((item) => '${item.type}:${item.message}').toSet();
+    final prior = (await repository.getGeneratedInsights())
+        .map((item) => '${item.type}:${item.message}')
+        .toSet();
     await repository.saveGeneratedInsights(generated);
-    for (final insight in generated.where((item) => !prior.contains('${item.type}:${item.message}'))) {
-      final budget = evaluations.where((evaluation) =>
-        insight.message.startsWith(evaluation.budget.categoryId)).firstOrNull;
-      if (insight.type == 'budget_over' && budget != null && !budget.budget.notifyOnOver) continue;
+    for (final insight in generated.where(
+      (item) => !prior.contains('${item.type}:${item.message}'),
+    )) {
+      final budget = evaluations
+          .where(
+            (evaluation) =>
+                insight.message.startsWith(evaluation.budget.categoryId),
+          )
+          .firstOrNull;
+      if (insight.type == 'budget_over' &&
+          budget != null &&
+          !budget.budget.notifyOnOver)
+        continue;
       await InsightNotificationService.show(
         id: insight.message.hashCode.abs(),
-        title: insight.type.startsWith('budget') ? 'Budget alert' : 'FinSight insight',
+        title: insight.type.startsWith('budget')
+            ? 'Budget alert'
+            : 'FinSight insight',
         body: insight.message,
-        route: insight.type.startsWith('budget') ? AppRoutes.budget : AppRoutes.insights,
+        route: insight.type.startsWith('budget')
+            ? AppRoutes.budget
+            : AppRoutes.insights,
       );
     }
     return generated;
