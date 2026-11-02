@@ -189,7 +189,10 @@ class _UnreadableMessagesViewState extends State<UnreadableMessagesView> {
                         foregroundColor: AppColors.textSecondary,
                         visualDensity: VisualDensity.compact,
                       ),
-                      child: const Text('Ignore', style: TextStyle(fontFamily: 'Inter')),
+                      child: const Text(
+                        'Ignore',
+                        style: TextStyle(fontFamily: 'Inter'),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
@@ -205,7 +208,10 @@ class _UnreadableMessagesViewState extends State<UnreadableMessagesView> {
                       ),
                       child: const Text(
                         'Add manually',
-                        style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -218,4 +224,3 @@ class _UnreadableMessagesViewState extends State<UnreadableMessagesView> {
     );
   }
 }
-

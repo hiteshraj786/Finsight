@@ -20,11 +20,7 @@ class GradientHeroCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF8B47FF),
-            Color(0xFF7F3DFF),
-            Color(0xFF6E28F8),
-          ],
+          colors: [Color(0xFF8B47FF), Color(0xFF7F3DFF), Color(0xFF6E28F8)],
         ),
         borderRadius: BorderRadius.circular(borderRadius),
         boxShadow: [
@@ -35,10 +31,7 @@ class GradientHeroCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Padding(
-        padding: padding,
-        child: child,
-      ),
+      child: Padding(padding: padding, child: child),
     );
   }
 }

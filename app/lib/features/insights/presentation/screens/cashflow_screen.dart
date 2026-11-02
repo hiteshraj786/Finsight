@@ -60,7 +60,9 @@ class _CashflowScreenState extends State<CashflowScreen> {
         centerTitle: true,
       ),
       body: _loading || _forecast == null
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF7F3DFF)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF7F3DFF)),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Column(
@@ -87,7 +89,10 @@ class _CashflowScreenState extends State<CashflowScreen> {
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
@@ -95,11 +100,19 @@ class _CashflowScreenState extends State<CashflowScreen> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.calendar_today_outlined, size: 12, color: Colors.white),
+                                  const Icon(
+                                    Icons.calendar_today_outlined,
+                                    size: 12,
+                                    color: Colors.white,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     'Today ${CurrencyFormatter.formatPaise(_forecast!.todayBalancePaise)}',
-                                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -108,7 +121,10 @@ class _CashflowScreenState extends State<CashflowScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          CurrencyFormatter.formatPaise(_forecast!.endBalancePaise, showDecimals: true),
+                          CurrencyFormatter.formatPaise(
+                            _forecast!.endBalancePaise,
+                            showDecimals: true,
+                          ),
                           style: GoogleFonts.inter(
                             fontSize: 34,
                             fontWeight: FontWeight.w800,
@@ -118,7 +134,10 @@ class _CashflowScreenState extends State<CashflowScreen> {
                         ),
                         const SizedBox(height: 10),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.18),
                             borderRadius: BorderRadius.circular(12),
@@ -126,7 +145,11 @@ class _CashflowScreenState extends State<CashflowScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.arrow_downward_rounded, size: 12, color: Colors.white),
+                              const Icon(
+                                Icons.arrow_downward_rounded,
+                                size: 12,
+                                color: Colors.white,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 '-${CurrencyFormatter.formatPaise(_forecast!.projectedNetChangePaise.abs())} ${'projected net change'.tr()}',
@@ -191,13 +214,21 @@ class _CashflowScreenState extends State<CashflowScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.auto_awesome, size: 14, color: Color(0xFF7F3DFF)),
+                        const Icon(
+                          Icons.auto_awesome,
+                          size: 14,
+                          color: Color(0xFF7F3DFF),
+                        ),
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            'Based on your recurring payments and average daily spend.'.tr(),
+                            'Based on your recurring payments and average daily spend.'
+                                .tr(),
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F)),
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: const Color(0xFF91919F),
+                            ),
                           ),
                         ),
                       ],
@@ -259,7 +290,10 @@ class _CashflowScreenState extends State<CashflowScreen> {
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEEE5FF),
                   borderRadius: BorderRadius.circular(12),
@@ -338,9 +372,15 @@ class _CashflowScreenState extends State<CashflowScreen> {
                   },
                 ),
                 titlesData: FlTitlesData(
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  leftTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -352,14 +392,19 @@ class _CashflowScreenState extends State<CashflowScreen> {
                         }
                         final point = _forecast!.points[index];
                         final text = DateFormat('d MMM').format(point.date);
-                        final isHighlight = point.date == _forecast!.lowestPoint.date;
+                        final isHighlight =
+                            point.date == _forecast!.lowestPoint.date;
                         if (text.isEmpty) return const SizedBox.shrink();
                         return Text(
                           text,
                           style: GoogleFonts.inter(
                             fontSize: 11,
-                            fontWeight: isHighlight ? FontWeight.w700 : FontWeight.w500,
-                            color: isHighlight ? const Color(0xFFFCAC12) : const Color(0xFF91919F),
+                            fontWeight: isHighlight
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: isHighlight
+                                ? const Color(0xFFFCAC12)
+                                : const Color(0xFF91919F),
                           ),
                         );
                       },
@@ -371,7 +416,10 @@ class _CashflowScreenState extends State<CashflowScreen> {
                   LineChartBarData(
                     spots: _forecast!.points.length >= 2
                         ? List.generate(_forecast!.points.length, (i) {
-                            return FlSpot(i.toDouble(), _forecast!.points[i].balancePaise.toDouble());
+                            return FlSpot(
+                              i.toDouble(),
+                              _forecast!.points[i].balancePaise.toDouble(),
+                            );
                           })
                         : const [FlSpot(0, 0), FlSpot(1, 0)],
                     isCurved: true,
@@ -381,7 +429,8 @@ class _CashflowScreenState extends State<CashflowScreen> {
                     isStrokeCapRound: true,
                     dotData: FlDotData(
                       show: true,
-                      checkToShowDot: (spot, barData) => spot.x == 0 || spot.x == 3 || spot.x == 7,
+                      checkToShowDot: (spot, barData) =>
+                          spot.x == 0 || spot.x == 3 || spot.x == 7,
                       getDotPainter: (spot, percent, barData, index) {
                         if (spot.x == 3) {
                           return FlDotCirclePainter(
@@ -429,19 +478,52 @@ class _CashflowScreenState extends State<CashflowScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(width: 14, height: 4, decoration: BoxDecoration(color: const Color(0xFF7F3DFF), borderRadius: BorderRadius.circular(2))),
+                  Container(
+                    width: 14,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF7F3DFF),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
                   const SizedBox(width: 6),
-                  Text('Actual'.tr(), style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF212325))),
+                  Text(
+                    'Actual'.tr(),
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF212325),
+                    ),
+                  ),
                   const SizedBox(width: 14),
-                  Container(width: 14, height: 2, color: const Color(0xFF7F3DFF)),
+                  Container(
+                    width: 14,
+                    height: 2,
+                    color: const Color(0xFF7F3DFF),
+                  ),
                   const SizedBox(width: 6),
-                  Text('Projected'.tr(), style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF91919F))),
+                  Text(
+                    'Projected'.tr(),
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF91919F),
+                    ),
+                  ),
                   const SizedBox(width: 14),
-                  Container(width: 14, height: 2, color: const Color(0xFFFCAC12)),
+                  Container(
+                    width: 14,
+                    height: 2,
+                    color: const Color(0xFFFCAC12),
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     '${CurrencyFormatter.formatPaise(_forecast!.safetyCushionPaise)} safety cushion',
-                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFFFCAC12)),
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFFCAC12),
+                    ),
                   ),
                 ],
               ),
@@ -471,7 +553,11 @@ class _CashflowScreenState extends State<CashflowScreen> {
               color: Color(0xFFFFE8B8),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.warning_amber_rounded, color: Color(0xFFE69100), size: 18),
+            child: const Icon(
+              Icons.warning_amber_rounded,
+              color: Color(0xFFE69100),
+              size: 18,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -489,11 +575,17 @@ class _CashflowScreenState extends State<CashflowScreen> {
                 const SizedBox(height: 4),
                 RichText(
                   text: TextSpan(
-                    style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF996100), height: 1.4),
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: const Color(0xFF996100),
+                      height: 1.4,
+                    ),
                     children: [
                       TextSpan(text: 'Your balance may dip below '.tr()),
                       TextSpan(
-                        text: CurrencyFormatter.formatPaise(_forecast!.safetyCushionPaise),
+                        text: CurrencyFormatter.formatPaise(
+                          _forecast!.safetyCushionPaise,
+                        ),
                         style: GoogleFonts.inter(fontWeight: FontWeight.w700),
                       ),
                       TextSpan(
@@ -533,12 +625,22 @@ class _CashflowScreenState extends State<CashflowScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  DateFormat('MMM').format(outflow.nextExpectedDate).toUpperCase(),
-                  style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w700, color: const Color(0xFF7F3DFF)),
+                  DateFormat(
+                    'MMM',
+                  ).format(outflow.nextExpectedDate).toUpperCase(),
+                  style: GoogleFonts.inter(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF7F3DFF),
+                  ),
                 ),
                 Text(
                   dayStr,
-                  style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800, color: const Color(0xFF212325)),
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF212325),
+                  ),
                 ),
               ],
             ),
@@ -555,19 +657,30 @@ class _CashflowScreenState extends State<CashflowScreen> {
                         outflow.merchant,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: const Color(0xFF212325)),
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF212325),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFECEF),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         'Due in ${outflow.nextExpectedDate.difference(DateTime.now()).inDays.clamp(0, 999)}d',
-                        style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: const Color(0xFFFD3C4A)),
+                        style: GoogleFonts.inter(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFFFD3C4A),
+                        ),
                       ),
                     ),
                   ],
@@ -576,7 +689,10 @@ class _CashflowScreenState extends State<CashflowScreen> {
                 Text(
                   '${DateFormat('d MMM').format(outflow.nextExpectedDate)} · '
                   '${outflow.paymentMethod ?? 'Scheduled'}',
-                  style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F)),
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: const Color(0xFF91919F),
+                  ),
                 ),
               ],
             ),
@@ -586,11 +702,18 @@ class _CashflowScreenState extends State<CashflowScreen> {
             children: [
               Text(
                 '-${CurrencyFormatter.formatPaise(outflow.amountPaise)}',
-                style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w800, color: const Color(0xFF212325)),
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF212325),
+                ),
               ),
               Text(
                 outflow.paymentMethod ?? 'Auto-pay'.tr(),
-                style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF91919F)),
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  color: const Color(0xFF91919F),
+                ),
               ),
             ],
           ),

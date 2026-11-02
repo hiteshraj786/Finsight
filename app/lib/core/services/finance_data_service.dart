@@ -51,7 +51,9 @@ class FinanceDataService {
     await prefs.setString('$_accountsPrefix$userId', jsonEncode(jsonList));
   }
 
-  static Future<List<FinanceAccount>> getCachedAccounts([String? userId]) async {
+  static Future<List<FinanceAccount>> getCachedAccounts([
+    String? userId,
+  ]) async {
     final uid = userId ?? AuthService.currentUser?.id ?? 'local_user';
     return _cachedAccounts(uid);
   }
@@ -68,16 +70,18 @@ class FinanceDataService {
       final localTx = await repo.getAll();
       localTransactions = localTx
           .where((t) => t.status != TransactionStatus.ignored)
-          .map((tx) => FinanceTransaction(
-                id: tx.id?.toString() ?? 'tx_${tx.date.millisecondsSinceEpoch}',
-                amount: tx.amountPaise / 100.0,
-                direction: tx.type == TransactionType.credit
-                    ? TransactionDirection.credit
-                    : TransactionDirection.debit,
-                merchant: tx.party.isEmpty ? 'Unknown' : tx.party,
-                category: tx.category,
-                occurredAt: tx.date,
-              ))
+          .map(
+            (tx) => FinanceTransaction(
+              id: tx.id?.toString() ?? 'tx_${tx.date.millisecondsSinceEpoch}',
+              amount: tx.amountPaise / 100.0,
+              direction: tx.type == TransactionType.credit
+                  ? TransactionDirection.credit
+                  : TransactionDirection.debit,
+              merchant: tx.party.isEmpty ? 'Unknown' : tx.party,
+              category: tx.category,
+              occurredAt: tx.date,
+            ),
+          )
           .toList();
     } catch (e) {
       debugPrint('Local transactions fetch error: $e');
@@ -107,8 +111,9 @@ class FinanceDataService {
         final profile = results[0] as Map<String, dynamic>?;
         final accounts = (results[1] as List<dynamic>)
             .map(
-              (row) =>
-                  FinanceAccount.fromJson(Map<String, dynamic>.from(row as Map)),
+              (row) => FinanceAccount.fromJson(
+                Map<String, dynamic>.from(row as Map),
+              ),
             )
             .toList();
         final remoteTransactions = (results[2] as List<dynamic>)
@@ -175,8 +180,9 @@ class FinanceDataService {
             .order('created_at');
         final remote = (rows as List<dynamic>)
             .map(
-              (row) =>
-                  FinanceAccount.fromJson(Map<String, dynamic>.from(row as Map)),
+              (row) => FinanceAccount.fromJson(
+                Map<String, dynamic>.from(row as Map),
+              ),
             )
             .toList();
 
@@ -191,7 +197,9 @@ class FinanceDataService {
         await _cacheAccounts(userId, merged);
         return merged;
       } catch (e) {
-        debugPrint('Accounts Supabase fetch failed: $e, returning local cache.');
+        debugPrint(
+          'Accounts Supabase fetch failed: $e, returning local cache.',
+        );
         return cached;
       }
     }
@@ -332,7 +340,10 @@ class FinanceDashboardData {
   });
 
   double get usableBalance => accounts
-      .where((account) => account.isDepositAccount || account.accountType == 'wallet')
+      .where(
+        (account) =>
+            account.isDepositAccount || account.accountType == 'wallet',
+      )
       .fold<double>(
         0,
         (total, account) => total + (account.latestBalance ?? 0),

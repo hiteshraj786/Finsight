@@ -17,8 +17,9 @@ class MonthSwitcher extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = switch (period) {
-      'week' => '${DateFormat('d MMM').format(_periodStart)} – '
-          '${DateFormat('d MMM').format(_periodStart.add(const Duration(days: 6)))}',
+      'week' =>
+        '${DateFormat('d MMM').format(_periodStart)} – '
+            '${DateFormat('d MMM').format(_periodStart.add(const Duration(days: 6)))}',
       'year' => DateFormat('yyyy').format(selectedMonth),
       _ => DateFormat('MMMM yyyy').format(selectedMonth),
     };
@@ -27,7 +28,11 @@ class MonthSwitcher extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         IconButton(
-          icon: const Icon(Icons.chevron_left_rounded, size: 24, color: Color(0xFF212325)),
+          icon: const Icon(
+            Icons.chevron_left_rounded,
+            size: 24,
+            color: Color(0xFF212325),
+          ),
           onPressed: () {
             onMonthChanged(_shift(-1));
           },
@@ -45,7 +50,11 @@ class MonthSwitcher extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.calendar_today_outlined, size: 16, color: Color(0xFF7F3DFF)),
+              const Icon(
+                Icons.calendar_today_outlined,
+                size: 16,
+                color: Color(0xFF7F3DFF),
+              ),
               const SizedBox(width: 8),
               Text(
                 label,
@@ -60,7 +69,11 @@ class MonthSwitcher extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         IconButton(
-          icon: const Icon(Icons.chevron_right_rounded, size: 24, color: Color(0xFF212325)),
+          icon: const Icon(
+            Icons.chevron_right_rounded,
+            size: 24,
+            color: Color(0xFF212325),
+          ),
           onPressed: () {
             onMonthChanged(_shift(1));
           },
@@ -73,7 +86,11 @@ class MonthSwitcher extends StatelessWidget {
   }
 
   DateTime get _periodStart {
-    final day = DateTime(selectedMonth.year, selectedMonth.month, selectedMonth.day);
+    final day = DateTime(
+      selectedMonth.year,
+      selectedMonth.month,
+      selectedMonth.day,
+    );
     if (period == 'week') {
       return day.subtract(Duration(days: day.weekday - 1));
     }
@@ -88,8 +105,16 @@ class MonthSwitcher extends StatelessWidget {
       return selectedMonth.add(Duration(days: amount * 7));
     }
     if (period == 'year') {
-      return DateTime(selectedMonth.year + amount, selectedMonth.month, selectedMonth.day);
+      return DateTime(
+        selectedMonth.year + amount,
+        selectedMonth.month,
+        selectedMonth.day,
+      );
     }
-    return DateTime(selectedMonth.year, selectedMonth.month + amount, selectedMonth.day);
+    return DateTime(
+      selectedMonth.year,
+      selectedMonth.month + amount,
+      selectedMonth.day,
+    );
   }
 }

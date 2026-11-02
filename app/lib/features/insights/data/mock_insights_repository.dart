@@ -53,12 +53,12 @@ class MockInsightsRepository implements InsightsRepository {
 
   final Map<String, int> _categorySpendMap = {
     'Food & Dining': 1245000, // ₹12,450
-    'Shopping': 980000,       // ₹9,800
+    'Shopping': 980000, // ₹9,800
     'Bills & Utilities': 610000, // ₹6,100
-    'Transport': 520000,      // ₹5,200
-    'Entertainment': 343000,  // ₹3,430
-    'Health': 220000,         // ₹2,200
-    'Others': 320000,         // ₹3,200
+    'Transport': 520000, // ₹5,200
+    'Entertainment': 343000, // ₹3,430
+    'Health': 220000, // ₹2,200
+    'Others': 320000, // ₹3,200
   };
 
   final List<RecurringPattern> _recurring = [
@@ -177,7 +177,7 @@ class MockInsightsRepository implements InsightsRepository {
       id: 1,
       name: 'Goa trip',
       targetAmountPaise: 3000000, // ₹30,000
-      savedAmountPaise: 1800000,  // ₹18,000
+      savedAmountPaise: 1800000, // ₹18,000
       targetDate: DateTime(2026, 12, 15),
       createdAt: DateTime(2026, 8, 1),
     ),
@@ -185,7 +185,7 @@ class MockInsightsRepository implements InsightsRepository {
       id: 2,
       name: 'Emergency fund',
       targetAmountPaise: 10000000, // ₹1,00,000
-      savedAmountPaise: 4500000,   // ₹45,000
+      savedAmountPaise: 4500000, // ₹45,000
       targetDate: DateTime(2027, 3, 31),
       createdAt: DateTime(2026, 1, 1),
     ),
@@ -193,7 +193,7 @@ class MockInsightsRepository implements InsightsRepository {
       id: 3,
       name: 'New laptop',
       targetAmountPaise: 7200000, // ₹72,000
-      savedAmountPaise: 3300000,  // ₹33,000
+      savedAmountPaise: 3300000, // ₹33,000
       targetDate: DateTime(2027, 1, 31),
       createdAt: DateTime(2026, 6, 1),
     ),
@@ -346,7 +346,10 @@ class MockInsightsRepository implements InsightsRepository {
   ];
 
   @override
-  Future<List<InsightTransaction>> confirmedTransactions({DateTime? from, DateTime? to}) async {
+  Future<List<InsightTransaction>> confirmedTransactions({
+    DateTime? from,
+    DateTime? to,
+  }) async {
     return _transactions;
   }
 
@@ -356,12 +359,19 @@ class MockInsightsRepository implements InsightsRepository {
   }
 
   @override
-  Future<List<MerchantSpend>> topMerchants(DateTime from, DateTime to, {int limit = 10}) async {
+  Future<List<MerchantSpend>> topMerchants(
+    DateTime from,
+    DateTime to, {
+    int limit = 10,
+  }) async {
     return getTopMerchants();
   }
 
   @override
-  Future<List<CategorySpend>> getCategorySpend({String period = 'month', DateTime? date}) async {
+  Future<List<CategorySpend>> getCategorySpend({
+    String period = 'month',
+    DateTime? date,
+  }) async {
     return [
       CategorySpend(
         category: 'Food & Dining',
@@ -422,19 +432,25 @@ class MockInsightsRepository implements InsightsRepository {
     final list = <BudgetEvaluation>[];
     for (final budget in _budgets) {
       final actual = _categorySpendMap[budget.categoryId] ?? 0;
-      final ratio = budget.limitAmountPaise == 0 ? 0.0 : actual / budget.limitAmountPaise;
+      final ratio = budget.limitAmountPaise == 0
+          ? 0.0
+          : actual / budget.limitAmountPaise;
       final status = ratio > 1.0
           ? BudgetStatus.over
-          : (ratio >= budget.alertThreshold ? BudgetStatus.nearLimit : BudgetStatus.onTrack);
+          : (ratio >= budget.alertThreshold
+                ? BudgetStatus.nearLimit
+                : BudgetStatus.onTrack);
       const remainingDays = 11;
       final remaining = budget.limitAmountPaise - actual;
       final safeDaily = remaining > 0 ? (remaining / remainingDays).floor() : 0;
-      list.add(BudgetEvaluation(
-        budget: budget,
-        actualPaise: actual,
-        status: status,
-        safeDailySpendPaise: safeDaily,
-      ));
+      list.add(
+        BudgetEvaluation(
+          budget: budget,
+          actualPaise: actual,
+          status: status,
+          safeDailySpendPaise: safeDaily,
+        ),
+      );
     }
     return list;
   }
@@ -453,10 +469,12 @@ class MockInsightsRepository implements InsightsRepository {
   }
 
   @override
-  Future<List<RecurringPattern>> getRecurring() async => List.unmodifiable(_recurring);
+  Future<List<RecurringPattern>> getRecurring() async =>
+      List.unmodifiable(_recurring);
 
   @override
-  Future<List<RecurringPattern>> getRecurringPatterns() async => List.unmodifiable(_recurring);
+  Future<List<RecurringPattern>> getRecurringPatterns() async =>
+      List.unmodifiable(_recurring);
 
   @override
   Future<void> saveDetectedPatterns(Iterable<RecurringPattern> patterns) async {
@@ -481,13 +499,16 @@ class MockInsightsRepository implements InsightsRepository {
   }
 
   @override
-  Future<void> confirmRecurring(int id) async => setRecurringStatus(id, RecurringStatus.confirmed);
+  Future<void> confirmRecurring(int id) async =>
+      setRecurringStatus(id, RecurringStatus.confirmed);
 
   @override
-  Future<void> ignoreRecurring(int id) async => setRecurringStatus(id, RecurringStatus.ignored);
+  Future<void> ignoreRecurring(int id) async =>
+      setRecurringStatus(id, RecurringStatus.ignored);
 
   @override
-  Future<List<SavingsGoal>> getSavingsGoals() async => List.unmodifiable(_goals);
+  Future<List<SavingsGoal>> getSavingsGoals() async =>
+      List.unmodifiable(_goals);
 
   @override
   Future<List<SavingsGoalEvaluation>> getSavingsGoalEvaluations() async {
@@ -540,8 +561,9 @@ class MockInsightsRepository implements InsightsRepository {
       _unusualFlags.where((f) => f.status == UnusualStatus.open).toList();
 
   @override
-  Future<List<UnusualFlag>> getUnusualFlags({UnusualStatus status = UnusualStatus.open}) async =>
-      _unusualFlags.where((f) => f.status == status).toList();
+  Future<List<UnusualFlag>> getUnusualFlags({
+    UnusualStatus status = UnusualStatus.open,
+  }) async => _unusualFlags.where((f) => f.status == status).toList();
 
   @override
   Future<void> saveUnusualFlags(Iterable<UnusualFlag> flags) async {
@@ -561,16 +583,55 @@ class MockInsightsRepository implements InsightsRepository {
   }
 
   @override
-  Future<void> dismissUnusual(int id) async => setUnusualStatus(id, UnusualStatus.dismissed);
+  Future<void> dismissUnusual(int id) async =>
+      setUnusualStatus(id, UnusualStatus.dismissed);
 
   @override
-  Future<List<MerchantStat>> getTopMerchants({String period = 'month', String sortBy = 'amount'}) async {
+  Future<List<MerchantStat>> getTopMerchants({
+    String period = 'month',
+    String sortBy = 'amount',
+  }) async {
     final list = [
-      const MerchantStat(rank: 1, merchant: 'Swiggy', amountPaise: 842000, transactionCount: 14, avgAmountPaise: 60100, relativeShare: 1.0),
-      const MerchantStat(rank: 2, merchant: 'Amazon', amountPaise: 735000, transactionCount: 8, avgAmountPaise: 91900, relativeShare: 0.87),
-      const MerchantStat(rank: 3, merchant: 'DMart', amountPaise: 485000, transactionCount: 3, avgAmountPaise: 161700, relativeShare: 0.58),
-      const MerchantStat(rank: 4, merchant: 'Uber', amountPaise: 390000, transactionCount: 11, avgAmountPaise: 35500, relativeShare: 0.46),
-      const MerchantStat(rank: 5, merchant: 'Zomato', amountPaise: 312000, transactionCount: 7, avgAmountPaise: 44600, relativeShare: 0.37),
+      const MerchantStat(
+        rank: 1,
+        merchant: 'Swiggy',
+        amountPaise: 842000,
+        transactionCount: 14,
+        avgAmountPaise: 60100,
+        relativeShare: 1.0,
+      ),
+      const MerchantStat(
+        rank: 2,
+        merchant: 'Amazon',
+        amountPaise: 735000,
+        transactionCount: 8,
+        avgAmountPaise: 91900,
+        relativeShare: 0.87,
+      ),
+      const MerchantStat(
+        rank: 3,
+        merchant: 'DMart',
+        amountPaise: 485000,
+        transactionCount: 3,
+        avgAmountPaise: 161700,
+        relativeShare: 0.58,
+      ),
+      const MerchantStat(
+        rank: 4,
+        merchant: 'Uber',
+        amountPaise: 390000,
+        transactionCount: 11,
+        avgAmountPaise: 35500,
+        relativeShare: 0.46,
+      ),
+      const MerchantStat(
+        rank: 5,
+        merchant: 'Zomato',
+        amountPaise: 312000,
+        transactionCount: 7,
+        avgAmountPaise: 44600,
+        relativeShare: 0.37,
+      ),
     ];
     if (sortBy == 'count') {
       list.sort((a, b) => b.transactionCount.compareTo(a.transactionCount));
@@ -582,14 +643,26 @@ class MockInsightsRepository implements InsightsRepository {
   Future<CashflowForecast> getCashflow() async {
     return CashflowForecast(
       points: [
-        CashflowPoint(DateTime(2026, 11, 1), 5840000, isActual: true), // 1 Nov: ₹58,400
+        CashflowPoint(
+          DateTime(2026, 11, 1),
+          5840000,
+          isActual: true,
+        ), // 1 Nov: ₹58,400
         CashflowPoint(DateTime(2026, 11, 5), 4500000, isActual: true), // 5 Nov
         CashflowPoint(DateTime(2026, 11, 8), 3500000, isActual: false), // 8 Nov
-        CashflowPoint(DateTime(2026, 11, 10), 980000, isActual: false), // 10 Nov: Low point ₹9,800
+        CashflowPoint(
+          DateTime(2026, 11, 10),
+          980000,
+          isActual: false,
+        ), // 10 Nov: Low point ₹9,800
         CashflowPoint(DateTime(2026, 11, 15), 1800000, isActual: false),
         CashflowPoint(DateTime(2026, 11, 20), 2400000, isActual: false),
         CashflowPoint(DateTime(2026, 11, 25), 2300000, isActual: false),
-        CashflowPoint(DateTime(2026, 11, 30), 2130000, isActual: false), // 30 Nov: End ₹21,300
+        CashflowPoint(
+          DateTime(2026, 11, 30),
+          2130000,
+          isActual: false,
+        ), // 30 Nov: End ₹21,300
       ],
       lowestPoint: CashflowPoint(DateTime(2026, 11, 10), 980000),
       endBalancePaise: 2130000, // ₹21,300
@@ -661,10 +734,14 @@ class MockInsightsRepository implements InsightsRepository {
   }
 
   @override
-  Future<List<GeneratedInsight>> getGeneratedInsights({bool unreadOnly = false}) async => getInsights();
+  Future<List<GeneratedInsight>> getGeneratedInsights({
+    bool unreadOnly = false,
+  }) async => getInsights();
 
   @override
-  Future<void> saveGeneratedInsights(Iterable<GeneratedInsight> insights) async {}
+  Future<void> saveGeneratedInsights(
+    Iterable<GeneratedInsight> insights,
+  ) async {}
 
   @override
   Future<void> markInsightRead(int id) async {}
@@ -699,24 +776,45 @@ class MockInsightsRepository implements InsightsRepository {
   }
 
   @override
-  Future<List<InsightTransaction>> searchTransactions({TransactionFilter? filter, String? query}) async {
+  Future<List<InsightTransaction>> searchTransactions({
+    TransactionFilter? filter,
+    String? query,
+  }) async {
     var result = List<InsightTransaction>.from(_transactions);
     if (query != null && query.trim().isNotEmpty) {
       final q = query.toLowerCase().trim();
-      result = result.where((t) =>
-        t.merchant.toLowerCase().contains(q) ||
-        t.category.toLowerCase().contains(q) ||
-        (t.subtitle?.toLowerCase().contains(q) ?? false)).toList();
+      result = result
+          .where(
+            (t) =>
+                t.merchant.toLowerCase().contains(q) ||
+                t.category.toLowerCase().contains(q) ||
+                (t.subtitle?.toLowerCase().contains(q) ?? false),
+          )
+          .toList();
     }
     if (filter != null) {
       if (filter.categories.isNotEmpty) {
-        result = result.where((t) => filter.categories.contains(t.category)).toList();
+        result = result
+            .where((t) => filter.categories.contains(t.category))
+            .toList();
       }
       if (filter.accounts.isNotEmpty) {
-        result = result.where((t) => t.account != null && filter.accounts.any((a) => t.account!.contains(a))).toList();
+        result = result
+            .where(
+              (t) =>
+                  t.account != null &&
+                  filter.accounts.any((a) => t.account!.contains(a)),
+            )
+            .toList();
       }
       if (filter.merchants.isNotEmpty) {
-        result = result.where((t) => filter.merchants.any((m) => t.merchant.toLowerCase().contains(m.toLowerCase()))).toList();
+        result = result
+            .where(
+              (t) => filter.merchants.any(
+                (m) => t.merchant.toLowerCase().contains(m.toLowerCase()),
+              ),
+            )
+            .toList();
       }
       if (filter.transactionType != 'all') {
         final debitOnly = filter.transactionType == 'debit';

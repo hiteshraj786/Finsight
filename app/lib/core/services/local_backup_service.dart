@@ -44,10 +44,9 @@ class LocalBackupService {
       }),
       flush: true,
     );
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      subject: 'FinSight encrypted backup',
-    );
+    await Share.shareXFiles([
+      XFile(file.path),
+    ], subject: 'FinSight encrypted backup');
   }
 
   static Future<String> _loadOrCreateKey() async {

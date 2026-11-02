@@ -98,40 +98,42 @@ class SmsSyncService with WidgetsBindingObserver {
   }
 
   Future<void> syncNewMessages() => _serialized(() async {
-        if (!_started || !await _hasPermission) return;
-        final since = await repository.getLastCheckedSmsTimestamp();
-        final messages = await reader.fetchInboxMessages(sinceMillis: since);
-        if (messages.isEmpty) return;
-        final scan = await compute(_processInBackground, messages);
-        final newlyInserted = <ParsedTransaction>[];
-        for (final tx in scan.transactions) {
-          final key = TransactionRepository.computeDedupeKey(tx);
-          if (await repository.findByDedupeKey(key) != null) continue;
-          await repository.insertNewFromScan([tx]);
-          final stored = await repository.findByDedupeKey(key);
-          if (stored != null) newlyInserted.add(stored);
-        }
-        await _advanceLastChecked(messages);
-        if (since != null && newlyInserted.length <= _maxCatchUpPopups) {
-          for (final tx in newlyInserted) {
-            popups.enqueue(tx);
-          }
-        }
-      });
+    if (!_started || !await _hasPermission) return;
+    final since = await repository.getLastCheckedSmsTimestamp();
+    final messages = await reader.fetchInboxMessages(sinceMillis: since);
+    if (messages.isEmpty) return;
+    final scan = await compute(_processInBackground, messages);
+    final newlyInserted = <ParsedTransaction>[];
+    for (final tx in scan.transactions) {
+      final key = TransactionRepository.computeDedupeKey(tx);
+      if (await repository.findByDedupeKey(key) != null) continue;
+      await repository.insertNewFromScan([tx]);
+      final stored = await repository.findByDedupeKey(key);
+      if (stored != null) newlyInserted.add(stored);
+    }
+    await _advanceLastChecked(messages);
+    if (since != null && newlyInserted.length <= _maxCatchUpPopups) {
+      for (final tx in newlyInserted) {
+        popups.enqueue(tx);
+      }
+    }
+  });
 
   Future<FullImportResult> importFullInbox() {
     final completer = Completer<FullImportResult>();
-    unawaited(_serialized(() async {
-      try {
-        final messages = await reader.fetchInboxMessages();
-        final scan = await compute(_processInBackground, messages);
-        final insert = await repository.insertNewFromScan(scan.transactions);
-        await _advanceLastChecked(messages);
-        completer.complete(FullImportResult(scan, insert));
-      } catch (error, stackTrace) {
-        completer.completeError(error, stackTrace);
-      }
-    }));
+    unawaited(
+      _serialized(() async {
+        try {
+          final messages = await reader.fetchInboxMessages();
+          final scan = await compute(_processInBackground, messages);
+          final insert = await repository.insertNewFromScan(scan.transactions);
+          await _advanceLastChecked(messages);
+          completer.complete(FullImportResult(scan, insert));
+        } catch (error, stackTrace) {
+          completer.completeError(error, stackTrace);
+        }
+      }),
+    );
     return completer.future;
   }
 

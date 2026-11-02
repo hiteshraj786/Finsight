@@ -104,25 +104,14 @@ class ImportScanningScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    StatCounter(
-                      label: 'Checked',
-                      value: '$checked',
-                    ),
-                    Container(
-                      width: 1,
-                      height: 36,
-                      color: AppColors.border,
-                    ),
+                    StatCounter(label: 'Checked', value: '$checked'),
+                    Container(width: 1, height: 36, color: AppColors.border),
                     StatCounter(
                       label: 'Found',
                       value: '$found',
                       valueColor: AppColors.credit,
                     ),
-                    Container(
-                      width: 1,
-                      height: 36,
-                      color: AppColors.border,
-                    ),
+                    Container(width: 1, height: 36, color: AppColors.border),
                     StatCounter(
                       label: 'Skipped',
                       value: '$skipped',
@@ -186,4 +175,3 @@ class ImportScanningScreen extends StatelessWidget {
     );
   }
 }
-

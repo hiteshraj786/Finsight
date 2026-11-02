@@ -8,7 +8,7 @@ class IncomingSmsImporter {
   final SmsPipeline pipeline;
 
   IncomingSmsImporter(this.repository, {SmsPipeline? pipeline})
-      : pipeline = pipeline ?? SmsPipeline();
+    : pipeline = pipeline ?? SmsPipeline();
 
   Future<ParsedTransaction?> import(RawSmsMessage sms) async {
     final filtered = pipeline.filter.evaluate(sms.body, sender: sms.sender);

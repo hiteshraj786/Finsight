@@ -132,8 +132,8 @@ class SmsPipeline {
       transactions.add(parsed);
       final senderKey =
           (message.sender != null && message.sender!.trim().isNotEmpty)
-              ? message.sender!.trim()
-              : 'Unknown';
+          ? message.sender!.trim()
+          : 'Unknown';
       senderCounts[senderKey] = (senderCounts[senderKey] ?? 0) + 1;
     }
 

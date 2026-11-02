@@ -1,48 +1,37 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-enum StatusTagType {
-  auto,
-  pending,
-  needsCheck,
-  ignored,
-  debit,
-  credit,
-}
+enum StatusTagType { auto, pending, needsCheck, ignored, debit, credit }
 
 class StatusTag extends StatelessWidget {
   final StatusTagType type;
   final String? customLabel;
 
-  const StatusTag({
-    super.key,
-    required this.type,
-    this.customLabel,
-  });
+  const StatusTag({super.key, required this.type, this.customLabel});
 
   const StatusTag.auto({super.key})
-      : type = StatusTagType.auto,
-        customLabel = null;
+    : type = StatusTagType.auto,
+      customLabel = null;
 
   const StatusTag.pending({super.key})
-      : type = StatusTagType.pending,
-        customLabel = null;
+    : type = StatusTagType.pending,
+      customLabel = null;
 
   const StatusTag.needsCheck({super.key})
-      : type = StatusTagType.needsCheck,
-        customLabel = null;
+    : type = StatusTagType.needsCheck,
+      customLabel = null;
 
   const StatusTag.ignored({super.key})
-      : type = StatusTagType.ignored,
-        customLabel = null;
+    : type = StatusTagType.ignored,
+      customLabel = null;
 
   const StatusTag.debit({super.key})
-      : type = StatusTagType.debit,
-        customLabel = null;
+    : type = StatusTagType.debit,
+      customLabel = null;
 
   const StatusTag.credit({super.key})
-      : type = StatusTagType.credit,
-        customLabel = null;
+    : type = StatusTagType.credit,
+      customLabel = null;
 
   @override
   Widget build(BuildContext context) {
@@ -102,4 +91,3 @@ class StatusTag extends StatelessWidget {
     );
   }
 }
-

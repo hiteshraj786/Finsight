@@ -17,13 +17,18 @@ class CategoryAnalyticsScreen extends StatefulWidget {
   const CategoryAnalyticsScreen({super.key});
 
   @override
-  State<CategoryAnalyticsScreen> createState() => _CategoryAnalyticsScreenState();
+  State<CategoryAnalyticsScreen> createState() =>
+      _CategoryAnalyticsScreenState();
 }
 
 class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
   final _repo = InsightsRepositoryProvider.current;
   String _selectedPeriod = 'month';
-  DateTime _selectedDate = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  DateTime _selectedDate = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+    1,
+  );
 
   bool _loading = true;
   List<CategorySpend> _spends = [];
@@ -36,7 +41,10 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
 
   Future<void> _loadData() async {
     setState(() => _loading = true);
-    final data = await _repo.getCategorySpend(period: _selectedPeriod, date: _selectedDate);
+    final data = await _repo.getCategorySpend(
+      period: _selectedPeriod,
+      date: _selectedDate,
+    );
     if (mounted) {
       setState(() {
         _spends = data;
@@ -53,9 +61,17 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
       case 'week':
         return _selectedDate.subtract(const Duration(days: 7));
       case 'year':
-        return DateTime(_selectedDate.year - 1, _selectedDate.month, _selectedDate.day);
+        return DateTime(
+          _selectedDate.year - 1,
+          _selectedDate.month,
+          _selectedDate.day,
+        );
       default:
-        return DateTime(_selectedDate.year, _selectedDate.month - 1, _selectedDate.day);
+        return DateTime(
+          _selectedDate.year,
+          _selectedDate.month - 1,
+          _selectedDate.day,
+        );
     }
   }
 
@@ -92,7 +108,9 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
         centerTitle: true,
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF7F3DFF)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF7F3DFF)),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Column(
@@ -142,7 +160,10 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                           ),
                         );
                       },
-                      icon: const Icon(Icons.file_upload_outlined, color: Color(0xFF7F3DFF)),
+                      icon: const Icon(
+                        Icons.file_upload_outlined,
+                        color: Color(0xFF7F3DFF),
+                      ),
                       label: Text(
                         '${'Export'.tr()} ${DateFormat('MMMM').format(_selectedDate)} ${'Breakdown'.tr()}',
                         style: GoogleFonts.inter(
@@ -211,7 +232,10 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
             children: _spends.take(3).map((item) {
               final color = CategoryColors.forCategory(item.category);
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
@@ -223,7 +247,10 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                     Container(
                       width: 8,
                       height: 8,
-                      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                     const SizedBox(width: 6),
                     Text(
@@ -245,7 +272,9 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
   }
 
   Widget _buildComparisonSection() {
-    final comparisonItems = _spends.where((s) => s.percentageChange != null).toList();
+    final comparisonItems = _spends
+        .where((s) => s.percentageChange != null)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,7 +305,10 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
             ),
             Row(
               children: [
-                _legendDot(const Color(0xFF7F3DFF), DateFormat('MMM').format(_selectedDate)),
+                _legendDot(
+                  const Color(0xFF7F3DFF),
+                  DateFormat('MMM').format(_selectedDate),
+                ),
                 const SizedBox(width: 10),
                 _legendDot(const Color(0xFFD3BDFF), _previousPeriodLabel),
               ],
@@ -289,7 +321,10 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
           final pct = (item.percentageChange ?? 0).abs().toStringAsFixed(0);
           final currentAmount = item.amountPaise;
           final previousAmount = item.previousAmountPaise ?? 0;
-          final maxAmount = [currentAmount, previousAmount].reduce((a, b) => a > b ? a : b);
+          final maxAmount = [
+            currentAmount,
+            previousAmount,
+          ].reduce((a, b) => a > b ? a : b);
           final currentBar = maxAmount == 0 ? 0.0 : currentAmount / maxAmount;
           final previousBar = maxAmount == 0 ? 0.0 : previousAmount / maxAmount;
           final currentStr = CurrencyFormatter.formatCompact(currentAmount);
@@ -312,18 +347,27 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
-                        color: isHigher ? const Color(0xFFFFECEF) : const Color(0xFFE6F7F0),
+                        color: isHigher
+                            ? const Color(0xFFFFECEF)
+                            : const Color(0xFFE6F7F0),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            isHigher ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                            isHigher
+                                ? Icons.arrow_upward_rounded
+                                : Icons.arrow_downward_rounded,
                             size: 11,
-                            color: isHigher ? const Color(0xFFFD3C4A) : const Color(0xFF00A86B),
+                            color: isHigher
+                                ? const Color(0xFFFD3C4A)
+                                : const Color(0xFF00A86B),
                           ),
                           const SizedBox(width: 2),
                           Text(
@@ -331,7 +375,9 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                             style: GoogleFonts.inter(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
-                              color: isHigher ? const Color(0xFFFD3C4A) : const Color(0xFF00A86B),
+                              color: isHigher
+                                  ? const Color(0xFFFD3C4A)
+                                  : const Color(0xFF00A86B),
                             ),
                           ),
                         ],
@@ -351,7 +397,9 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                               value: currentBar,
                               minHeight: 6,
                               backgroundColor: const Color(0xFFF1F1FA),
-                              valueColor: const AlwaysStoppedAnimation(Color(0xFF7F3DFF)),
+                              valueColor: const AlwaysStoppedAnimation(
+                                Color(0xFF7F3DFF),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -361,7 +409,9 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                               value: previousBar,
                               minHeight: 6,
                               backgroundColor: const Color(0xFFF1F1FA),
-                              valueColor: const AlwaysStoppedAnimation(Color(0xFFD3BDFF)),
+                              valueColor: const AlwaysStoppedAnimation(
+                                Color(0xFFD3BDFF),
+                              ),
                             ),
                           ),
                         ],
@@ -373,11 +423,18 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                       children: [
                         Text(
                           currentStr,
-                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF212325)),
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF212325),
+                          ),
                         ),
                         Text(
                           previousStr,
-                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F)),
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: const Color(0xFF91919F),
+                          ),
                         ),
                       ],
                     ),
@@ -403,7 +460,10 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
         const SizedBox(width: 4),
         Text(
           label,
-          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF91919F)),
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            color: const Color(0xFF91919F),
+          ),
         ),
       ],
     );
@@ -450,9 +510,8 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => TransactionSearchScreen(
-                      initialCategory: item.category,
-                    ),
+                    builder: (_) =>
+                        TransactionSearchScreen(initialCategory: item.category),
                   ),
                 );
               },
@@ -514,7 +573,11 @@ class _CategoryAnalyticsScreenState extends State<CategoryAnalyticsScreen> {
                           ],
                         ),
                         const SizedBox(width: 6),
-                        const Icon(Icons.chevron_right_rounded, size: 20, color: Color(0xFF91919F)),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          size: 20,
+                          color: Color(0xFF91919F),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 10),

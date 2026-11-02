@@ -74,7 +74,9 @@ class _PaymentPopupSettingsScreenState extends State<PaymentPopupSettingsScreen>
   }
 
   void _snack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override

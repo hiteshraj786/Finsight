@@ -41,4 +41,3 @@ class PopupQueueController extends ChangeNotifier {
     notifyListeners();
   }
 }
-

@@ -39,8 +39,8 @@ class SmsShellScreen extends StatefulWidget {
     super.key,
     SmsPipeline? pipeline,
     TransactionRepository? repository,
-  })  : pipeline = pipeline ?? SmsPipeline(),
-        repository = repository ?? TransactionRepository();
+  }) : pipeline = pipeline ?? SmsPipeline(),
+       repository = repository ?? TransactionRepository();
 
   @override
   State<SmsShellScreen> createState() => _SmsShellScreenState();
@@ -110,13 +110,19 @@ class _SmsShellScreenState extends State<SmsShellScreen> {
             tx.id!,
             category: category,
           );
-          await widget.repository.updateStatus(tx.id!, TransactionStatus.confirmed);
+          await widget.repository.updateStatus(
+            tx.id!,
+            TransactionStatus.confirmed,
+          );
         }
         _popupController.markDismissed();
       },
       onIgnore: () async {
         if (tx.id != null) {
-          await widget.repository.updateStatus(tx.id!, TransactionStatus.ignored);
+          await widget.repository.updateStatus(
+            tx.id!,
+            TransactionStatus.ignored,
+          );
         }
         _popupController.markDismissed();
       },
@@ -169,7 +175,9 @@ class _SmsShellScreenState extends State<SmsShellScreen> {
       if (mounted) {
         setState(() => _flowState = ShellFlowState.mainApp);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to read inbox. Please try again.')),
+          const SnackBar(
+            content: Text('Failed to read inbox. Please try again.'),
+          ),
         );
       }
     }
@@ -232,7 +240,8 @@ class _SmsShellScreenState extends State<SmsShellScreen> {
             title: const Text('Unreadable Messages'),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_rounded),
-              onPressed: () => setState(() => _flowState = ShellFlowState.mainApp),
+              onPressed: () =>
+                  setState(() => _flowState = ShellFlowState.mainApp),
             ),
           ),
           body: UnreadableMessagesView(
@@ -286,9 +295,6 @@ class _SmsShellScreenState extends State<SmsShellScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: AppTheme.lightTheme,
-      child: _buildContent(context),
-    );
+    return Theme(data: AppTheme.lightTheme, child: _buildContent(context));
   }
 }

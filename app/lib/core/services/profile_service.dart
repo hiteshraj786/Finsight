@@ -72,24 +72,21 @@ class ProfileService {
           .maybeSingle();
       final data = Map<String, dynamic>.from(row ?? {});
       final hasRemotePreferences = data.containsKey('preferred_currency');
-      final profile = UserProfile.fromJson(
-        {
-          ...(hasCachedPreferences
-              ? {...data, ...cached.toJson()}
-              : hasRemotePreferences
-              ? data
-              : {...data, ...cached.toJson()}),
-          // Auth is the canonical source for a display name. The device cache
-          // lets the new name appear immediately if a legacy profiles row
-          // cannot be updated yet.
-          'full_name': cachedName?.isNotEmpty == true
-              ? cachedName
-              : authName.isNotEmpty
-              ? authName
-              : data['full_name'],
-        },
-        fallbackEmail: user.email ?? '',
-      );
+      final profile = UserProfile.fromJson({
+        ...(hasCachedPreferences
+            ? {...data, ...cached.toJson()}
+            : hasRemotePreferences
+            ? data
+            : {...data, ...cached.toJson()}),
+        // Auth is the canonical source for a display name. The device cache
+        // lets the new name appear immediately if a legacy profiles row
+        // cannot be updated yet.
+        'full_name': cachedName?.isNotEmpty == true
+            ? cachedName
+            : authName.isNotEmpty
+            ? authName
+            : data['full_name'],
+      }, fallbackEmail: user.email ?? '');
       await _cachePreferences(user.id, profile.preferences);
       CurrencyService.setCurrency(profile.preferences.currency);
       LanguageService.setLanguage(profile.preferences.language);
@@ -167,21 +164,29 @@ class ProfileService {
       if (AuthService.currentUser != null) {
         try {
           final data = await Future.wait<dynamic>([
-            _client.from('finance_accounts').select(
-              'provider_name, masked_account_number, account_type, currency, latest_balance, is_active, created_at',
-            ).eq('is_active', true),
-            _client.from('finance_transactions').select(
-              'amount, direction, merchant, category, occurred_at, source, account_id',
-            ).gte('occurred_at', startedAt.toIso8601String()).order(
-              'occurred_at',
-              ascending: false,
-            ),
+            _client
+                .from('finance_accounts')
+                .select(
+                  'provider_name, masked_account_number, account_type, currency, latest_balance, is_active, created_at',
+                )
+                .eq('is_active', true),
+            _client
+                .from('finance_transactions')
+                .select(
+                  'amount, direction, merchant, category, occurred_at, source, account_id',
+                )
+                .gte('occurred_at', startedAt.toIso8601String())
+                .order('occurred_at', ascending: false),
           ]);
           accounts = List<Map<String, dynamic>>.from(
-            (data[0] as List).map((row) => Map<String, dynamic>.from(row as Map)),
+            (data[0] as List).map(
+              (row) => Map<String, dynamic>.from(row as Map),
+            ),
           );
           transactions = List<Map<String, dynamic>>.from(
-            (data[1] as List).map((row) => Map<String, dynamic>.from(row as Map)),
+            (data[1] as List).map(
+              (row) => Map<String, dynamic>.from(row as Map),
+            ),
           );
         } catch (error) {
           debugPrint('Cloud export unavailable; using local data: $error');
@@ -220,14 +225,16 @@ class ProfileService {
   ) async {
     final database = local.AppDatabase();
     try {
-      final rows = await database.customSelect(
-        'SELECT amount_paise, type, party, category, date FROM transactions '
-        'WHERE status = ? AND date >= ? ORDER BY date DESC',
-        variables: [
-          Variable.withString(TransactionStatus.confirmed.name),
-          Variable.withInt(startedAt.toUtc().millisecondsSinceEpoch),
-        ],
-      ).get();
+      final rows = await database
+          .customSelect(
+            'SELECT amount_paise, type, party, category, date FROM transactions '
+            'WHERE status = ? AND date >= ? ORDER BY date DESC',
+            variables: [
+              Variable.withString(TransactionStatus.confirmed.name),
+              Variable.withInt(startedAt.toUtc().millisecondsSinceEpoch),
+            ],
+          )
+          .get();
       return rows
           .map(
             (row) => <String, dynamic>{

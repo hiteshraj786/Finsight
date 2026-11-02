@@ -68,7 +68,10 @@ class _AlertsScreenState extends State<AlertsScreen> {
         break;
     }
 
-    await Navigator.push(context, MaterialPageRoute(builder: (_) => nextScreen));
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => nextScreen),
+    );
     _loadData();
   }
 
@@ -96,12 +99,17 @@ class _AlertsScreenState extends State<AlertsScreen> {
         centerTitle: true,
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF7F3DFF)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF7F3DFF)),
+            )
           : Column(
               children: [
                 // Sub-header with unread count & Mark all read
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -141,7 +149,11 @@ class _AlertsScreenState extends State<AlertsScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.done_all_rounded, size: 16, color: Color(0xFF7F3DFF)),
+                            const Icon(
+                              Icons.done_all_rounded,
+                              size: 16,
+                              color: Color(0xFF7F3DFF),
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               'Mark all read'.tr(),
@@ -184,19 +196,31 @@ class _AlertsScreenState extends State<AlertsScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.notifications_off_outlined, size: 48, color: Color(0xFF91919F)),
+                              const Icon(
+                                Icons.notifications_off_outlined,
+                                size: 48,
+                                color: Color(0xFF91919F),
+                              ),
                               const SizedBox(height: 12),
                               Text(
                                 'No alerts right now'.tr(),
-                                style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF212325)),
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF212325),
+                                ),
                               ),
                             ],
                           ),
                         )
                       : ListView.separated(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 8,
+                          ),
                           itemCount: _alerts.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 12),
                           itemBuilder: (context, i) {
                             final alert = _alerts[i];
                             return _buildAlertCard(alert);
@@ -322,7 +346,10 @@ class _AlertsScreenState extends State<AlertsScreen> {
                     GestureDetector(
                       onTap: () => _handleAlertTap(alert),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF7F3DFF),
                           borderRadius: BorderRadius.circular(14),

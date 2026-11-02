@@ -30,7 +30,10 @@ class CurrencyFormatter {
     int paise, {
     bool showDecimals = false,
     String? currency,
-  }) => _format(showDecimals: showDecimals, currency: currency).format(paise / 100);
+  }) => _format(
+    showDecimals: showDecimals,
+    currency: currency,
+  ).format(paise / 100);
 
   static String formatRupees(
     num rupees, {

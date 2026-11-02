@@ -7,6 +7,7 @@ import '../../core/services/language_service.dart';
 import '../../core/constants/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/bank_logo.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -36,51 +37,51 @@ class _HomeScreenState extends State<HomeScreen> {
     builder: (context, _, __) => ValueListenableBuilder<String>(
       valueListenable: CurrencyService.selected,
       builder: (context, _, child) => Scaffold(
-    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-    body: SafeArea(
-      child: FutureBuilder<FinanceDashboardData>(
-        future: _dashboard,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) return _ErrorState(onRetry: _refresh);
-          final data = snapshot.data!;
-          if (data.accounts.isEmpty) return const _EmptyState();
-          return RefreshIndicator(
-            onRefresh: _refresh,
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 120),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _header(data.firstName),
-                      const SizedBox(height: 26),
-                      _usableBalanceCard(data),
-                      const SizedBox(height: 28),
-                      _sectionHeader('Recent transactions'),
-                      const SizedBox(height: 12),
-                      _transactions(data.transactions),
-                      const SizedBox(height: 28),
-                      _sectionHeader('Accounts'),
-                      const SizedBox(height: 12),
-                      _accounts(data.accounts),
-                      if (data.creditCardDue > 0) ...[
-                        const SizedBox(height: 20),
-                        _creditDue(data.creditCardDue),
-                      ],
-                    ]),
-                  ),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: SafeArea(
+          child: FutureBuilder<FinanceDashboardData>(
+            future: _dashboard,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) return _ErrorState(onRetry: _refresh);
+              final data = snapshot.data!;
+              if (data.accounts.isEmpty) return const _EmptyState();
+              return RefreshIndicator(
+                onRefresh: _refresh,
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 120),
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate([
+                          _header(data.firstName),
+                          const SizedBox(height: 26),
+                          _usableBalanceCard(data),
+                          const SizedBox(height: 28),
+                          _sectionHeader('Recent transactions'),
+                          const SizedBox(height: 12),
+                          _transactions(data.transactions),
+                          const SizedBox(height: 28),
+                          _sectionHeader('Accounts'),
+                          const SizedBox(height: 12),
+                          _accounts(data.accounts),
+                          if (data.creditCardDue > 0) ...[
+                            const SizedBox(height: 20),
+                            _creditDue(data.creditCardDue),
+                          ],
+                        ]),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ),
       ),
-    ),
-    ),
     ),
   );
 
@@ -88,38 +89,38 @@ class _HomeScreenState extends State<HomeScreen> {
     final scheme = Theme.of(context).colorScheme;
     return Row(
       children: [
-      Container(
-        width: 46,
-        height: 46,
-        decoration: BoxDecoration(
-          color: AppColors.primaryLight,
-          borderRadius: BorderRadius.circular(15),
+        Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: AppColors.primaryLight,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: const Icon(Icons.auto_graph_rounded, color: AppColors.primary),
         ),
-        child: const Icon(Icons.auto_graph_rounded, color: AppColors.primary),
-      ),
-      const SizedBox(width: 12),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Your finances'.tr(),
-              style: _text(13, scheme.onSurfaceVariant, FontWeight.w500),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              '${'Hi,'.tr()} $name',
-              style: _text(20, scheme.onSurface, FontWeight.w800),
-            ),
-          ],
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Your finances'.tr(),
+                style: _text(13, scheme.onSurfaceVariant, FontWeight.w500),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '${'Hi,'.tr()} $name',
+                style: _text(20, scheme.onSurface, FontWeight.w800),
+              ),
+            ],
+          ),
         ),
-      ),
-      IconButton(
-        onPressed: _refresh,
-        tooltip: 'Refresh',
-        style: IconButton.styleFrom(backgroundColor: scheme.surfaceContainer),
-        icon: const Icon(Icons.refresh_rounded),
-      ),
+        IconButton(
+          onPressed: _refresh,
+          tooltip: 'Refresh',
+          style: IconButton.styleFrom(backgroundColor: scheme.surfaceContainer),
+          icon: const Icon(Icons.refresh_rounded),
+        ),
       ],
     );
   }
@@ -194,11 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _sectionHeader(String title) => Text(
     title.tr(),
-    style: _text(
-      19,
-      Theme.of(context).colorScheme.onSurface,
-      FontWeight.w800,
-    ),
+    style: _text(19, Theme.of(context).colorScheme.onSurface, FontWeight.w800),
   );
 
   Widget _transactions(List<FinanceTransaction> transactions) {
@@ -224,9 +221,8 @@ class _HomeScreenState extends State<HomeScreen> {
         if (hasMore) ...[
           const SizedBox(height: 4),
           InkWell(
-            onTap: () => setState(
-              () => _showAllTransactions = !_showAllTransactions,
-            ),
+            onTap: () =>
+                setState(() => _showAllTransactions = !_showAllTransactions),
             borderRadius: BorderRadius.circular(14),
             child: Ink(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -278,30 +274,29 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _creditDue(double amount) {
     final scheme = Theme.of(context).colorScheme;
     return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: const Color(0xFFFFF2ED),
-      borderRadius: BorderRadius.circular(18),
-    ),
-    child: Row(
-      children: [
-        const Icon(Icons.credit_card_rounded, color: AppColors.secondary),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            'Credit card balance reported',
-            style: _text(14, scheme.onSurface, FontWeight.w700),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF2ED),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.credit_card_rounded, color: AppColors.secondary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Credit card balance reported',
+              style: _text(14, scheme.onSurface, FontWeight.w700),
+            ),
           ),
-        ),
-        Text(
-          _currency(amount),
-          style: _text(14, scheme.onSurface, FontWeight.w800),
-        ),
-      ],
-    ),
+          Text(
+            _currency(amount),
+            style: _text(14, scheme.onSurface, FontWeight.w800),
+          ),
+        ],
+      ),
     );
   }
-
 
   TextStyle _text(
     double size,
@@ -387,47 +382,47 @@ class _AccountCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Container(
-    width: 236,
-    padding: const EdgeInsets.all(17),
-    decoration: BoxDecoration(
-      color: account.isCreditCard
-          ? scheme.secondaryContainer
-          : scheme.primaryContainer,
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        BankLogo(
-          providerName: account.providerName,
-          size: 38,
-          fallbackIcon: account.isCreditCard
-              ? Icons.credit_card_rounded
-              : Icons.account_balance_rounded,
-        ),
-        const Spacer(),
-        Text(
-          account.providerName,
-          style: GoogleFonts.inter(fontWeight: FontWeight.w800),
-        ),
-        Text(
-          '${account.displayType} · ${account.maskedAccountNumber}',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            color: AppColors.textSecondary,
+      width: 236,
+      padding: const EdgeInsets.all(17),
+      decoration: BoxDecoration(
+        color: account.isCreditCard
+            ? scheme.secondaryContainer
+            : scheme.primaryContainer,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          BankLogo(
+            providerName: account.providerName,
+            size: 38,
+            fallbackIcon: account.isCreditCard
+                ? Icons.credit_card_rounded
+                : Icons.account_balance_rounded,
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          account.latestBalance == null
-              ? 'Balance unavailable'
-              : '${_currency(account.latestBalance!)}${account.isCreditCard ? ' reported' : ''}',
-          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800),
-        ),
-      ],
-    ),
+          const Spacer(),
+          Text(
+            account.providerName,
+            style: GoogleFonts.inter(fontWeight: FontWeight.w800),
+          ),
+          Text(
+            '${account.displayType} · ${account.maskedAccountNumber}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            account.latestBalance == null
+                ? 'Balance unavailable'
+                : '${_currency(account.latestBalance!)}${account.isCreditCard ? ' reported' : ''}',
+            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -453,7 +448,8 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Add a bank, wallet, or credit card to start tracking your finances.'.tr(),
+            'Add a bank, wallet, or credit card to start tracking your finances.'
+                .tr(),
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               color: AppColors.textSecondary,

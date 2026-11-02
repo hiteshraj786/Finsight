@@ -19,7 +19,8 @@ class TransactionSearchScreen extends StatefulWidget {
   });
 
   @override
-  State<TransactionSearchScreen> createState() => _TransactionSearchScreenState();
+  State<TransactionSearchScreen> createState() =>
+      _TransactionSearchScreenState();
 }
 
 class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
@@ -34,8 +35,12 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
   void initState() {
     super.initState();
     _filter = TransactionFilter(
-      categories: widget.initialCategory != null ? {widget.initialCategory!} : {},
-      merchants: widget.initialMerchant != null ? {widget.initialMerchant!} : {},
+      categories: widget.initialCategory != null
+          ? {widget.initialCategory!}
+          : {},
+      merchants: widget.initialMerchant != null
+          ? {widget.initialMerchant!}
+          : {},
     );
     if (widget.initialCategory != null) {
       _queryCtrl.text = widget.initialCategory!;
@@ -78,8 +83,9 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
     }
   }
 
-  int get _totalSpendPaise =>
-      _results.where((t) => t.isDebit).fold<int>(0, (sum, t) => sum + t.amountPaise);
+  int get _totalSpendPaise => _results
+      .where((t) => t.isDebit)
+      .fold<int>(0, (sum, t) => sum + t.amountPaise);
 
   Map<String, List<InsightTransaction>> get _groupedResults {
     final map = <String, List<InsightTransaction>>{};
@@ -89,10 +95,25 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
       final String group;
       if (d.year == now.year && d.month == now.month && d.day == now.day) {
         group = 'TODAY';
-      } else if (d.year == now.year && d.month == now.month && d.day == now.day - 1) {
+      } else if (d.year == now.year &&
+          d.month == now.month &&
+          d.day == now.day - 1) {
         group = 'YESTERDAY';
       } else {
-        const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        const months = [
+          'JAN',
+          'FEB',
+          'MAR',
+          'APR',
+          'MAY',
+          'JUN',
+          'JUL',
+          'AUG',
+          'SEP',
+          'OCT',
+          'NOV',
+          'DEC',
+        ];
         group = '${d.day} ${months[d.month - 1]} ${d.year}';
       }
       map.putIfAbsent(group, () => []).add(t);
@@ -140,13 +161,21 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.search_rounded, size: 20, color: Color(0xFF91919F)),
+                        const Icon(
+                          Icons.search_rounded,
+                          size: 20,
+                          color: Color(0xFF91919F),
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: TextField(
                             controller: _queryCtrl,
                             onChanged: (_) => _search(),
-                            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: const Color(0xFF212325)),
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF212325),
+                            ),
                             decoration: InputDecoration(
                               hintText: 'Search transactions...'.tr(),
                               border: InputBorder.none,
@@ -160,7 +189,11 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
                               _queryCtrl.clear();
                               _search();
                             },
-                            child: const Icon(Icons.cancel, size: 16, color: Color(0xFF91919F)),
+                            child: const Icon(
+                              Icons.cancel,
+                              size: 16,
+                              color: Color(0xFF91919F),
+                            ),
                           ),
                       ],
                     ),
@@ -179,7 +212,11 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
                           color: const Color(0xFFEEE5FF),
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Icon(Icons.tune_rounded, color: Color(0xFF7F3DFF), size: 22),
+                        child: const Icon(
+                          Icons.tune_rounded,
+                          color: Color(0xFF7F3DFF),
+                          size: 22,
+                        ),
                       ),
                     ),
                     if (filterCount > 0)
@@ -211,7 +248,9 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
           ),
 
           // Active Removable Filter Chips
-          if (!_filter.isDefault || _filter.categories.isNotEmpty || _filter.merchants.isNotEmpty)
+          if (!_filter.isDefault ||
+              _filter.categories.isNotEmpty ||
+              _filter.merchants.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
               child: SingleChildScrollView(
@@ -220,19 +259,31 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
                   children: [
                     if (_filter.dateRange != '30days')
                       _activeFilterChip(_filter.dateRange, () {
-                        setState(() => _filter = _filter.copyWith(dateRange: '30days'));
+                        setState(
+                          () => _filter = _filter.copyWith(dateRange: '30days'),
+                        );
                         _search();
                       }),
-                    ..._filter.categories.map((c) => _activeFilterChip(c, () {
-                      final updated = Set<String>.from(_filter.categories)..remove(c);
-                      setState(() => _filter = _filter.copyWith(categories: updated));
-                      _search();
-                    })),
-                    ..._filter.merchants.map((m) => _activeFilterChip(m, () {
-                      final updated = Set<String>.from(_filter.merchants)..remove(m);
-                      setState(() => _filter = _filter.copyWith(merchants: updated));
-                      _search();
-                    })),
+                    ..._filter.categories.map(
+                      (c) => _activeFilterChip(c, () {
+                        final updated = Set<String>.from(_filter.categories)
+                          ..remove(c);
+                        setState(
+                          () => _filter = _filter.copyWith(categories: updated),
+                        );
+                        _search();
+                      }),
+                    ),
+                    ..._filter.merchants.map(
+                      (m) => _activeFilterChip(m, () {
+                        final updated = Set<String>.from(_filter.merchants)
+                          ..remove(m);
+                        setState(
+                          () => _filter = _filter.copyWith(merchants: updated),
+                        );
+                        _search();
+                      }),
+                    ),
                     TextButton(
                       onPressed: () {
                         setState(() {
@@ -272,7 +323,11 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
                 ),
                 Row(
                   children: [
-                    const Icon(Icons.swap_horiz_rounded, size: 16, color: Color(0xFF7F3DFF)),
+                    const Icon(
+                      Icons.swap_horiz_rounded,
+                      size: 16,
+                      color: Color(0xFF7F3DFF),
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'Filtered view',
@@ -291,56 +346,73 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
           // Transaction Timeline List
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFF7F3DFF)))
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF7F3DFF)),
+                  )
                 : _results.isEmpty
-                    ? Center(
-                        child: Column(
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.search_off_rounded,
+                          size: 48,
+                          color: Color(0xFF91919F),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'No matching transactions',
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF212325),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    children: [
+                      for (final entry in _groupedResults.entries) ...[
+                        _buildDateGroup(entry.key, entry.value),
+                        const SizedBox(height: 18),
+                      ],
+                      const SizedBox(height: 24),
+                      Center(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.search_off_rounded, size: 48, color: Color(0xFF91919F)),
-                            const SizedBox(height: 12),
+                            Container(
+                              width: 22,
+                              height: 22,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFEEE5FF),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.check,
+                                size: 14,
+                                color: Color(0xFF7F3DFF),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
                             Text(
-                              'No matching transactions',
-                              style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF212325)),
+                              'All matching entries loaded',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: const Color(0xFF91919F),
+                              ),
                             ),
                           ],
                         ),
-                      )
-                    : ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        children: [
-                          for (final entry in _groupedResults.entries) ...[
-                            _buildDateGroup(entry.key, entry.value),
-                            const SizedBox(height: 18),
-                          ],
-                          const SizedBox(height: 24),
-                          Center(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 22,
-                                  height: 22,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFEEE5FF),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.check, size: 14, color: Color(0xFF7F3DFF)),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'All matching entries loaded',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    color: const Color(0xFF91919F),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 32),
-                        ],
                       ),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
           ),
         ],
       ),
@@ -360,12 +432,20 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
         children: [
           Text(
             label,
-            style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF7F3DFF)),
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF7F3DFF),
+            ),
           ),
           const SizedBox(width: 4),
           GestureDetector(
             onTap: onRemove,
-            child: const Icon(Icons.close_rounded, size: 14, color: Color(0xFF7F3DFF)),
+            child: const Icon(
+              Icons.close_rounded,
+              size: 14,
+              color: Color(0xFF7F3DFF),
+            ),
           ),
         ],
       ),
@@ -452,7 +532,9 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
                     style: GoogleFonts.inter(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
-                      color: isCredit ? const Color(0xFF00A86B) : const Color(0xFF212325),
+                      color: isCredit
+                          ? const Color(0xFF00A86B)
+                          : const Color(0xFF212325),
                     ),
                   ),
                 ],

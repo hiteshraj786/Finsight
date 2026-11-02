@@ -130,7 +130,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           }
 
           return ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             children: [
               // Summary card for "This month"
               Container(
@@ -170,7 +173,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             valueColor: AppColors.debit,
                           ),
                         ),
-                        Container(width: 1, height: 36, color: AppColors.border),
+                        Container(
+                          width: 1,
+                          height: 36,
+                          color: AppColors.border,
+                        ),
                         Expanded(
                           child: Padding(
                             padding: const EdgeInsets.only(left: 12.0),
@@ -182,7 +189,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             ),
                           ),
                         ),
-                        Container(width: 1, height: 36, color: AppColors.border),
+                        Container(
+                          width: 1,
+                          height: 36,
+                          color: AppColors.border,
+                        ),
                         Expanded(
                           child: Padding(
                             padding: const EdgeInsets.only(left: 12.0),
@@ -289,4 +300,3 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     );
   }
 }
-

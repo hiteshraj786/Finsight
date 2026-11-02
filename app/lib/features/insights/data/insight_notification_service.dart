@@ -5,12 +5,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// turns on the Phase 2 setting, never while the app starts.
 class InsightNotificationService {
   static const _enabledKey = 'insight_notifications_enabled';
-  static final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
   static void Function(String route)? onNotificationTap;
 
   static Future<void> initialize() async {
     await _plugin.initialize(
-      const InitializationSettings(android: AndroidInitializationSettings('@mipmap/ic_launcher')),
+      const InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      ),
       onDidReceiveNotificationResponse: (response) {
         final route = response.payload;
         if (route != null) onNotificationTap?.call(route);
@@ -18,7 +21,8 @@ class InsightNotificationService {
     );
   }
 
-  static Future<bool> isEnabled() async => (await SharedPreferences.getInstance()).getBool(_enabledKey) ?? false;
+  static Future<bool> isEnabled() async =>
+      (await SharedPreferences.getInstance()).getBool(_enabledKey) ?? false;
 
   static Future<bool> setEnabled(bool enabled) async {
     if (enabled && !await requestPermission()) return false;
@@ -27,7 +31,10 @@ class InsightNotificationService {
   }
 
   static Future<bool> requestPermission() async {
-    final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     return await android?.requestNotificationsPermission() ?? true;
   }
 
@@ -38,11 +45,16 @@ class InsightNotificationService {
     required String route,
   }) async {
     if (!await isEnabled()) return;
-    const details = NotificationDetails(android: AndroidNotificationDetails(
-      'finsight_insights', 'FinSight insights',
-      channelDescription: 'Budget, recurring payment, and unusual transaction alerts',
-      importance: Importance.high, priority: Priority.high,
-    ));
+    const details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'finsight_insights',
+        'FinSight insights',
+        channelDescription:
+            'Budget, recurring payment, and unusual transaction alerts',
+        importance: Importance.high,
+        priority: Priority.high,
+      ),
+    );
     await _plugin.show(id, title, body, details, payload: route);
   }
 }

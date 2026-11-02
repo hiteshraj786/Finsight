@@ -54,9 +54,9 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
   int get _safeDailyPaise => _budgets.isEmpty
       ? 0
       : _budgets
-            .map((budget) => budget.safeDailySpendPaise)
-            .reduce((a, b) => a + b) ~/
-          _budgets.length;
+                .map((budget) => budget.safeDailySpendPaise)
+                .reduce((a, b) => a + b) ~/
+            _budgets.length;
 
   int get _daysRemaining {
     final now = DateTime.now();
@@ -86,13 +86,18 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
         centerTitle: true,
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF7F3DFF)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF7F3DFF)),
+            )
           : RefreshIndicator(
               color: const Color(0xFF7F3DFF),
               onRefresh: _loadData,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -120,7 +125,10 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF1F1FA),
                                 borderRadius: BorderRadius.circular(10),
@@ -156,7 +164,10 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                           child: Text(
                             'No category budgets set yet. Tap below to create your first budget!',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF91919F)),
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: const Color(0xFF91919F),
+                            ),
                           ),
                         ),
                       )
@@ -235,7 +246,10 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
@@ -340,25 +354,40 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
               color: Color(0xFFEEE5FF),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.location_on_outlined, color: Color(0xFF7F3DFF), size: 18),
+            child: const Icon(
+              Icons.location_on_outlined,
+              color: Color(0xFF7F3DFF),
+              size: 18,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: RichText(
               text: TextSpan(
-                style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF212325)),
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: const Color(0xFF212325),
+                ),
                 children: [
                   TextSpan(text: 'Daily safe spend is '.tr()),
                   TextSpan(
-                    text: '${CurrencyFormatter.formatPaise(_safeDailyPaise)}/day',
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: const Color(0xFF7F3DFF)),
+                    text:
+                        '${CurrencyFormatter.formatPaise(_safeDailyPaise)}/day',
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF7F3DFF),
+                    ),
                   ),
                   TextSpan(text: ' to last month-end.'.tr()),
                 ],
               ),
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: Color(0xFF7F3DFF), size: 20),
+          const Icon(
+            Icons.chevron_right_rounded,
+            color: Color(0xFF7F3DFF),
+            size: 20,
+          ),
         ],
       ),
     );
@@ -452,15 +481,21 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                 Expanded(
                   child: RichText(
                     text: TextSpan(
-                      style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF212325)),
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: const Color(0xFF212325),
+                      ),
                       children: [
                         TextSpan(
                           text: CurrencyFormatter.formatPaise(item.actualPaise),
                           style: GoogleFonts.inter(fontWeight: FontWeight.w700),
                         ),
                         TextSpan(
-                          text: ' of ${CurrencyFormatter.formatPaise(item.budget.limitAmountPaise)}',
-                          style: GoogleFonts.inter(color: const Color(0xFF91919F)),
+                          text:
+                              ' of ${CurrencyFormatter.formatPaise(item.budget.limitAmountPaise)}',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF91919F),
+                          ),
                         ),
                       ],
                     ),

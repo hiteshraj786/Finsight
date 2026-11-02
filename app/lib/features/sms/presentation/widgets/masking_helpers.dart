@@ -19,4 +19,3 @@ String? maskReference(String? reference) {
       : trimmed;
   return 'Ref ••••$last4';
 }
-

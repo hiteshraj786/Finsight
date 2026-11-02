@@ -59,14 +59,22 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
   }
 
   void _addAmount(int addRupees) {
-    final current = int.tryParse(_amountController.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+    final current =
+        int.tryParse(
+          _amountController.text.replaceAll(RegExp(r'[^0-9]'), ''),
+        ) ??
+        0;
     setState(() {
       _amountController.text = (current + addRupees).toString();
     });
   }
 
   Future<void> _save() async {
-    final rupees = int.tryParse(_amountController.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+    final rupees =
+        int.tryParse(
+          _amountController.text.replaceAll(RegExp(r'[^0-9]'), ''),
+        ) ??
+        0;
     if (rupees <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please enter a valid budget amount'.tr())),
@@ -158,12 +166,19 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
                   return GestureDetector(
                     onTap: () => setState(() => _selectedCategory = cat),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFFEEE5FF) : const Color(0xFFF1F1FA),
+                        color: isSelected
+                            ? const Color(0xFFEEE5FF)
+                            : const Color(0xFFF1F1FA),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: isSelected ? const Color(0xFF7F3DFF) : Colors.transparent,
+                          color: isSelected
+                              ? const Color(0xFF7F3DFF)
+                              : Colors.transparent,
                           width: 1.5,
                         ),
                       ),
@@ -183,8 +198,12 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
                             cat,
                             style: GoogleFonts.inter(
                               fontSize: 13,
-                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                              color: isSelected ? const Color(0xFF7F3DFF) : const Color(0xFF212325),
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: isSelected
+                                  ? const Color(0xFF7F3DFF)
+                                  : const Color(0xFF212325),
                             ),
                           ),
                         ],
@@ -312,7 +331,10 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFEEE5FF),
                           borderRadius: BorderRadius.circular(12),
@@ -334,7 +356,9 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
                       activeTrackColor: const Color(0xFF7F3DFF),
                       inactiveTrackColor: const Color(0xFFEEE5FF),
                       thumbColor: const Color(0xFF7F3DFF),
-                      overlayColor: const Color(0xFF7F3DFF).withValues(alpha: 0.12),
+                      overlayColor: const Color(
+                        0xFF7F3DFF,
+                      ).withValues(alpha: 0.12),
                       trackHeight: 6,
                     ),
                     child: Slider(
@@ -350,9 +374,27 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('50%', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF91919F))),
-                        Text('75%', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF91919F))),
-                        Text('100%', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF91919F))),
+                        Text(
+                          '50%',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: const Color(0xFF91919F),
+                          ),
+                        ),
+                        Text(
+                          '75%',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: const Color(0xFF91919F),
+                          ),
+                        ),
+                        Text(
+                          '100%',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: const Color(0xFF91919F),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -414,7 +456,11 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
                       color: Color(0xFFD4F7E5),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.auto_awesome, color: Color(0xFF00A86B), size: 18),
+                    child: const Icon(
+                      Icons.auto_awesome,
+                      color: Color(0xFF00A86B),
+                      size: 18,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

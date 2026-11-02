@@ -32,7 +32,11 @@ class InsightsHomeScreen extends StatefulWidget {
 class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
   final _repo = InsightsRepositoryProvider.current;
   String _selectedPeriod = 'month';
-  DateTime _selectedDate = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  DateTime _selectedDate = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+    1,
+  );
 
   bool _loading = true;
   List<CategorySpend> _categorySpends = [];
@@ -48,7 +52,10 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
 
   Future<void> _loadData() async {
     setState(() => _loading = true);
-    final spends = await _repo.getCategorySpend(period: _selectedPeriod, date: _selectedDate);
+    final spends = await _repo.getCategorySpend(
+      period: _selectedPeriod,
+      date: _selectedDate,
+    );
     await _repo.getInsights();
     final budgets = await _repo.getBudgetEvaluations();
     final recurring = await _repo.getRecurring();
@@ -92,9 +99,9 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
   int get _periodDays {
     if (_selectedPeriod == 'week') return 7;
     if (_selectedPeriod == 'year') {
-      return DateTime(_selectedDate.year + 1)
-          .difference(DateTime(_selectedDate.year))
-          .inDays;
+      return DateTime(
+        _selectedDate.year + 1,
+      ).difference(DateTime(_selectedDate.year)).inDays;
     }
     return DateUtils.getDaysInMonth(_selectedDate.year, _selectedDate.month);
   }
@@ -134,7 +141,11 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
             alignment: Alignment.center,
             children: [
               IconButton(
-                icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF212325), size: 26),
+                icon: const Icon(
+                  Icons.notifications_none_rounded,
+                  color: Color(0xFF212325),
+                  size: 26,
+                ),
                 onPressed: () async {
                   await Navigator.push(
                     context,
@@ -162,13 +173,18 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF7F3DFF)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF7F3DFF)),
+            )
           : RefreshIndicator(
               color: const Color(0xFF7F3DFF),
               onRefresh: _loadData,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -236,7 +252,10 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
@@ -244,7 +263,11 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.arrow_upward_rounded, size: 12, color: Colors.white),
+                    const Icon(
+                      Icons.arrow_upward_rounded,
+                      size: 12,
+                      color: Colors.white,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '${_periodChange.abs().toStringAsFixed(0)}% vs previous',
@@ -316,7 +339,9 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
               onTap: () async {
                 await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const CategoryAnalyticsScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const CategoryAnalyticsScreen(),
+                  ),
                 );
                 _loadData();
               },
@@ -478,7 +503,11 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 6),
-                const Icon(Icons.auto_awesome, size: 18, color: Color(0xFF7F3DFF)),
+                const Icon(
+                  Icons.auto_awesome,
+                  size: 18,
+                  color: Color(0xFF7F3DFF),
+                ),
               ],
             ),
             Text(
@@ -520,17 +549,21 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                 icon: Icons.trending_up_rounded,
                 iconColor: const Color(0xFFFD3C4A),
                 iconBg: const Color(0xFFFFECEF),
-                title: '${'Shopping is over budget for'.tr()} '
+                title:
+                    '${'Shopping is over budget for'.tr()} '
                     '${DateFormat('MMMM').format(_selectedDate)}.',
                 actionText: 'Adjust budget →'.tr(),
                 onTap: () {
-                  final shoppingBudget = _budgets.where(
-                    (b) => b.budget.categoryId == 'Shopping',
-                  ).firstOrNull ?? (_budgets.isNotEmpty ? _budgets.first : null);
+                  final shoppingBudget =
+                      _budgets
+                          .where((b) => b.budget.categoryId == 'Shopping')
+                          .firstOrNull ??
+                      (_budgets.isNotEmpty ? _budgets.first : null);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => BudgetFormScreen(budget: shoppingBudget?.budget),
+                      builder: (_) =>
+                          BudgetFormScreen(budget: shoppingBudget?.budget),
                     ),
                   );
                 },
@@ -540,12 +573,15 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                 icon: Icons.repeat_rounded,
                 iconColor: const Color(0xFF7F3DFF),
                 iconBg: const Color(0xFFEEE5FF),
-                title: '${_recurring.length} ${'subscriptions renew soon'.tr()}.',
+                title:
+                    '${_recurring.length} ${'subscriptions renew soon'.tr()}.',
                 actionText: 'View recurring →'.tr(),
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const RecurringPaymentsScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const RecurringPaymentsScreen(),
+                    ),
                   );
                 },
               ),
@@ -663,7 +699,9 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
               onTap: () async {
                 await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const RecurringPaymentsScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const RecurringPaymentsScreen(),
+                  ),
                 );
                 _loadData();
               },
@@ -779,7 +817,11 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                 color: const Color(0xFF7F3DFF).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(Icons.show_chart_rounded, color: Color(0xFF7F3DFF), size: 24),
+              child: const Icon(
+                Icons.show_chart_rounded,
+                color: Color(0xFF7F3DFF),
+                size: 24,
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(

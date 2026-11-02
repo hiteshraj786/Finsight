@@ -17,13 +17,10 @@ class PaymentOverlayApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        home: const Material(
-          color: Colors.transparent,
-          child: PaymentOverlay(),
-        ),
-      );
+    debugShowCheckedModeBanner: false,
+    theme: AppTheme.lightTheme,
+    home: const Material(color: Colors.transparent, child: PaymentOverlay()),
+  );
 }
 
 class PaymentOverlay extends StatefulWidget {

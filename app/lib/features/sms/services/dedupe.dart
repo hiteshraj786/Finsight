@@ -20,12 +20,14 @@ class TransactionDeduplicator {
     }
 
     // 2. Same amount/type/account/party within a short delivery window.
-    final duplicate = _seenTransactions.any((other) =>
-        other.amountPaise == tx.amountPaise &&
-        other.type == tx.type &&
-        (other.accountLast4 ?? '').trim() == (tx.accountLast4 ?? '').trim() &&
-        other.party.trim().toLowerCase() == tx.party.trim().toLowerCase() &&
-        other.date.difference(tx.date).abs() <= timestampWindow);
+    final duplicate = _seenTransactions.any(
+      (other) =>
+          other.amountPaise == tx.amountPaise &&
+          other.type == tx.type &&
+          (other.accountLast4 ?? '').trim() == (tx.accountLast4 ?? '').trim() &&
+          other.party.trim().toLowerCase() == tx.party.trim().toLowerCase() &&
+          other.date.difference(tx.date).abs() <= timestampWindow,
+    );
     if (duplicate) {
       return true;
     }

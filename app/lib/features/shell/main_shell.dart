@@ -132,7 +132,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
   }
 
   Widget _buildSmsCard(ColorScheme scheme, int pendingCount) {
-    final subtitle = pendingCount > 0 ? '$pendingCount to review' : 'Import from SMS';
+    final subtitle = pendingCount > 0
+        ? '$pendingCount to review'
+        : 'Import from SMS';
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -157,7 +159,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
               color: AppColors.primaryLight,
               borderRadius: BorderRadius.circular(15),
             ),
-            child: const Icon(Icons.sms_rounded, color: AppColors.primary, size: 26),
+            child: const Icon(
+              Icons.sms_rounded,
+              color: AppColors.primary,
+              size: 26,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -178,7 +184,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: pendingCount > 0 ? AppColors.secondary : AppColors.textSecondary,
+                    color: pendingCount > 0
+                        ? AppColors.secondary
+                        : AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -189,7 +197,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.primaryLight,
               foregroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
             ),
             child: Row(
@@ -298,7 +308,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
           final scheme = Theme.of(context).colorScheme;
           return Scaffold(
             body: IndexedStack(
-              key: ValueKey('shell_stack_${LanguageService.current}_${CurrencyService.current}'),
+              key: ValueKey(
+                'shell_stack_${LanguageService.current}_${CurrencyService.current}',
+              ),
               index: _currentIndex,
               children: const [
                 HomeScreen(),
@@ -313,17 +325,30 @@ class _MainShellScreenState extends State<MainShellScreen> {
                 height: 76,
                 decoration: BoxDecoration(
                   color: scheme.surface,
-                  border: Border(
-                    top: BorderSide(color: scheme.outlineVariant),
-                  ),
+                  border: Border(top: BorderSide(color: scheme.outlineVariant)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _navItem(0, Icons.home_rounded, 'Home'.tr(), scheme),
-                    _navItem(1, Icons.receipt_long_outlined, 'Activity'.tr(), scheme),
-                    _navItem(2, Icons.insights_rounded, 'Insights'.tr(), scheme),
-                    _navItem(3, Icons.person_outline_rounded, 'Profile'.tr(), scheme),
+                    _navItem(
+                      1,
+                      Icons.receipt_long_outlined,
+                      'Activity'.tr(),
+                      scheme,
+                    ),
+                    _navItem(
+                      2,
+                      Icons.insights_rounded,
+                      'Insights'.tr(),
+                      scheme,
+                    ),
+                    _navItem(
+                      3,
+                      Icons.person_outline_rounded,
+                      'Profile'.tr(),
+                      scheme,
+                    ),
                   ],
                 ),
               ),

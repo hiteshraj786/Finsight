@@ -34,7 +34,10 @@ class ReviewListScreen extends StatefulWidget {
 class _ReviewListScreenState extends State<ReviewListScreen> {
   bool _hideLowConfidence = true;
 
-  Future<void> _updateStatus(ParsedTransaction tx, TransactionStatus status) async {
+  Future<void> _updateStatus(
+    ParsedTransaction tx,
+    TransactionStatus status,
+  ) async {
     if (tx.id == null) return;
     final oldStatus = tx.status;
     await widget.repository.updateStatus(tx.id!, status);
@@ -65,7 +68,9 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Confirmed ${ids.length} visible transaction(s).')),
+      SnackBar(
+        content: Text('Confirmed ${ids.length} visible transaction(s).'),
+      ),
     );
   }
 
@@ -82,7 +87,10 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
             onPressed: widget.onScanAgain,
           ),
           IconButton(
-            icon: const Icon(Icons.help_outline_rounded, color: AppColors.textSecondary),
+            icon: const Icon(
+              Icons.help_outline_rounded,
+              color: AppColors.textSecondary,
+            ),
             tooltip: 'Unreadable messages',
             onPressed: widget.onOpenUnreadable,
           ),
@@ -106,7 +114,10 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
             children: [
               // Sticky Header Bar: Title, subtitle & status
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 4.0,
+                ),
                 child: Row(
                   children: [
                     Container(
@@ -138,13 +149,21 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                   if (bannerCount <= 0) return const SizedBox.shrink();
 
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 6.0,
+                    ),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primaryContainer,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.primary.withAlpha(64)),
+                        border: Border.all(
+                          color: AppColors.primary.withAlpha(64),
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -169,7 +188,10 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                             onPressed: widget.onShowPopup,
                             style: TextButton.styleFrom(
                               foregroundColor: AppColors.primary,
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
                               minimumSize: Size.zero,
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
@@ -192,11 +214,18 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                 future: widget.repository.getAll(),
                 builder: (context, allSnapshot) {
                   final all = allSnapshot.data ?? [];
-                  final pendingAll = all.where((t) => t.status == TransactionStatus.pending).toList();
-                  final hiddenCount = pendingAll.where((t) => t.lowConfidence).length;
+                  final pendingAll = all
+                      .where((t) => t.status == TransactionStatus.pending)
+                      .toList();
+                  final hiddenCount = pendingAll
+                      .where((t) => t.lowConfidence)
+                      .length;
 
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 2.0,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -232,7 +261,10 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                             alignment: Alignment.centerRight,
                             child: TextButton.icon(
                               onPressed: () => _confirmAllVisible(visible),
-                              icon: const Icon(Icons.done_all_rounded, size: 16),
+                              icon: const Icon(
+                                Icons.done_all_rounded,
+                                size: 16,
+                              ),
                               label: Text(
                                 'Confirm all visible (${visible.length})',
                                 style: const TextStyle(
@@ -243,7 +275,10 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                               ),
                               style: TextButton.styleFrom(
                                 foregroundColor: AppColors.primary,
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
                                 visualDensity: VisualDensity.compact,
                               ),
                             ),
@@ -264,7 +299,8 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                     : ListView.separated(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
                         itemCount: visible.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 8),
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 8),
                         itemBuilder: (context, index) {
                           final tx = visible[index];
                           return TransactionCard(
@@ -278,7 +314,8 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                                 onSaved: () => setState(() {}),
                               );
                             },
-                            onStatusChanged: (status) => _updateStatus(tx, status),
+                            onStatusChanged: (status) =>
+                                _updateStatus(tx, status),
                           );
                         },
                       ),

@@ -37,13 +37,15 @@ class SparklineCardChart extends StatelessWidget {
               isStrokeCapRound: true,
               dotData: FlDotData(
                 show: true,
-                checkToShowDot: (spot, barData) => spot.x == (values.length - 1).toDouble(),
-                getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
-                  radius: 4,
-                  color: Colors.white,
-                  strokeWidth: 2,
-                  strokeColor: const Color(0xFF7F3DFF),
-                ),
+                checkToShowDot: (spot, barData) =>
+                    spot.x == (values.length - 1).toDouble(),
+                getDotPainter: (spot, percent, barData, index) =>
+                    FlDotCirclePainter(
+                      radius: 4,
+                      color: Colors.white,
+                      strokeWidth: 2,
+                      strokeColor: const Color(0xFF7F3DFF),
+                    ),
               ),
               belowBarData: BarAreaData(
                 show: true,

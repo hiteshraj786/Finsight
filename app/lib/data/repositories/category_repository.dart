@@ -18,9 +18,9 @@ class CategoryRepository {
   CategoryRepository({AppDatabase? db}) : _db = db ?? AppDatabase.instance;
 
   Future<List<CategoryDefinition>> getStored() async {
-    final rows = await (_db.select(_db.customCategories)
-          ..orderBy([(category) => OrderingTerm(expression: category.id)]))
-        .get();
+    final rows = await (_db.select(
+      _db.customCategories,
+    )..orderBy([(category) => OrderingTerm(expression: category.id)])).get();
     return rows
         .map(
           (row) => CategoryDefinition(
@@ -41,11 +41,15 @@ class CategoryRepository {
     String keywords = '',
   }) async {
     final clean = await _validateName(name);
-    await _db.into(_db.customCategories).insert(
+    await _db
+        .into(_db.customCategories)
+        .insert(
           CustomCategoriesCompanion.insert(
             name: clean,
             iconKey: Value(iconKey),
-            keywords: Value(CategoryDefinition.parseKeywords(keywords).join(',')),
+            keywords: Value(
+              CategoryDefinition.parseKeywords(keywords).join(','),
+            ),
             createdAt: DateTime.now().toUtc(),
           ),
         );
@@ -63,8 +67,9 @@ class CategoryRepository {
     }
     final clean = await _validateName(name, exceptId: id);
     await _db.transaction(() async {
-      await (_db.update(_db.customCategories)..where((row) => row.id.equals(id)))
-          .write(
+      await (_db.update(
+        _db.customCategories,
+      )..where((row) => row.id.equals(id))).write(
         CustomCategoriesCompanion(
           name: Value(clean),
           iconKey: Value(iconKey),
@@ -72,8 +77,9 @@ class CategoryRepository {
         ),
       );
       if (clean != category.name) {
-        await (_db.update(_db.transactions)
-              ..where((transaction) => transaction.category.equals(category.name)))
+        await (_db.update(_db.transactions)..where(
+              (transaction) => transaction.category.equals(category.name),
+            ))
             .write(TransactionsCompanion(category: Value(clean)));
         await (_db.update(_db.merchantRules)
               ..where((rule) => rule.category.equals(category.name)))
@@ -88,15 +94,18 @@ class CategoryRepository {
       throw const CategoryException('This category cannot be deleted.');
     }
     await _db.transaction(() async {
-      await (_db.delete(_db.customCategories)..where((row) => row.id.equals(id))).go();
-      await (_db.update(_db.transactions)
-            ..where((transaction) => transaction.category.equals(category.name)))
+      await (_db.delete(
+        _db.customCategories,
+      )..where((row) => row.id.equals(id))).go();
+      await (_db.update(
+            _db.transactions,
+          )..where((transaction) => transaction.category.equals(category.name)))
           .write(
-        const TransactionsCompanion(category: Value(uncategorizedCategory)),
-      );
-      await (_db.delete(_db.merchantRules)
-            ..where((rule) => rule.category.equals(category.name)))
-          .go();
+            const TransactionsCompanion(category: Value(uncategorizedCategory)),
+          );
+      await (_db.delete(
+        _db.merchantRules,
+      )..where((rule) => rule.category.equals(category.name))).go();
     });
   }
 
@@ -110,8 +119,10 @@ class CategoryRepository {
       throw const CategoryException('"Uncategorized" is reserved.');
     }
     final existing = await getStored();
-    if (existing.any((item) =>
-        item.id != exceptId && item.name.toLowerCase() == clean.toLowerCase())) {
+    if (existing.any(
+      (item) =>
+          item.id != exceptId && item.name.toLowerCase() == clean.toLowerCase(),
+    )) {
       throw CategoryException('You already have a category called "$clean".');
     }
     return clean;

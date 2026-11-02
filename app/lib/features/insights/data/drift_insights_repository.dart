@@ -15,39 +15,78 @@ import 'insights_repository.dart';
 class DriftInsightsRepository implements InsightsRepository {
   final local.AppDatabase _db;
   final Future<List<FinanceAccount>> Function() _accounts;
-  DriftInsightsRepository({local.AppDatabase? database, Future<List<FinanceAccount>> Function()? accountsLoader})
-      : _db = database ?? local.AppDatabase(), _accounts = accountsLoader ?? FinanceDataService.getCachedAccounts;
+  DriftInsightsRepository({
+    local.AppDatabase? database,
+    Future<List<FinanceAccount>> Function()? accountsLoader,
+  }) : _db = database ?? local.AppDatabase(),
+       _accounts = accountsLoader ?? FinanceDataService.getCachedAccounts;
 
   @override
-  Future<List<InsightTransaction>> confirmedTransactions({DateTime? from, DateTime? to}) async {
-    final query = _db.select(_db.transactions)..where((t) => t.status.equals(TransactionStatus.confirmed.name));
-    if (from != null) query.where((t) => t.date.isBiggerOrEqualValue(from.toUtc()));
+  Future<List<InsightTransaction>> confirmedTransactions({
+    DateTime? from,
+    DateTime? to,
+  }) async {
+    final query = _db.select(_db.transactions)
+      ..where((t) => t.status.equals(TransactionStatus.confirmed.name));
+    if (from != null)
+      query.where((t) => t.date.isBiggerOrEqualValue(from.toUtc()));
     if (to != null) query.where((t) => t.date.isSmallerThanValue(to.toUtc()));
-    return (await query.get()).map((row) => InsightTransaction(
-      id: row.id, amountPaise: row.amountPaise, isDebit: row.type == TransactionType.debit.name,
-      merchant: row.party, normalizedMerchant: row.normalizedParty.isEmpty ? normalizeMerchant(row.party) : row.normalizedParty,
-      category: row.category, occurredAt: row.date.toLocal(),
-    )).toList();
+    return (await query.get())
+        .map(
+          (row) => InsightTransaction(
+            id: row.id,
+            amountPaise: row.amountPaise,
+            isDebit: row.type == TransactionType.debit.name,
+            merchant: row.party,
+            normalizedMerchant: row.normalizedParty.isEmpty
+                ? normalizeMerchant(row.party)
+                : row.normalizedParty,
+            category: row.category,
+            occurredAt: row.date.toLocal(),
+          ),
+        )
+        .toList();
   }
 
   @override
-  Future<List<CategorySpend>> categorySpend(DateTime from, DateTime to) => _aggregate(
-    'category', 'category', from, to).then((rows) => rows.map((row) => CategorySpend(
-      category: row.$1,
-      amountPaise: row.$2,
-      transactionCount: row.$3,
-    )).toList());
+  Future<List<CategorySpend>> categorySpend(DateTime from, DateTime to) =>
+      _aggregate('category', 'category', from, to).then(
+        (rows) => rows
+            .map(
+              (row) => CategorySpend(
+                category: row.$1,
+                amountPaise: row.$2,
+                transactionCount: row.$3,
+              ),
+            )
+            .toList(),
+      );
 
   @override
-  Future<List<MerchantSpend>> topMerchants(DateTime from, DateTime to, {int limit = 10}) async {
-    final rows = await _db.customSelect('''SELECT party AS label, SUM(amount_paise) AS total, COUNT(*) AS count
+  Future<List<MerchantSpend>> topMerchants(
+    DateTime from,
+    DateTime to, {
+    int limit = 10,
+  }) async {
+    final rows = await _db
+        .customSelect(
+          '''SELECT party AS label, SUM(amount_paise) AS total, COUNT(*) AS count
       FROM transactions WHERE status=? AND type=? AND date>=? AND date<?
-      GROUP BY normalized_party, party ORDER BY total DESC LIMIT ?''', variables: [
-      Variable.withString('confirmed'), Variable.withString('debit'), Variable.withDateTime(from.toUtc()),
-      Variable.withDateTime(to.toUtc()), Variable.withInt(limit),
-    ]).get();
+      GROUP BY normalized_party, party ORDER BY total DESC LIMIT ?''',
+          variables: [
+            Variable.withString('confirmed'),
+            Variable.withString('debit'),
+            Variable.withDateTime(from.toUtc()),
+            Variable.withDateTime(to.toUtc()),
+            Variable.withInt(limit),
+          ],
+        )
+        .get();
     var rank = 1;
-    final totalSpend = rows.fold<int>(0, (sum, r) => sum + r.read<int>('total'));
+    final totalSpend = rows.fold<int>(
+      0,
+      (sum, r) => sum + r.read<int>('total'),
+    );
     return rows.map((row) {
       final total = row.read<int>('total');
       final count = row.read<int>('count');
@@ -62,93 +101,273 @@ class DriftInsightsRepository implements InsightsRepository {
     }).toList();
   }
 
-  Future<List<(String, int, int)>> _aggregate(String select, String group, DateTime from, DateTime to) async {
-    final rows = await _db.customSelect('''SELECT $select AS label, SUM(amount_paise) AS total, COUNT(*) AS count
+  Future<List<(String, int, int)>> _aggregate(
+    String select,
+    String group,
+    DateTime from,
+    DateTime to,
+  ) async {
+    final rows = await _db
+        .customSelect(
+          '''SELECT $select AS label, SUM(amount_paise) AS total, COUNT(*) AS count
       FROM transactions WHERE status=? AND type=? AND date>=? AND date<?
-      GROUP BY $group ORDER BY total DESC''', variables: [
-      Variable.withString('confirmed'), Variable.withString('debit'), Variable.withDateTime(from.toUtc()), Variable.withDateTime(to.toUtc()),
-    ]).get();
-    return rows.map((row) => (row.read<String>('label'), row.read<int>('total'), row.read<int>('count'))).toList();
+      GROUP BY $group ORDER BY total DESC''',
+          variables: [
+            Variable.withString('confirmed'),
+            Variable.withString('debit'),
+            Variable.withDateTime(from.toUtc()),
+            Variable.withDateTime(to.toUtc()),
+          ],
+        )
+        .get();
+    return rows
+        .map(
+          (row) => (
+            row.read<String>('label'),
+            row.read<int>('total'),
+            row.read<int>('count'),
+          ),
+        )
+        .toList();
   }
 
   @override
   Future<List<Budget>> getBudgets() async {
-    return (await _rows('SELECT * FROM budgets')).map((r) => Budget(
-      id: r.read<int>('id'), categoryId: r.read<String>('category_id'), limitAmountPaise: r.read<int>('limit_amount'),
-      period: BudgetPeriod.values.byName(r.read<String>('period')), alertThreshold: r.read<double>('alert_threshold'),
-      notifyOnOver: (r.data['notify_on_over'] == 1 || r.data['notify_on_over'] == true), createdAt: _date(r, 'created_at'),
-    )).toList();
+    return (await _rows('SELECT * FROM budgets'))
+        .map(
+          (r) => Budget(
+            id: r.read<int>('id'),
+            categoryId: r.read<String>('category_id'),
+            limitAmountPaise: r.read<int>('limit_amount'),
+            period: BudgetPeriod.values.byName(r.read<String>('period')),
+            alertThreshold: r.read<double>('alert_threshold'),
+            notifyOnOver:
+                (r.data['notify_on_over'] == 1 ||
+                r.data['notify_on_over'] == true),
+            createdAt: _date(r, 'created_at'),
+          ),
+        )
+        .toList();
   }
 
   @override
   Future<int> saveBudget(Budget value) => value.id == null
-      ? _db.customInsert('INSERT INTO budgets (category_id,limit_amount,period,alert_threshold,notify_on_over,created_at) VALUES (?,?,?,?,?,?)',
-          variables: [_s(value.categoryId), _i(value.limitAmountPaise), _s(value.period.name), _d(value.alertThreshold), _b(value.notifyOnOver), _time(value.createdAt)])
-      : _db.customUpdate('UPDATE budgets SET category_id=?,limit_amount=?,period=?,alert_threshold=?,notify_on_over=?,created_at=? WHERE id=?',
-          variables: [_s(value.categoryId), _i(value.limitAmountPaise), _s(value.period.name), _d(value.alertThreshold), _b(value.notifyOnOver), _time(value.createdAt), _i(value.id!)]);
+      ? _db.customInsert(
+          'INSERT INTO budgets (category_id,limit_amount,period,alert_threshold,notify_on_over,created_at) VALUES (?,?,?,?,?,?)',
+          variables: [
+            _s(value.categoryId),
+            _i(value.limitAmountPaise),
+            _s(value.period.name),
+            _d(value.alertThreshold),
+            _b(value.notifyOnOver),
+            _time(value.createdAt),
+          ],
+        )
+      : _db.customUpdate(
+          'UPDATE budgets SET category_id=?,limit_amount=?,period=?,alert_threshold=?,notify_on_over=?,created_at=? WHERE id=?',
+          variables: [
+            _s(value.categoryId),
+            _i(value.limitAmountPaise),
+            _s(value.period.name),
+            _d(value.alertThreshold),
+            _b(value.notifyOnOver),
+            _time(value.createdAt),
+            _i(value.id!),
+          ],
+        );
 
   @override
-  Future<List<RecurringPattern>> getRecurringPatterns() async => (await _rows('SELECT * FROM recurring_patterns')).map((r) => RecurringPattern(
-    id: r.read<int>('id'), merchant: r.read<String>('merchant'), amountPaise: r.read<int>('amount'), intervalDays: r.read<int>('interval_days'),
-    nextExpectedDate: _date(r, 'next_expected_date'), status: RecurringStatus.values.byName(r.read<String>('status')),
-    lastSeenAt: _date(r, 'last_seen_at'), confidence: r.read<double>('confidence'),
-  )).toList();
+  Future<List<RecurringPattern>> getRecurringPatterns() async =>
+      (await _rows('SELECT * FROM recurring_patterns'))
+          .map(
+            (r) => RecurringPattern(
+              id: r.read<int>('id'),
+              merchant: r.read<String>('merchant'),
+              amountPaise: r.read<int>('amount'),
+              intervalDays: r.read<int>('interval_days'),
+              nextExpectedDate: _date(r, 'next_expected_date'),
+              status: RecurringStatus.values.byName(r.read<String>('status')),
+              lastSeenAt: _date(r, 'last_seen_at'),
+              confidence: r.read<double>('confidence'),
+            ),
+          )
+          .toList();
 
   @override
   Future<void> saveDetectedPatterns(Iterable<RecurringPattern> patterns) async {
     for (final value in patterns) {
-      final found = await _rows('SELECT id,status FROM recurring_patterns WHERE merchant=? AND amount=?', [_s(value.merchant), _i(value.amountPaise)]);
-      if (found.isNotEmpty && found.single.read<String>('status') != 'detected') continue;
-      final args = [_s(value.merchant), _i(value.amountPaise), _i(value.intervalDays), _time(value.nextExpectedDate), _s(value.status.name), _time(value.lastSeenAt), _d(value.confidence)];
+      final found = await _rows(
+        'SELECT id,status FROM recurring_patterns WHERE merchant=? AND amount=?',
+        [_s(value.merchant), _i(value.amountPaise)],
+      );
+      if (found.isNotEmpty && found.single.read<String>('status') != 'detected')
+        continue;
+      final args = [
+        _s(value.merchant),
+        _i(value.amountPaise),
+        _i(value.intervalDays),
+        _time(value.nextExpectedDate),
+        _s(value.status.name),
+        _time(value.lastSeenAt),
+        _d(value.confidence),
+      ];
       if (found.isEmpty) {
-        await _db.customInsert('INSERT INTO recurring_patterns (merchant,amount,interval_days,next_expected_date,status,last_seen_at,confidence) VALUES (?,?,?,?,?,?,?)', variables: args);
+        await _db.customInsert(
+          'INSERT INTO recurring_patterns (merchant,amount,interval_days,next_expected_date,status,last_seen_at,confidence) VALUES (?,?,?,?,?,?,?)',
+          variables: args,
+        );
       } else {
-        await _db.customUpdate('UPDATE recurring_patterns SET merchant=?,amount=?,interval_days=?,next_expected_date=?,status=?,last_seen_at=?,confidence=? WHERE id=?', variables: [...args, _i(found.single.read<int>('id'))]);
+        await _db.customUpdate(
+          'UPDATE recurring_patterns SET merchant=?,amount=?,interval_days=?,next_expected_date=?,status=?,last_seen_at=?,confidence=? WHERE id=?',
+          variables: [...args, _i(found.single.read<int>('id'))],
+        );
       }
     }
   }
 
   @override
-  Future<void> setRecurringStatus(int id, RecurringStatus status) => _db.customUpdate('UPDATE recurring_patterns SET status=? WHERE id=?', variables: [_s(status.name), _i(id)]);
+  Future<void> setRecurringStatus(int id, RecurringStatus status) =>
+      _db.customUpdate(
+        'UPDATE recurring_patterns SET status=? WHERE id=?',
+        variables: [_s(status.name), _i(id)],
+      );
 
   @override
   Future<List<SavingsGoal>> getSavingsGoals() async {
-    return (await _rows('SELECT * FROM savings_goals')).map((r) => SavingsGoal(
-      id: r.read<int>('id'), name: r.read<String>('name'), targetAmountPaise: r.read<int>('target_amount'), savedAmountPaise: r.read<int>('saved_amount'),
-      targetDate: _date(r, 'target_date'), createdAt: _date(r, 'created_at'),
-    )).toList();
+    return (await _rows('SELECT * FROM savings_goals'))
+        .map(
+          (r) => SavingsGoal(
+            id: r.read<int>('id'),
+            name: r.read<String>('name'),
+            targetAmountPaise: r.read<int>('target_amount'),
+            savedAmountPaise: r.read<int>('saved_amount'),
+            targetDate: _date(r, 'target_date'),
+            createdAt: _date(r, 'created_at'),
+          ),
+        )
+        .toList();
   }
 
   @override
   Future<int> saveSavingsGoal(SavingsGoal value) => value.id == null
-      ? _db.customInsert('INSERT INTO savings_goals (name,target_amount,saved_amount,target_date,created_at) VALUES (?,?,?,?,?)', variables: [_s(value.name), _i(value.targetAmountPaise), _i(value.savedAmountPaise), _time(value.targetDate), _time(value.createdAt)])
-      : _db.customUpdate('UPDATE savings_goals SET name=?,target_amount=?,saved_amount=?,target_date=?,created_at=? WHERE id=?', variables: [_s(value.name), _i(value.targetAmountPaise), _i(value.savedAmountPaise), _time(value.targetDate), _time(value.createdAt), _i(value.id!)]);
+      ? _db.customInsert(
+          'INSERT INTO savings_goals (name,target_amount,saved_amount,target_date,created_at) VALUES (?,?,?,?,?)',
+          variables: [
+            _s(value.name),
+            _i(value.targetAmountPaise),
+            _i(value.savedAmountPaise),
+            _time(value.targetDate),
+            _time(value.createdAt),
+          ],
+        )
+      : _db.customUpdate(
+          'UPDATE savings_goals SET name=?,target_amount=?,saved_amount=?,target_date=?,created_at=? WHERE id=?',
+          variables: [
+            _s(value.name),
+            _i(value.targetAmountPaise),
+            _i(value.savedAmountPaise),
+            _time(value.targetDate),
+            _time(value.createdAt),
+            _i(value.id!),
+          ],
+        );
 
   @override
-  Future<void> addMoneyToGoal(int id, int amountPaise) => _db.customUpdate('UPDATE savings_goals SET saved_amount=saved_amount+? WHERE id=?', variables: [_i(amountPaise), _i(id)]);
+  Future<void> addMoneyToGoal(int id, int amountPaise) => _db.customUpdate(
+    'UPDATE savings_goals SET saved_amount=saved_amount+? WHERE id=?',
+    variables: [_i(amountPaise), _i(id)],
+  );
 
   @override
-  Future<List<UnusualFlag>> getUnusualFlags({UnusualStatus status = UnusualStatus.open}) async => (await _rows('SELECT * FROM unusual_flags WHERE status=?', [_s(status.name)])).map((r) => UnusualFlag(
-    id: r.read<int>('id'), txnId: r.read<int>('txn_id'), reason: r.read<String>('reason'), status: UnusualStatus.values.byName(r.read<String>('status')), createdAt: _date(r, 'created_at'),
-  )).toList();
+  Future<List<UnusualFlag>> getUnusualFlags({
+    UnusualStatus status = UnusualStatus.open,
+  }) async =>
+      (await _rows('SELECT * FROM unusual_flags WHERE status=?', [
+            _s(status.name),
+          ]))
+          .map(
+            (r) => UnusualFlag(
+              id: r.read<int>('id'),
+              txnId: r.read<int>('txn_id'),
+              reason: r.read<String>('reason'),
+              status: UnusualStatus.values.byName(r.read<String>('status')),
+              createdAt: _date(r, 'created_at'),
+            ),
+          )
+          .toList();
 
   @override
-  Future<void> saveUnusualFlags(Iterable<UnusualFlag> flags) async { for (final flag in flags) { if ((await _rows('SELECT id FROM unusual_flags WHERE txn_id=?', [_i(flag.txnId)])).isEmpty) await _db.customInsert('INSERT INTO unusual_flags (txn_id,reason,status,created_at) VALUES (?,?,?,?)', variables: [_i(flag.txnId), _s(flag.reason), _s(flag.status.name), _time(flag.createdAt)]); } }
-  @override
-  Future<void> setUnusualStatus(int id, UnusualStatus status) => _db.customUpdate('UPDATE unusual_flags SET status=? WHERE id=?', variables: [_s(status.name), _i(id)]);
+  Future<void> saveUnusualFlags(Iterable<UnusualFlag> flags) async {
+    for (final flag in flags) {
+      if ((await _rows('SELECT id FROM unusual_flags WHERE txn_id=?', [
+        _i(flag.txnId),
+      ])).isEmpty)
+        await _db.customInsert(
+          'INSERT INTO unusual_flags (txn_id,reason,status,created_at) VALUES (?,?,?,?)',
+          variables: [
+            _i(flag.txnId),
+            _s(flag.reason),
+            _s(flag.status.name),
+            _time(flag.createdAt),
+          ],
+        );
+    }
+  }
 
   @override
-  Future<List<GeneratedInsight>> getGeneratedInsights({bool unreadOnly = false}) async => (await _rows('SELECT * FROM insights${unreadOnly ? ' WHERE is_read=0' : ''} ORDER BY generated_at DESC')).map((r) => GeneratedInsight(
-    id: r.read<int>('id'),
-    type: r.read<String>('type'), message: r.read<String>('message'), generatedAt: _date(r, 'generated_at'),
-    relatedTransactionIds: (jsonDecode(r.read<String>('related_txn_ids')) as List).whereType<num>().map((n) => n.toInt()).toList(),
-    isRead: r.data['is_read'] == 1 || r.data['is_read'] == true,
-  )).toList();
+  Future<void> setUnusualStatus(int id, UnusualStatus status) =>
+      _db.customUpdate(
+        'UPDATE unusual_flags SET status=? WHERE id=?',
+        variables: [_s(status.name), _i(id)],
+      );
 
   @override
-  Future<void> saveGeneratedInsights(Iterable<GeneratedInsight> values) async { for (final value in values) { if ((await _rows('SELECT id FROM insights WHERE type=? AND message=?', [_s(value.type), _s(value.message)])).isEmpty) await _db.customInsert('INSERT INTO insights (type,message,generated_at,related_txn_ids,is_read) VALUES (?,?,?,?,0)', variables: [_s(value.type), _s(value.message), _time(value.generatedAt), _s(value.relatedTransactionIdsJson)]); } }
+  Future<List<GeneratedInsight>> getGeneratedInsights({
+    bool unreadOnly = false,
+  }) async =>
+      (await _rows(
+            'SELECT * FROM insights${unreadOnly ? ' WHERE is_read=0' : ''} ORDER BY generated_at DESC',
+          ))
+          .map(
+            (r) => GeneratedInsight(
+              id: r.read<int>('id'),
+              type: r.read<String>('type'),
+              message: r.read<String>('message'),
+              generatedAt: _date(r, 'generated_at'),
+              relatedTransactionIds:
+                  (jsonDecode(r.read<String>('related_txn_ids')) as List)
+                      .whereType<num>()
+                      .map((n) => n.toInt())
+                      .toList(),
+              isRead: r.data['is_read'] == 1 || r.data['is_read'] == true,
+            ),
+          )
+          .toList();
+
   @override
-  Future<void> markInsightRead(int id) => _db.customUpdate('UPDATE insights SET is_read=1 WHERE id=?', variables: [_i(id)]);
+  Future<void> saveGeneratedInsights(Iterable<GeneratedInsight> values) async {
+    for (final value in values) {
+      if ((await _rows('SELECT id FROM insights WHERE type=? AND message=?', [
+        _s(value.type),
+        _s(value.message),
+      ])).isEmpty)
+        await _db.customInsert(
+          'INSERT INTO insights (type,message,generated_at,related_txn_ids,is_read) VALUES (?,?,?,?,0)',
+          variables: [
+            _s(value.type),
+            _s(value.message),
+            _time(value.generatedAt),
+            _s(value.relatedTransactionIdsJson),
+          ],
+        );
+    }
+  }
+
+  @override
+  Future<void> markInsightRead(int id) => _db.customUpdate(
+    'UPDATE insights SET is_read=1 WHERE id=?',
+    variables: [_i(id)],
+  );
 
   @override
   Future<List<RecurringPattern>> getRecurring() async {
@@ -165,10 +384,12 @@ class DriftInsightsRepository implements InsightsRepository {
   }
 
   @override
-  Future<void> confirmRecurring(int id) => setRecurringStatus(id, RecurringStatus.confirmed);
+  Future<void> confirmRecurring(int id) =>
+      setRecurringStatus(id, RecurringStatus.confirmed);
 
   @override
-  Future<void> ignoreRecurring(int id) => setRecurringStatus(id, RecurringStatus.ignored);
+  Future<void> ignoreRecurring(int id) =>
+      setRecurringStatus(id, RecurringStatus.ignored);
 
   @override
   Future<int> addGoal(SavingsGoal goal) => saveSavingsGoal(goal);
@@ -188,7 +409,8 @@ class DriftInsightsRepository implements InsightsRepository {
   }
 
   @override
-  Future<void> dismissUnusual(int id) => setUnusualStatus(id, UnusualStatus.dismissed);
+  Future<void> dismissUnusual(int id) =>
+      setUnusualStatus(id, UnusualStatus.dismissed);
 
   @override
   Future<List<GeneratedInsight>> getInsights() async {
@@ -197,13 +419,23 @@ class DriftInsightsRepository implements InsightsRepository {
       final budgetEvals = await getBudgetEvaluations();
       final recurring = await getRecurringPatterns();
       final now = DateTime.now();
-      final currentSpends = await categorySpend(DateTime(now.year, now.month), DateTime(now.year, now.month + 1));
-      final prevSpends = await categorySpend(DateTime(now.year, now.month - 1), DateTime(now.year, now.month));
+      final currentSpends = await categorySpend(
+        DateTime(now.year, now.month),
+        DateTime(now.year, now.month + 1),
+      );
+      final prevSpends = await categorySpend(
+        DateTime(now.year, now.month - 1),
+        DateTime(now.year, now.month),
+      );
       final generated = InsightGenerator(clock: DateTime.now).generate(
         budgets: budgetEvals,
         recurring: recurring,
-        currentCategorySpend: {for (final c in currentSpends) c.category: c.amountPaise},
-        previousCategorySpend: {for (final p in prevSpends) p.category: p.amountPaise},
+        currentCategorySpend: {
+          for (final c in currentSpends) c.category: c.amountPaise,
+        },
+        previousCategorySpend: {
+          for (final p in prevSpends) p.category: p.amountPaise,
+        },
       );
       if (generated.isNotEmpty) {
         await saveGeneratedInsights(generated);
@@ -217,7 +449,10 @@ class DriftInsightsRepository implements InsightsRepository {
   Future<List<BudgetEvaluation>> getBudgetEvaluations() async {
     final budgets = await getBudgets();
     final txns = await confirmedTransactions();
-    return [for (final b in budgets) BudgetEngine(clock: DateTime.now).evaluate(b, txns)];
+    return [
+      for (final b in budgets)
+        BudgetEngine(clock: DateTime.now).evaluate(b, txns),
+    ];
   }
 
   @override
@@ -226,12 +461,10 @@ class DriftInsightsRepository implements InsightsRepository {
     final now = DateTime.now();
     final monthStart = DateTime(now.year, now.month);
     final nextMonth = DateTime(now.year, now.month + 1);
-    final contribution = (await confirmedTransactions(
-      from: monthStart,
-      to: nextMonth,
-    ))
-        .where((transaction) => !transaction.isDebit)
-        .fold<int>(0, (sum, transaction) => sum + transaction.amountPaise);
+    final contribution =
+        (await confirmedTransactions(from: monthStart, to: nextMonth))
+            .where((transaction) => !transaction.isDebit)
+            .fold<int>(0, (sum, transaction) => sum + transaction.amountPaise);
     return [
       for (final g in goals)
         SavingsGoalEngine(clock: DateTime.now).evaluate(g, contribution),
@@ -239,7 +472,10 @@ class DriftInsightsRepository implements InsightsRepository {
   }
 
   @override
-  Future<List<CategorySpend>> getCategorySpend({String period = 'month', DateTime? date}) async {
+  Future<List<CategorySpend>> getCategorySpend({
+    String period = 'month',
+    DateTime? date,
+  }) async {
     final selected = date ?? DateTime.now();
     final (start, end) = _periodRange(period, selected);
     final (previousStart, previousEnd) = _previousPeriodRange(period, selected);
@@ -253,7 +489,9 @@ class DriftInsightsRepository implements InsightsRepository {
       final item = currentMap[category];
       final prev = prevMap[category];
       final amount = item?.amountPaise ?? 0;
-      final change = prev != null && prev > 0 ? ((amount - prev) / prev * 100) : null;
+      final change = prev != null && prev > 0
+          ? ((amount - prev) / prev * 100)
+          : null;
       final share = total > 0 ? (amount / total * 100) : 0.0;
       return CategorySpend(
         category: category,
@@ -282,29 +520,38 @@ class DriftInsightsRepository implements InsightsRepository {
   @override
   Future<List<AlertItem>> getAlerts({String filter = 'all'}) async {
     final list = await getGeneratedInsights();
-    final alerts = list.map((g) => AlertItem(
-      id: g.id ?? g.message.hashCode.abs(),
-      type: g.type.startsWith('budget')
-          ? AlertType.budget
-          : (g.type.startsWith('recurring')
-              ? AlertType.recurring
-              : (g.type.startsWith('unusual')
-                  ? AlertType.unusual
-                  : (g.type.startsWith('goal') ? AlertType.goal : AlertType.trend))),
-      title: g.message,
-      subtitle: 'FinSight insight',
-      timeAgo: 'Recently',
-      isRead: g.isRead,
-    )).toList();
+    final alerts = list
+        .map(
+          (g) => AlertItem(
+            id: g.id ?? g.message.hashCode.abs(),
+            type: g.type.startsWith('budget')
+                ? AlertType.budget
+                : (g.type.startsWith('recurring')
+                      ? AlertType.recurring
+                      : (g.type.startsWith('unusual')
+                            ? AlertType.unusual
+                            : (g.type.startsWith('goal')
+                                  ? AlertType.goal
+                                  : AlertType.trend))),
+            title: g.message,
+            subtitle: 'FinSight insight',
+            timeAgo: 'Recently',
+            isRead: g.isRead,
+          ),
+        )
+        .toList();
 
     if (alerts.isEmpty) {
-      alerts.add(const AlertItem(
-        id: 1,
-        type: AlertType.trend,
-        title: 'FinSight smart detection is active',
-        subtitle: 'Monitoring incoming bank SMS for budgets & recurring bills',
-        timeAgo: 'Just now',
-      ));
+      alerts.add(
+        const AlertItem(
+          id: 1,
+          type: AlertType.trend,
+          title: 'FinSight smart detection is active',
+          subtitle:
+              'Monitoring incoming bank SMS for budgets & recurring bills',
+          timeAgo: 'Just now',
+        ),
+      );
     }
 
     final normalizedFilter = filter == 'budgets' ? 'budget' : filter;
@@ -326,7 +573,10 @@ class DriftInsightsRepository implements InsightsRepository {
   }
 
   @override
-  Future<List<InsightTransaction>> searchTransactions({TransactionFilter? filter, String? query}) async {
+  Future<List<InsightTransaction>> searchTransactions({
+    TransactionFilter? filter,
+    String? query,
+  }) async {
     DateTime? from;
     DateTime? to;
     if (filter != null) {
@@ -354,21 +604,32 @@ class DriftInsightsRepository implements InsightsRepository {
     var list = await confirmedTransactions(from: from, to: to);
     if (query != null && query.trim().isNotEmpty) {
       final q = query.toLowerCase().trim();
-      list = list.where((t) =>
-        t.merchant.toLowerCase().contains(q) ||
-        t.category.toLowerCase().contains(q) ||
-        (t.subtitle?.toLowerCase().contains(q) ?? false)
-      ).toList();
+      list = list
+          .where(
+            (t) =>
+                t.merchant.toLowerCase().contains(q) ||
+                t.category.toLowerCase().contains(q) ||
+                (t.subtitle?.toLowerCase().contains(q) ?? false),
+          )
+          .toList();
     }
     if (filter != null) {
       if (filter.categories.isNotEmpty) {
-        list = list.where((t) => filter.categories.contains(t.category)).toList();
+        list = list
+            .where((t) => filter.categories.contains(t.category))
+            .toList();
       }
       if (filter.merchants.isNotEmpty) {
-        list = list.where((t) => filter.merchants.contains(t.merchant)).toList();
+        list = list
+            .where((t) => filter.merchants.contains(t.merchant))
+            .toList();
       }
       if (filter.accounts.isNotEmpty) {
-        list = list.where((t) => t.account != null && filter.accounts.contains(t.account)).toList();
+        list = list
+            .where(
+              (t) => t.account != null && filter.accounts.contains(t.account),
+            )
+            .toList();
       }
       if (filter.transactionType == 'debit') {
         list = list.where((t) => t.isDebit).toList();
@@ -383,29 +644,43 @@ class DriftInsightsRepository implements InsightsRepository {
   Future<int> currentCashBalancePaise() async {
     final accounts = await _accounts();
     final depositAccounts = accounts.where((a) => a.isDepositAccount);
-    final totalRupees = depositAccounts.fold<double>(0.0, (sum, a) => sum + (a.latestBalance ?? 0.0));
+    final totalRupees = depositAccounts.fold<double>(
+      0.0,
+      (sum, a) => sum + (a.latestBalance ?? 0.0),
+    );
     return (totalRupees * 100).round();
   }
 
   @override
-  Future<List<MerchantStat>> getTopMerchants({String period = 'month', String sortBy = 'amount'}) async {
+  Future<List<MerchantStat>> getTopMerchants({
+    String period = 'month',
+    String sortBy = 'amount',
+  }) async {
     final (from, to) = _periodRange(period, DateTime.now());
     final merchants = await topMerchants(from, to, limit: 20);
     if (sortBy == 'count') {
-      merchants.sort((a, b) => b.transactionCount.compareTo(a.transactionCount));
+      merchants.sort(
+        (a, b) => b.transactionCount.compareTo(a.transactionCount),
+      );
     } else {
       merchants.sort((a, b) => b.amountPaise.compareTo(a.amountPaise));
     }
     return merchants;
   }
 
-  Future<List<QueryRow>> _rows(String sql, [List<Variable> variables = const []]) => _db.customSelect(sql, variables: variables).get();
+  Future<List<QueryRow>> _rows(
+    String sql, [
+    List<Variable> variables = const [],
+  ]) => _db.customSelect(sql, variables: variables).get();
 
   DateTime _date(QueryRow row, String column) {
     final val = row.data[column];
     if (val is int) {
       if (val < 10000000000) {
-        return DateTime.fromMillisecondsSinceEpoch(val * 1000, isUtc: true).toLocal();
+        return DateTime.fromMillisecondsSinceEpoch(
+          val * 1000,
+          isUtc: true,
+        ).toLocal();
       }
       return DateTime.fromMillisecondsSinceEpoch(val, isUtc: true).toLocal();
     } else if (val is String) {
@@ -420,7 +695,8 @@ class DriftInsightsRepository implements InsightsRepository {
   Variable<int> _i(int value) => Variable.withInt(value);
   Variable<double> _d(double value) => Variable.withReal(value);
   Variable<int> _b(bool value) => Variable.withInt(value ? 1 : 0);
-  Variable<int> _time(DateTime value) => Variable.withInt(value.toUtc().millisecondsSinceEpoch);
+  Variable<int> _time(DateTime value) =>
+      Variable.withInt(value.toUtc().millisecondsSinceEpoch);
 
   (DateTime, DateTime) _periodRange(String period, DateTime selected) {
     final day = DateTime(selected.year, selected.month, selected.day);
@@ -432,7 +708,10 @@ class DriftInsightsRepository implements InsightsRepository {
         return (DateTime(day.year), DateTime(day.year + 1));
       case 'month':
       default:
-        return (DateTime(day.year, day.month), DateTime(day.year, day.month + 1));
+        return (
+          DateTime(day.year, day.month),
+          DateTime(day.year, day.month + 1),
+        );
     }
   }
 
@@ -446,7 +725,10 @@ class DriftInsightsRepository implements InsightsRepository {
         return (DateTime(day.year - 1), DateTime(day.year));
       case 'month':
       default:
-        return (DateTime(day.year, day.month - 1), DateTime(day.year, day.month));
+        return (
+          DateTime(day.year, day.month - 1),
+          DateTime(day.year, day.month),
+        );
     }
   }
 }

@@ -37,13 +37,19 @@ class _CustomDonutChartState extends State<CustomDonutChart> {
               height: widget.size * 0.76,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFF1F1FA), width: widget.size * 0.12),
+                border: Border.all(
+                  color: const Color(0xFFF1F1FA),
+                  width: widget.size * 0.12,
+                ),
               ),
             ),
             if (widget.centerWidget != null)
               widget.centerWidget!
             else
-              const Text('No spend yet', style: TextStyle(color: Color(0xFF91919F), fontSize: 13)),
+              const Text(
+                'No spend yet',
+                style: TextStyle(color: Color(0xFF91919F), fontSize: 13),
+              ),
           ],
         ),
       );
@@ -66,7 +72,8 @@ class _CustomDonutChartState extends State<CustomDonutChart> {
                       _touchedIndex = -1;
                       return;
                     }
-                    _touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                    _touchedIndex =
+                        pieTouchResponse.touchedSection!.touchedSectionIndex;
                   });
                 },
               ),
@@ -76,7 +83,9 @@ class _CustomDonutChartState extends State<CustomDonutChart> {
               sections: List.generate(widget.items.length, (i) {
                 final item = widget.items[i];
                 final isTouched = i == _touchedIndex;
-                final radius = isTouched ? widget.size * 0.16 : widget.size * 0.13;
+                final radius = isTouched
+                    ? widget.size * 0.16
+                    : widget.size * 0.13;
                 final color = CategoryColors.forCategory(item.category);
 
                 return PieChartSectionData(

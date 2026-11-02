@@ -89,13 +89,21 @@ class ImportCompleteScreen extends StatelessWidget {
                           value: '$newCount',
                           valueColor: AppColors.primary,
                         ),
-                        Container(width: 1, height: 36, color: AppColors.border),
+                        Container(
+                          width: 1,
+                          height: 36,
+                          color: AppColors.border,
+                        ),
                         StatCounter(
                           label: 'Already saved',
                           value: '$alreadySavedCount',
                           valueColor: AppColors.textSecondary,
                         ),
-                        Container(width: 1, height: 36, color: AppColors.border),
+                        Container(
+                          width: 1,
+                          height: 36,
+                          color: AppColors.border,
+                        ),
                         StatCounter(
                           label: 'Low confidence',
                           value: '$lowConfidenceCount',
@@ -138,4 +146,3 @@ class ImportCompleteScreen extends StatelessWidget {
     );
   }
 }
-

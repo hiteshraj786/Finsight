@@ -71,20 +71,29 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                 child: Container(
                   width: 40,
                   height: 4,
-                  decoration: BoxDecoration(color: const Color(0xFFE0E0E0), borderRadius: BorderRadius.circular(2)),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE0E0E0),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
               const SizedBox(height: 18),
               Text(
                 'Add savings goal',
-                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: const Color(0xFF212325)),
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF212325),
+                ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: nameCtrl,
                 decoration: InputDecoration(
                   labelText: 'Goal name (e.g. Goa trip)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -92,8 +101,11 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                 controller: targetCtrl,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: 'Target amount (${CurrencyService.symbolFor(CurrencyService.current)})',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                  labelText:
+                      'Target amount (${CurrencyService.symbolFor(CurrencyService.current)})',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -101,8 +113,11 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                 controller: savedCtrl,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: 'Already saved (${CurrencyService.symbolFor(CurrencyService.current)})',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                  labelText:
+                      'Already saved (${CurrencyService.symbolFor(CurrencyService.current)})',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -115,25 +130,35 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                     final target = int.tryParse(targetCtrl.text.trim()) ?? 0;
                     final saved = int.tryParse(savedCtrl.text.trim()) ?? 0;
                     if (name.isNotEmpty && target > 0) {
-                      await _repo.addGoal(SavingsGoal(
-                        name: name,
-                        targetAmountPaise: target * 100,
-                        savedAmountPaise: saved * 100,
-                        targetDate: DateTime.now().add(const Duration(days: 90)),
-                        createdAt: DateTime.now(),
-                      ));
+                      await _repo.addGoal(
+                        SavingsGoal(
+                          name: name,
+                          targetAmountPaise: target * 100,
+                          savedAmountPaise: saved * 100,
+                          targetDate: DateTime.now().add(
+                            const Duration(days: 90),
+                          ),
+                          createdAt: DateTime.now(),
+                        ),
+                      );
                       if (ctx.mounted) Navigator.pop(ctx);
                       _loadData();
                     }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF7F3DFF),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     elevation: 0,
                   ),
                   child: Text(
                     'Save goal',
-                    style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white),
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -166,27 +191,40 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                 child: Container(
                   width: 40,
                   height: 4,
-                  decoration: BoxDecoration(color: const Color(0xFFE0E0E0), borderRadius: BorderRadius.circular(2)),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE0E0E0),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
               const SizedBox(height: 18),
               Text(
                 'Add money to ${goal.name}',
-                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: const Color(0xFF212325)),
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF212325),
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Current progress: ${CurrencyFormatter.formatPaise(goal.savedAmountPaise)} / ${CurrencyFormatter.formatPaise(goal.targetAmountPaise)}',
-                style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF91919F)),
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: const Color(0xFF91919F),
+                ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: amountCtrl,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  prefixText: '${CurrencyService.symbolFor(CurrencyService.current)} ',
+                  prefixText:
+                      '${CurrencyService.symbolFor(CurrencyService.current)} ',
                   labelText: 'Amount to add',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -204,12 +242,18 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF7F3DFF),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     elevation: 0,
                   ),
                   child: Text(
                     'Add money',
-                    style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white),
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -244,7 +288,9 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
         centerTitle: true,
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF7F3DFF)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF7F3DFF)),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Column(
@@ -271,7 +317,10 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
@@ -290,7 +339,11 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                                   const SizedBox(width: 6),
                                   Text(
                                     'across ${_evaluations.length} goals',
-                                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -327,8 +380,12 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                           child: LinearProgressIndicator(
                             value: _overallProgress.clamp(0.0, 1.0),
                             minHeight: 8,
-                            backgroundColor: Colors.white.withValues(alpha: 0.25),
-                            valueColor: const AlwaysStoppedAnimation(Color(0xFF00A86B)),
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.25,
+                            ),
+                            valueColor: const AlwaysStoppedAnimation(
+                              Color(0xFF00A86B),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -337,17 +394,28 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                           children: [
                             Row(
                               children: [
-                                const Icon(Icons.trending_up, size: 14, color: Color(0xFF00A86B)),
+                                const Icon(
+                                  Icons.trending_up,
+                                  size: 14,
+                                  color: Color(0xFF00A86B),
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Overall pace',
-                                  style: GoogleFonts.inter(fontSize: 12, color: Colors.white.withValues(alpha: 0.85)),
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: Colors.white.withValues(alpha: 0.85),
+                                  ),
                                 ),
                               ],
                             ),
                             Text(
                               '$pct% completed',
-                              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
                             ),
                           ],
                         ),
@@ -378,14 +446,21 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF1F1FA),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
                                 '${_evaluations.length} active',
-                                style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF91919F)),
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF91919F),
+                                ),
                               ),
                             ),
                           ],
@@ -394,7 +469,11 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                       const SizedBox(width: 8),
                       Text(
                         'Sort by date ⌵',
-                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF7F3DFF)),
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF7F3DFF),
+                        ),
                       ),
                     ],
                   ),
@@ -407,7 +486,10 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 36),
                         child: Text(
                           'No savings goals created yet. Tap + to add one!',
-                          style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF91919F)),
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: const Color(0xFF91919F),
+                          ),
                         ),
                       ),
                     )
@@ -442,7 +524,11 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                             color: Color(0xFFEEE5FF),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.lightbulb_outline_rounded, color: Color(0xFF7F3DFF), size: 18),
+                          child: const Icon(
+                            Icons.lightbulb_outline_rounded,
+                            color: Color(0xFF7F3DFF),
+                            size: 18,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -509,7 +595,9 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
   Widget _buildGoalCard(SavingsGoalEvaluation item) {
     final pct = (item.progress * 100).round();
     final isBehind = !item.onTrack;
-    final ringColor = isBehind ? const Color(0xFFFCAC12) : const Color(0xFF7F3DFF);
+    final ringColor = isBehind
+        ? const Color(0xFFFCAC12)
+        : const Color(0xFF7F3DFF);
 
     return InkWell(
       onTap: () => _showAddMoneySheet(item.goal),
@@ -579,9 +667,15 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                           ),
                           const SizedBox(width: 8),
                           StatusChip(
-                            label: item.onTrack ? 'On track' : 'Slightly behind',
-                            kind: item.onTrack ? StatusChipKind.onTrack : StatusChipKind.nearLimit,
-                            icon: item.onTrack ? Icons.check_circle_rounded : Icons.warning_amber_rounded,
+                            label: item.onTrack
+                                ? 'On track'
+                                : 'Slightly behind',
+                            kind: item.onTrack
+                                ? StatusChipKind.onTrack
+                                : StatusChipKind.nearLimit,
+                            icon: item.onTrack
+                                ? Icons.check_circle_rounded
+                                : Icons.warning_amber_rounded,
                           ),
                         ],
                       ),
@@ -601,14 +695,20 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
             const SizedBox(height: 12),
             RichText(
               text: TextSpan(
-                style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF212325)),
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: const Color(0xFF212325),
+                ),
                 children: [
                   TextSpan(
-                    text: CurrencyFormatter.formatPaise(item.goal.savedAmountPaise),
+                    text: CurrencyFormatter.formatPaise(
+                      item.goal.savedAmountPaise,
+                    ),
                     style: GoogleFonts.inter(fontWeight: FontWeight.w700),
                   ),
                   TextSpan(
-                    text: ' of ${CurrencyFormatter.formatPaise(item.goal.targetAmountPaise)}',
+                    text:
+                        ' of ${CurrencyFormatter.formatPaise(item.goal.targetAmountPaise)}',
                     style: GoogleFonts.inter(color: const Color(0xFF91919F)),
                   ),
                 ],
@@ -624,7 +724,11 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.calendar_today_outlined, size: 12, color: Color(0xFF7F3DFF)),
+                  const Icon(
+                    Icons.calendar_today_outlined,
+                    size: 12,
+                    color: Color(0xFF7F3DFF),
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     'needs ${CurrencyFormatter.formatPaise(item.neededPerMonthPaise)} / month · Tap to add money',

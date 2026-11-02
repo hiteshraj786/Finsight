@@ -73,7 +73,9 @@ class _NewTransactionPopupSheetState extends State<NewTransactionPopupSheet> {
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.cardRadius)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppTheme.cardRadius),
+        ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: SafeArea(
@@ -97,7 +99,10 @@ class _NewTransactionPopupSheetState extends State<NewTransactionPopupSheet> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primaryContainer,
                     borderRadius: BorderRadius.circular(AppTheme.pillRadius),
@@ -105,7 +110,11 @@ class _NewTransactionPopupSheetState extends State<NewTransactionPopupSheet> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: const [
-                      Icon(Icons.flash_on_rounded, size: 12, color: AppColors.primary),
+                      Icon(
+                        Icons.flash_on_rounded,
+                        size: 12,
+                        color: AppColors.primary,
+                      ),
                       SizedBox(width: 4),
                       Text(
                         'New transaction detected',
@@ -188,11 +197,19 @@ class _NewTransactionPopupSheetState extends State<NewTransactionPopupSheet> {
                     onTap: () => setState(() => _showFullGrid = true),
                     borderRadius: BorderRadius.circular(AppTheme.pillRadius),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(AppTheme.pillRadius),
-                        border: Border.all(color: AppColors.borderLight, width: 1),
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.pillRadius,
+                        ),
+                        border: Border.all(
+                          color: AppColors.borderLight,
+                          width: 1,
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -238,7 +255,9 @@ class _NewTransactionPopupSheetState extends State<NewTransactionPopupSheet> {
                             : AppColors.surfaceContainer,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isSelected ? AppColors.primary : Colors.transparent,
+                          color: isSelected
+                              ? AppColors.primary
+                              : Colors.transparent,
                           width: 1.5,
                         ),
                       ),
@@ -253,7 +272,9 @@ class _NewTransactionPopupSheetState extends State<NewTransactionPopupSheet> {
                             backgroundColor: isSelected
                                 ? AppColors.primary
                                 : AppColors.border,
-                            iconColor: isSelected ? Colors.white : AppColors.textSecondary,
+                            iconColor: isSelected
+                                ? Colors.white
+                                : AppColors.textSecondary,
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -263,8 +284,12 @@ class _NewTransactionPopupSheetState extends State<NewTransactionPopupSheet> {
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 11,
-                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                              color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.textPrimary,
                             ),
                           ),
                         ],

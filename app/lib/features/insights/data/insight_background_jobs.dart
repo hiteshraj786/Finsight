@@ -21,10 +21,7 @@ void insightWorkmanagerDispatcher() {
     try {
       if (task == _dailyTask) {
         await runner.runDaily();
-        await runner.runDigest(
-          window: const Duration(days: 1),
-          label: 'Daily',
-        );
+        await runner.runDigest(window: const Duration(days: 1), label: 'Daily');
       } else if (task == _periodicTask) {
         await runner.runPeriodicInsights();
       } else if (task == _weeklyDigestTask) {
@@ -50,7 +47,10 @@ void insightWorkmanagerDispatcher() {
 
 class InsightBackgroundJobs {
   static Future<void> initializeAndSchedule() async {
-    await Workmanager().initialize(insightWorkmanagerDispatcher, isInDebugMode: kDebugMode);
+    await Workmanager().initialize(
+      insightWorkmanagerDispatcher,
+      isInDebugMode: kDebugMode,
+    );
     await Workmanager().registerPeriodicTask(
       _dailyTask,
       _dailyTask,

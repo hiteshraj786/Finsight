@@ -65,4 +65,3 @@ class StatCounter extends StatelessWidget {
     );
   }
 }
-
