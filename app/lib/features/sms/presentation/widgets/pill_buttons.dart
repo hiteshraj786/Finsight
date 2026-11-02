@@ -88,7 +88,7 @@ class SecondaryPillButton extends StatelessWidget {
               onPressed: onPressed,
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.primary,
-                side: const BorderSide(color: AppColors.border, width: 1.5),
+                side: BorderSide(color: AppColors.border, width: 1.5),
                 shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(horizontal: 24),
               ),

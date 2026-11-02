@@ -1,46 +1,60 @@
 import 'package:flutter/material.dart';
+import 'dart:ui' show PlatformDispatcher;
+
+import '../../../../core/theme/app_theme.dart' as core;
 
 class AppColors {
   AppColors._();
 
+  static bool get isDark => switch (core.AppTheme.themeMode.value) {
+    ThemeMode.dark => true,
+    ThemeMode.light => false,
+    ThemeMode.system =>
+      PlatformDispatcher.instance.platformBrightness == Brightness.dark,
+  };
+
+  static Color _pick(Color light, Color dark) => isDark ? dark : light;
+
   // Brand
-  static const Color primary = Color(0xFF7F3DFF);
-  static const Color primaryDark = Color(0xFF660FE6);
-  static const Color primaryContainer = Color(0xFFEEE5FF);
-  static const Color accentGold = Color(0xFFFCAC12);
-  static const Color accentGoldLight = Color(0xFFFEF4E4);
+  static Color get primary => _pick(const Color(0xFF7F3DFF), const Color(0xFFA475FF));
+  static Color get primaryDark => _pick(const Color(0xFF660FE6), const Color(0xFF8B5CF6));
+  static Color get primaryContainer => _pick(const Color(0xFFEEE5FF), const Color(0xFF2E2347));
+  static Color get accentGold => _pick(const Color(0xFFFCAC12), const Color(0xFFFFC04D));
+  static Color get accentGoldLight => _pick(const Color(0xFFFEF4E4), const Color(0xFF3A2E14));
 
   // Surfaces & Backgrounds
-  static const Color background = Color(0xFFFBF9FE);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceContainer = Color(0xFFF5F3F8);
+  static Color get background => _pick(const Color(0xFFFBF9FE), const Color(0xFF15121B));
+  static Color get surface => _pick(const Color(0xFFFFFFFF), const Color(0xFF1F1B26));
+  static Color get surfaceContainer => _pick(const Color(0xFFF5F3F8), const Color(0xFF2A2633));
 
   // Borders & Dividers
-  static const Color border = Color(0xFFF0ECFC);
-  static const Color borderLight = Color(0xFFE9E3F8);
+  static Color get border => _pick(const Color(0xFFF0ECFC), const Color(0xFF2F2A3A));
+  static Color get borderLight => _pick(const Color(0xFFE9E3F8), const Color(0xFF3B3548));
 
   // Transaction Dynamics
-  static const Color debit = Color(0xFFFD3C4A);
-  static const Color debitLight = Color(0xFFFFF1F2);
-  static const Color credit = Color(0xFF00A86B);
-  static const Color creditLight = Color(0xFFE6F7F0);
+  static Color get debit => _pick(const Color(0xFFFD3C4A), const Color(0xFFFF6B76));
+  static Color get debitLight => _pick(const Color(0xFFFFF1F2), const Color(0xFF3A1D22));
+  static Color get credit => _pick(const Color(0xFF00A86B), const Color(0xFF3DD69C));
+  static Color get creditLight => _pick(const Color(0xFFE6F7F0), const Color(0xFF15302A));
 
   // Status & Badges
-  static const Color pendingText = Color(0xFFFCAC12);
-  static const Color pendingBg = Color(0xFFFEF4E4);
-  static const Color needsCheckText = Color(0xFFFCAC12);
-  static const Color needsCheckBg = Color(0xFFFEF4E4);
-  static const Color confirmedText = Color(0xFF00A86B);
-  static const Color confirmedBg = Color(0xFFE6F7F0);
-  static const Color ignoredText = Color(0xFF91919F);
-  static const Color ignoredBg = Color(0xFFF1F1F3);
-  static const Color autoTagText = Color(0xFF7F3DFF);
-  static const Color autoTagBg = Color(0xFFEEE5FF);
+  static Color get pendingText => accentGold;
+  static Color get pendingBg => accentGoldLight;
+  static Color get needsCheckText => accentGold;
+  static Color get needsCheckBg => accentGoldLight;
+  static Color get confirmedText => credit;
+  static Color get confirmedBg => creditLight;
+  static Color get ignoredText => _pick(const Color(0xFF91919F), const Color(0xFF9A98A8));
+  static Color get ignoredBg => _pick(const Color(0xFFF1F1F3), const Color(0xFF2A2830));
+  static Color get autoTagText => primary;
+  static Color get autoTagBg => primaryContainer;
 
   // Typography Colors
-  static const Color textPrimary = Color(0xFF1B1B1F);
-  static const Color textSecondary = Color(0xFF6C6A7B);
-  static const Color textMuted = Color(0xFF91919F);
+  static Color get textPrimary => _pick(const Color(0xFF1B1B1F), const Color(0xFFF2F0F7));
+  static Color get textSecondary => _pick(const Color(0xFF6C6A7B), const Color(0xFFB4B1C2));
+  static Color get textMuted => _pick(const Color(0xFF91919F), const Color(0xFF8A8799));
+
+  static void rebuildOnThemeChange(BuildContext context) => Theme.of(context);
 }
 
 class AppTheme {
@@ -49,13 +63,30 @@ class AppTheme {
   static const double cardRadius = 20.0;
   static const double pillRadius = 9999.0;
 
+  static ThemeData get current {
+    final brightness = AppColors.isDark ? Brightness.dark : Brightness.light;
+    return lightTheme.copyWith(
+      brightness: brightness,
+      scaffoldBackgroundColor: AppColors.background,
+      canvasColor: AppColors.surface,
+      colorScheme: lightTheme.colorScheme.copyWith(
+        brightness: brightness,
+        primary: AppColors.primary,
+        primaryContainer: AppColors.primaryContainer,
+        surface: AppColors.surface,
+        onSurface: AppColors.textPrimary,
+        onSurfaceVariant: AppColors.textSecondary,
+      ),
+    );
+  }
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       fontFamily: 'Inter',
       fontFamilyFallback: const ['sans-serif'],
       scaffoldBackgroundColor: AppColors.background,
-      colorScheme: const ColorScheme(
+      colorScheme: ColorScheme(
         brightness: Brightness.light,
         primary: AppColors.primary,
         onPrimary: Colors.white,
@@ -68,7 +99,7 @@ class AppTheme {
         error: AppColors.debit,
         onError: Colors.white,
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
@@ -87,7 +118,7 @@ class AppTheme {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(cardRadius),
-          side: const BorderSide(color: AppColors.border, width: 1.5),
+          side: BorderSide(color: AppColors.border, width: 1.5),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -108,7 +139,7 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
           minimumSize: const Size.fromHeight(48),
-          side: const BorderSide(color: AppColors.border, width: 1.5),
+          side: BorderSide(color: AppColors.border, width: 1.5),
           shape: const StadiumBorder(),
           textStyle: const TextStyle(
             fontFamily: 'Inter',
@@ -121,20 +152,20 @@ class AppTheme {
         backgroundColor: AppColors.surface,
         selectedColor: AppColors.primaryContainer,
         disabledColor: AppColors.ignoredBg,
-        labelStyle: const TextStyle(
+        labelStyle: TextStyle(
           fontFamily: 'Inter',
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: AppColors.textSecondary,
         ),
-        secondaryLabelStyle: const TextStyle(
+        secondaryLabelStyle: TextStyle(
           fontFamily: 'Inter',
           fontSize: 12,
           fontWeight: FontWeight.w600,
           color: AppColors.primary,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        shape: const StadiumBorder(
+        shape: StadiumBorder(
           side: BorderSide(color: AppColors.borderLight, width: 1),
         ),
       ),

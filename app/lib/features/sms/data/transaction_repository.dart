@@ -285,6 +285,33 @@ class TransactionRepository {
     return row == null ? null : _rowToModel(row);
   }
 
+  /// Fills payment methods for transactions imported before the detector was
+  /// added. The SMS text is re-parsed by the sync service and matched using
+  /// the same dedupe key used during insertion.
+  Future<int> fillMissingPaymentMethods(
+    List<ParsedTransaction> scanned,
+  ) async {
+    var updated = 0;
+    for (final tx in scanned) {
+      if (tx.paymentMethod == PaymentMethod.unknown) continue;
+      final key = computeDedupeKey(tx);
+      final row = await (_db.select(
+        _db.transactions,
+      )..where((item) => item.dedupeKey.equals(key))).getSingleOrNull();
+      if (row == null || row.paymentMethod != PaymentMethod.unknown.name) {
+        continue;
+      }
+      await (_db.update(
+        _db.transactions,
+      )..where((item) => item.id.equals(row.id))).write(
+        TransactionsCompanion(paymentMethod: Value(tx.paymentMethod.name)),
+      );
+      updated++;
+    }
+    if (updated > 0) notifyExternalChanges();
+    return updated;
+  }
+
   Future<String?> getAppState(String key) async {
     final row = await (_db.select(
       _db.appStates,

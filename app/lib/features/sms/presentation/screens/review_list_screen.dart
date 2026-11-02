@@ -82,7 +82,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
         title: 'Review',
         actions: [
           IconButton(
-            icon: const Icon(Icons.sync_rounded, color: AppColors.primary),
+            icon: Icon(Icons.sync_rounded, color: AppColors.primary),
             tooltip: 'Scan inbox',
             onPressed: widget.onScanAgain,
           ),
@@ -288,7 +288,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                   );
                 },
               ),
-              const Divider(height: 8, color: AppColors.border),
+              Divider(height: 8, color: AppColors.border),
               // Scrolling transaction list
               Expanded(
                 child: visible.isEmpty

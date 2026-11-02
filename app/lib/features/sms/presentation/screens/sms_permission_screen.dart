@@ -79,12 +79,12 @@ class SmsPermissionScreen extends StatelessWidget {
                       Icons.mark_email_read_rounded,
                       'Only bank and payment messages are used',
                     ),
-                    const Divider(height: 20, color: AppColors.border),
+                    Divider(height: 20, color: AppColors.border),
                     _buildFeatureRow(
                       Icons.phonelink_lock_rounded,
                       'Your messages and transactions stay on this phone',
                     ),
-                    const Divider(height: 20, color: AppColors.border),
+                    Divider(height: 20, color: AppColors.border),
                     _buildFeatureRow(
                       Icons.touch_app_rounded,
                       'Nothing is finalized without your tap',

@@ -4,12 +4,15 @@ import '../../models/parsed_transaction.dart';
 import '../../models/transaction_status.dart';
 import '../../models/transaction_type.dart';
 import '../../utils/currency_formatter.dart';
+import '../../../core/services/finance_data_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/category_widgets.dart';
 import '../widgets/finsight_app_bar.dart';
 import '../widgets/stat_counter.dart';
 import '../widgets/transaction_card.dart';
 import 'transaction_detail_sheet.dart';
+import '../filters/transaction_filter.dart';
+import '../widgets/transaction_filter_sheet.dart';
 
 class TransactionsScreen extends StatefulWidget {
   final TransactionRepository repository;
@@ -27,6 +30,43 @@ class TransactionsScreen extends StatefulWidget {
 
 class _TransactionsScreenState extends State<TransactionsScreen> {
   String? _selectedCategory;
+  TransactionFilter _filter = const TransactionFilter();
+  Map<String, String> _bankByLast4 = const {};
+  List<AccountFilterOption> _accountOptions = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedAccounts();
+  }
+
+  Future<void> _loadSavedAccounts() async {
+    final accounts = await FinanceDataService.getCachedAccounts();
+    final byLast4 = <String, String>{};
+    for (final account in accounts) {
+      final digits = account.maskedAccountNumber.replaceAll(RegExp(r'\D'), '');
+      if (digits.length >= 4) {
+        byLast4[digits.substring(digits.length - 4)] = account.providerName;
+      }
+    }
+    if (mounted) setState(() => _bankByLast4 = byLast4);
+  }
+
+  List<AccountFilterOption> _accountsIn(List<ParsedTransaction> all) {
+    final counts = <String, int>{};
+    for (final tx in all) {
+      final last4 = tx.accountLast4;
+      if (last4 != null && last4.isNotEmpty) {
+        counts[last4] = (counts[last4] ?? 0) + 1;
+      }
+    }
+    final keys = counts.keys.toList()
+      ..sort((a, b) => counts[b]!.compareTo(counts[a]!));
+    return [
+      for (final last4 in keys)
+        AccountFilterOption(last4: last4, bankName: _bankByLast4[last4]),
+    ];
+  }
 
   bool _isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
@@ -69,6 +109,15 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         title: 'Transactions',
         actions: [
           IconButton(
+            icon: Badge(
+              isLabelVisible: _filter.hasFilters,
+              label: Text('${_filter.activeCount}'),
+              child: const Icon(Icons.tune_rounded),
+            ),
+            tooltip: 'Filter transactions',
+            onPressed: _openFilter,
+          ),
+          IconButton(
             icon: Container(
               padding: const EdgeInsets.all(6),
               decoration: const BoxDecoration(
@@ -95,6 +144,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           }
 
           final all = snapshot.data ?? [];
+          _accountOptions = _accountsIn(all);
           final now = DateTime.now();
 
           // Calculate "This month" totals (confirmed only, not ignored)
@@ -117,10 +167,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           final netAbs = netPaise.abs();
 
           // Filter by category if selected
-          final filtered = all.where((t) {
+          final categoryFiltered = all.where((t) {
             if (_selectedCategory == null) return true;
             return t.category.toLowerCase() == _selectedCategory!.toLowerCase();
           }).toList();
+          final filtered = _filter.apply(categoryFiltered);
 
           // Group by date
           final Map<String, List<ParsedTransaction>> grouped = {};
@@ -298,5 +349,14 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         },
       ),
     );
+  }
+
+  Future<void> _openFilter() async {
+    final result = await TransactionFilterSheet.show(
+      context,
+      _filter,
+      accounts: _accountOptions,
+    );
+    if (result != null && mounted) setState(() => _filter = result);
   }
 }

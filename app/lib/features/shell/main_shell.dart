@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../core/services/language_service.dart';
 import '../../core/services/currency_service.dart';
@@ -17,6 +18,7 @@ import '../sms/presentation/screens/new_transaction_popup_sheet.dart';
 import '../sms/presentation/screens/sms_shell_screen.dart';
 import '../sms/presentation/screens/transaction_detail_sheet.dart';
 import '../sms/services/sms_sync_service.dart';
+import '../sms/services/payment_popup.dart';
 import '../insights/presentation/screens/insights_home_screen.dart';
 
 /// Activity tab screen dedicated to SMS transactions review, scanning, and sync.
@@ -300,7 +302,10 @@ class _MainShellScreenState extends State<MainShellScreen> {
     super.initState();
     _currentIndex = widget.initialTab;
     _syncService.popups.addListener(_onPopupQueueChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _showQueuedPopup());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showQueuedPopup();
+      _maybeOfferPaymentPopups();
+    });
   }
 
   @override
@@ -320,6 +325,36 @@ class _MainShellScreenState extends State<MainShellScreen> {
         !_syncService.popups.isShowing ||
         _syncService.popups.currentPopup == null) {
       return;
+    }
+
+    Future<void> _maybeOfferPaymentPopups() async {
+      if (!await Permission.sms.isGranted) return;
+      if (!await PaymentPopup.isEnabled() || await PaymentPopup.hasPermission()) {
+        return;
+      }
+      if (!await PaymentPopup.takePromptTurn() || !mounted) return;
+      final allow = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          icon: const Icon(Icons.picture_in_picture_alt_rounded),
+          title: const Text('Show payment popups?'),
+          content: const Text(
+            'After a bank SMS arrives, FinSight can show a small card over GPay '
+            'or another app after five seconds so you can categorise it.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Not now'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Allow'),
+            ),
+          ],
+        ),
+      );
+      if (allow == true) await PaymentPopup.requestPermission();
     }
 
     final tx = _syncService.popups.currentPopup!;

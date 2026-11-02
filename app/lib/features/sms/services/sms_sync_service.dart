@@ -27,6 +27,7 @@ class SmsSyncService with WidgetsBindingObserver {
   static final instance = SmsSyncService._();
 
   static const _maxCatchUpPopups = 3;
+  static const _paymentMethodBackfillKey = 'paymentMethodBackfillV1';
   final repository = TransactionRepository();
   final reader = const SmsReader();
   final popups = PopupQueueController();
@@ -51,6 +52,22 @@ class SmsSyncService with WidgetsBindingObserver {
   Future<void> refresh() async {
     await _ensureListening();
     await syncNewMessages();
+    await _backfillPaymentMethodsOnce();
+  }
+
+  Future<void> _backfillPaymentMethodsOnce() {
+    return _serialized(() async {
+      if (!await _hasPermission) return;
+      if (await repository.getAppState(_paymentMethodBackfillKey) != null) {
+        return;
+      }
+      final messages = await reader.fetchInboxMessages();
+      final scan = await compute(_processInBackground, messages);
+      final updated = await repository.fillMissingPaymentMethods(
+        scan.transactions,
+      );
+      await repository.setAppState(_paymentMethodBackfillKey, '$updated');
+    });
   }
 
   bool get _started => _attachedShells > 0;

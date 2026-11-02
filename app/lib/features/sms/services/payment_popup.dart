@@ -11,6 +11,7 @@ class PaymentPopup {
   static const pendingTransactionKey = 'overlayTransactionId';
   static const heightDp = 236;
   static const _enabledKey = 'payment_popup_enabled';
+  static const _promptShownKey = 'payment_popup_prompt_shown';
 
   static Future<bool> hasPermission() async {
     try {
@@ -36,6 +37,13 @@ class PaymentPopup {
   static Future<void> setEnabled(bool enabled) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_enabledKey, enabled);
+  }
+
+  static Future<bool> takePromptTurn() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_promptShownKey) ?? false) return false;
+    await prefs.setBool(_promptShownKey, true);
+    return true;
   }
 
   static Future<void> waitUntilDue(DateTime receivedAt) async {
