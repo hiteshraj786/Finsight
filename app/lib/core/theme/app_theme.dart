@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'app_colors.dart';
 
 class AppTheme {
@@ -8,13 +9,29 @@ class AppTheme {
   // Light is the default for every new account. A saved setting can explicitly
   // select dark mode or follow the device.
   static final themeMode = ValueNotifier<ThemeMode>(ThemeMode.light);
+  static const _savedPreferenceKey = 'app_theme_preference';
 
-  static void setPreference(String preference) {
+  static Future<void> loadSaved() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_savedPreferenceKey);
+      if (saved != null) setPreference(saved, persist: false);
+    } catch (_) {
+      // Keep the default theme if local storage is unavailable.
+    }
+  }
+
+  static void setPreference(String preference, {bool persist = true}) {
     themeMode.value = switch (preference) {
       'dark' => ThemeMode.dark,
       'system' => ThemeMode.system,
       _ => ThemeMode.light,
     };
+    if (persist) {
+      SharedPreferences.getInstance()
+          .then((prefs) => prefs.setString(_savedPreferenceKey, preference))
+          .ignore();
+    }
   }
 
   static ThemeData get lightTheme {

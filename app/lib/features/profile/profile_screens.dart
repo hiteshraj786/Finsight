@@ -11,6 +11,9 @@ import '../../core/services/profile_service.dart';
 import '../../core/services/language_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/bank_logo.dart';
+import '../../core/widgets/theme_toggle_button.dart';
+import '../../core/widgets/bank_picker_sheet.dart';
 import '../insights/data/insight_notification_service.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -174,6 +177,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ],
                           ),
                         ),
+                        const ThemeToggleButton(),
+                        const SizedBox(width: 8),
                         IconButton.outlined(
                           onPressed: () => _editName(profile),
                           icon: const Icon(Icons.edit_outlined),
@@ -393,17 +398,6 @@ class _AccountEditorScreenState extends State<AccountEditorScreen> {
     'other': 'Other',
   };
   static const _currencies = ['INR', 'USD', 'EUR', 'GBP', 'IDR', 'JPY'];
-  static const _providers = <_ProviderOption>[
-    _ProviderOption('HDFC Bank', Icons.account_balance_rounded, Color(0xFF174EA6)),
-    _ProviderOption('SBI', Icons.account_balance_rounded, Color(0xFF243C9E)),
-    _ProviderOption('ICICI Bank', Icons.account_balance_rounded, Color(0xFFF36C21)),
-    _ProviderOption('Axis Bank', Icons.account_balance_rounded, Color(0xFF97144D)),
-    _ProviderOption('PayPal', Icons.payment_rounded, Color(0xFF0070BA)),
-    _ProviderOption('PhonePe', Icons.account_balance_wallet_rounded, Color(0xFF5F259F)),
-    _ProviderOption('Cash wallet', Icons.wallet_rounded, Color(0xFF00A86B)),
-    _ProviderOption('Other', Icons.add_circle_outline_rounded, AppColors.primary),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -469,100 +463,14 @@ class _AccountEditorScreenState extends State<AccountEditorScreen> {
     }
   }
 
-  Future<void> _pickProvider() async {
-    final selected = await showModalBottomSheet<_ProviderOption>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => Container(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 26),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 42,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              const SizedBox(height: 18),
-              Text(
-                'Select a provider',
-                style: _style(18, AppColors.textPrimary, FontWeight.w800),
-              ),
-              const SizedBox(height: 18),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: .86,
-                ),
-                itemCount: _providers.length,
-                itemBuilder: (context, index) {
-                  final provider = _providers[index];
-                  final selected = _name.text.trim() == provider.name;
-                  return InkWell(
-                    borderRadius: BorderRadius.circular(14),
-                    onTap: () => Navigator.pop(sheetContext, provider),
-                    child: Ink(
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? AppColors.primaryLight
-                            : AppColors.surface,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: selected
-                              ? AppColors.primary
-                              : Colors.transparent,
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircleAvatar(
-                            radius: 18,
-                            backgroundColor: provider.color.withValues(alpha: .14),
-                            child: Icon(provider.icon, color: provider.color, size: 20),
-                          ),
-                          const SizedBox(height: 6),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 3),
-                            child: Text(
-                              provider.name,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: _style(10, AppColors.textPrimary, FontWeight.w600),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+  Future<void> _pickCatalogProvider() async {
+    final selected = await BankPickerSheet.show(
+      context,
+      selectedName: _name.text.trim(),
     );
-    if (selected == null || !mounted) return;
-    setState(() {
-      _name.text = selected.name == 'Other' ? '' : selected.name;
-      if (_type == 'savings' && selected.name == 'Cash wallet') {
-        _type = 'wallet';
-      }
-    });
+    if (selected != null && mounted) {
+      setState(() => _name.text = selected.name);
+    }
   }
 
   @override
@@ -631,7 +539,7 @@ class _AccountEditorScreenState extends State<AccountEditorScreen> {
                         labelText: 'Account name'.tr(),
                         suffixIcon: IconButton(
                           tooltip: 'Select provider'.tr(),
-                          onPressed: _pickProvider,
+                          onPressed: _pickCatalogProvider,
                           icon: const Icon(Icons.account_balance_outlined),
                         ),
                       ),
@@ -672,7 +580,7 @@ class _AccountEditorScreenState extends State<AccountEditorScreen> {
                     ),
                     const SizedBox(height: 8),
                     TextButton.icon(
-                      onPressed: _pickProvider,
+                      onPressed: _pickCatalogProvider,
                       icon: const Icon(Icons.grid_view_rounded, size: 18),
                       label: Text('Choose bank or wallet provider'.tr()),
                     ),
@@ -732,13 +640,6 @@ class _AccountEditorScreenState extends State<AccountEditorScreen> {
       ),
     );
   }
-}
-
-class _ProviderOption {
-  final String name;
-  final IconData icon;
-  final Color color;
-  const _ProviderOption(this.name, this.icon, this.color);
 }
 
 class AccountDetailScreen extends StatefulWidget {
@@ -1504,6 +1405,15 @@ class _AccountIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wallet = account.accountType == 'wallet';
+    if (!wallet) {
+      return BankLogo(
+        providerName: account.providerName,
+        size: size,
+        fallbackIcon: account.isCreditCard
+            ? Icons.credit_card_rounded
+            : Icons.account_balance_rounded,
+      );
+    }
     return Container(
       width: size,
       height: size,

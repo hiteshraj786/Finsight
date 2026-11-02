@@ -44,6 +44,7 @@ void main() async {
   await AuthService.initialize();
   await CurrencyService.initialize();
   await LanguageService.initialize();
+  await AppTheme.loadSaved();
   await InsightNotificationService.initialize();
   // WorkManager registration does not prompt for notifications. It simply gives
   // Android a best-effort, offline task to run when the OS permits it.

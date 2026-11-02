@@ -6,6 +6,7 @@ import '../../core/services/currency_service.dart';
 import '../../core/services/language_service.dart';
 import '../../core/constants/app_routes.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/bank_logo.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -397,11 +398,12 @@ class _AccountCard extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          account.isCreditCard
+        BankLogo(
+          providerName: account.providerName,
+          size: 38,
+          fallbackIcon: account.isCreditCard
               ? Icons.credit_card_rounded
               : Icons.account_balance_rounded,
-          color: AppColors.primary,
         ),
         const Spacer(),
         Text(
