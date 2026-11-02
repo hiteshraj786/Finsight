@@ -136,7 +136,6 @@ class LanguageService {
           'अनुमानित बैलेंस और आगामी खर्च देखें',
       'Category Analytics': 'श्रेणी विश्लेषण',
       'breakdown exported successfully': 'ब्रेकडाउन सफलतापूर्वक निर्यात हुआ',
-      'Export': 'निर्यात करें',
       'Breakdown': 'ब्रेकडाउन',
       'Total spent in': 'कुल खर्च',
       'vs': 'बनाम',

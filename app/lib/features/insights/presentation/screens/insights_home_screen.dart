@@ -36,7 +36,6 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
 
   bool _loading = true;
   List<CategorySpend> _categorySpends = [];
-  List<GeneratedInsight> _insights = [];
   List<BudgetEvaluation> _budgets = [];
   List<RecurringPattern> _recurring = [];
   List<AlertItem> _alerts = [];
@@ -50,7 +49,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
   Future<void> _loadData() async {
     setState(() => _loading = true);
     final spends = await _repo.getCategorySpend(period: _selectedPeriod, date: _selectedDate);
-    final insights = await _repo.getInsights();
+    await _repo.getInsights();
     final budgets = await _repo.getBudgetEvaluations();
     final recurring = await _repo.getRecurring();
     final alerts = await _repo.getAlerts();
@@ -58,7 +57,6 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
     if (mounted) {
       setState(() {
         _categorySpends = spends;
-        _insights = insights;
         _budgets = budgets;
         _recurring = recurring;
         _alerts = alerts;

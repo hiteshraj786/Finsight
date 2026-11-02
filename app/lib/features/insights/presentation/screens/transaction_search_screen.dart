@@ -147,7 +147,7 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
                             controller: _queryCtrl,
                             onChanged: (_) => _search(),
                             style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: const Color(0xFF212325)),
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               hintText: 'Search transactions...'.tr(),
                               border: InputBorder.none,
                               isDense: true,
