@@ -1,5 +1,5 @@
 import 'package:drift/native.dart';
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:finsight/features/sms/data/database.dart';

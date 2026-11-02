@@ -2,7 +2,6 @@ import '../models/parsed_transaction.dart';
 import '../models/raw_sms_message.dart';
 import '../models/transaction_type.dart';
 import 'sms_categorizer.dart';
-import '../models/payment_method.dart';
 import 'payment_method_detector.dart';
 
 class SmsParser {
