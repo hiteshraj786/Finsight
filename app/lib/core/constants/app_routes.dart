@@ -38,6 +38,8 @@ class AppRoutes {
   static const String language = '/settings/language';
   static const String theme = '/settings/theme';
   static const String security = '/settings/security';
+  static const String categories = '/settings/categories';
+  static const String paymentPopups = '/settings/payment-popups';
   static const String notifications = '/settings/notifications';
   static const String exportData = '/export-data';
   static const String about = '/settings/about';

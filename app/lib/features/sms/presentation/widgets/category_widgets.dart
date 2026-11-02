@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../services/categories/category_registry.dart';
+import '../../../../core/constants/category_icons.dart';
 import '../theme/app_theme.dart';
 
 class CategoryMeta {
@@ -19,6 +21,8 @@ class CategoryMeta {
   ];
 
   static IconData getIcon(String category) {
+    final stored = CategoryRegistry.instance.find(category);
+    if (stored != null) return CategoryIcons.of(stored.iconKey);
     switch (category.trim().toLowerCase()) {
       case 'food':
         return Icons.restaurant_rounded;
@@ -41,6 +45,8 @@ class CategoryMeta {
   }
 
   static String sanitize(String category) {
+    final stored = CategoryRegistry.instance.find(category);
+    if (stored != null) return stored.name;
     for (final c in validCategories) {
       if (c.toLowerCase() == category.trim().toLowerCase()) {
         return c;
@@ -102,7 +108,8 @@ class CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cleanName = CategoryMeta.sanitize(category);
+    final cleanName = CategoryRegistry.instance.find(category)?.name ??
+        CategoryMeta.sanitize(category);
     final icon = CategoryMeta.getIcon(cleanName);
 
     return InkWell(
@@ -144,4 +151,3 @@ class CategoryChip extends StatelessWidget {
     );
   }
 }
-

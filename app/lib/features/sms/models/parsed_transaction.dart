@@ -1,5 +1,6 @@
 import 'transaction_status.dart';
 import 'transaction_type.dart';
+import 'payment_method.dart';
 
 class ParsedTransaction {
   final int? id;
@@ -16,6 +17,7 @@ class ParsedTransaction {
   final String? confidenceReason;
   final TransactionStatus status;
   final String categorySource;
+  final PaymentMethod paymentMethod;
 
   bool get isLowConfidence => lowConfidence;
 
@@ -34,6 +36,7 @@ class ParsedTransaction {
     this.confidenceReason,
     this.status = TransactionStatus.pending,
     this.categorySource = 'auto',
+    this.paymentMethod = PaymentMethod.unknown,
   });
 
   ParsedTransaction copyWith({
@@ -51,6 +54,7 @@ class ParsedTransaction {
     String? confidenceReason,
     TransactionStatus? status,
     String? categorySource,
+    PaymentMethod? paymentMethod,
   }) {
     return ParsedTransaction(
       id: id ?? this.id,
@@ -67,6 +71,7 @@ class ParsedTransaction {
       confidenceReason: confidenceReason ?? this.confidenceReason,
       status: status ?? this.status,
       categorySource: categorySource ?? this.categorySource,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
     );
   }
 }

@@ -25,6 +25,7 @@ dependencies:
   permission_handler: 11.3.1
   drift: ^2.34.4
   drift_flutter: ^0.3.1
+  flutter_overlay_window: ^1.0.2
   flutter_local_notifications: ^17.2.4
   workmanager: ^0.9.0+3
   fl_chart: ^0.70.2

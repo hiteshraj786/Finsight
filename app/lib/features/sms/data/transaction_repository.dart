@@ -3,6 +3,9 @@ import 'package:drift/drift.dart';
 import '../models/parsed_transaction.dart';
 import '../models/transaction_status.dart';
 import '../models/transaction_type.dart';
+import '../models/payment_method.dart';
+import '../../../data/models/category_definition.dart';
+import '../../../data/catalogs/predefined_categories.dart';
 import '../services/sms_categorizer.dart';
 import 'database.dart';
 
@@ -23,7 +26,7 @@ class TransactionRepository {
   TransactionRepository({
     AppDatabase? db,
     SmsCategorizer defaultCategorizer = const SmsCategorizer(),
-  }) : _db = db ?? AppDatabase(),
+  }) : _db = db ?? AppDatabase.instance,
        _defaultCategorizer = defaultCategorizer;
 
   AppDatabase get db => _db;
@@ -78,14 +81,26 @@ class TransactionRepository {
       return bestRule.category;
     }
 
-    // 3. Default rules in category_rules.dart (longest-keyword wins)
-    final defaultCat = _defaultCategorizer.categorize(party);
-    if (defaultCat != 'Uncategorized') {
-      return defaultCat;
+    // 3. Editable category keywords, including user-created categories.
+    final categories = await (_db.select(_db.customCategories)
+          ..orderBy([(category) => OrderingTerm(expression: category.id)]))
+        .get();
+    String? keywordCategory;
+    var keywordLength = 0;
+    final lowerParty = party.toLowerCase();
+    for (final category in categories) {
+      for (final keyword in CategoryDefinition.parseKeywords(category.keywords)) {
+        if (lowerParty.contains(keyword) && keyword.length >= keywordLength) {
+          keywordLength = keyword.length;
+          keywordCategory = category.name;
+        }
+      }
     }
+    if (keywordCategory != null) return keywordCategory;
 
-    // 4. Fallback: Uncategorized
-    return 'Uncategorized';
+    // 4. Existing merchant rules remain the final built-in fallback.
+    final defaultCat = _defaultCategorizer.categorize(party);
+    return defaultCat == uncategorizedCategory ? uncategorizedCategory : defaultCat;
   }
 
   Future<void> saveMerchantRule(
@@ -149,13 +164,18 @@ class TransactionRepository {
         } else {
           final norm = normalizeParty(tx.party);
           // Suggest category using learned user rules and default rules
-          final resolvedCategory = await suggestCategory(tx.party);
-          final finalCategory =
-              (tx.category != 'Uncategorized' && tx.category.isNotEmpty)
-              ? (resolvedCategory != 'Uncategorized'
-                    ? resolvedCategory
-                    : tx.category)
-              : resolvedCategory;
+          final userChoseCategory =
+              tx.categorySource == 'user' && tx.category.isNotEmpty;
+          final resolvedCategory =
+              userChoseCategory ? tx.category : await suggestCategory(tx.party);
+          final finalCategory = userChoseCategory
+              ? tx.category
+              : (resolvedCategory != 'Uncategorized' &&
+                    tx.category != 'Uncategorized'
+                ? resolvedCategory
+                : resolvedCategory == 'Uncategorized'
+                    ? tx.category
+                    : resolvedCategory);
 
           await _db
               .into(_db.transactions)
@@ -176,6 +196,7 @@ class TransactionRepository {
                   createdAt: DateTime.now().toUtc(),
                   normalizedParty: Value(norm),
                   categorySource: const Value('auto'),
+                  paymentMethod: Value(tx.paymentMethod.name),
                 ),
                 mode: InsertMode.insertOrIgnore,
               );
@@ -221,6 +242,41 @@ class TransactionRepository {
             ]))
             .get();
     return rows.map(_rowToModel).toList();
+  }
+
+  Future<ParsedTransaction?> findById(int id) async {
+    final row = await (_db.select(_db.transactions)
+          ..where((transaction) => transaction.id.equals(id)))
+        .getSingleOrNull();
+    return row == null ? null : _rowToModel(row);
+  }
+
+  Future<ParsedTransaction?> findByDedupeKey(String key) async {
+    final row = await (_db.select(_db.transactions)
+          ..where((transaction) => transaction.dedupeKey.equals(key)))
+        .getSingleOrNull();
+    return row == null ? null : _rowToModel(row);
+  }
+
+  Future<String?> getAppState(String key) async {
+    final row = await (_db.select(_db.appStates)
+          ..where((state) => state.key.equals(key)))
+        .getSingleOrNull();
+    return row?.value;
+  }
+
+  Future<void> setAppState(String key, String value) async {
+    await _db.into(_db.appStates).insertOnConflictUpdate(
+          AppStatesCompanion.insert(
+            key: key,
+            value: Value(value),
+            updatedAt: DateTime.now().toUtc(),
+          ),
+        );
+  }
+
+  void notifyExternalChanges() {
+    _db.markTablesUpdated({_db.transactions});
   }
 
   Future<void> updateStatus(int id, TransactionStatus status) async {
@@ -324,6 +380,7 @@ class TransactionRepository {
       confidenceReason: row.confidenceReason,
       status: status,
       categorySource: row.categorySource,
+      paymentMethod: PaymentMethod.fromName(row.paymentMethod),
     );
   }
 }

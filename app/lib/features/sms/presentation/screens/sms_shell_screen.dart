@@ -1,12 +1,13 @@
-import 'package:another_telephony/telephony.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../data/transaction_repository.dart';
 import '../../models/parsed_transaction.dart';
-import '../../models/raw_sms_message.dart';
 import '../../models/transaction_status.dart';
 import '../../services/sms_pipeline.dart';
+import '../../services/sms_sync_service.dart';
 import '../controllers/popup_queue_controller.dart';
 import '../theme/app_theme.dart';
 import '../widgets/bottom_nav.dart';
@@ -45,11 +46,11 @@ class SmsShellScreen extends StatefulWidget {
   State<SmsShellScreen> createState() => _SmsShellScreenState();
 }
 
-class _SmsShellScreenState extends State<SmsShellScreen>
-    with WidgetsBindingObserver {
+class _SmsShellScreenState extends State<SmsShellScreen> {
   ShellFlowState _flowState = ShellFlowState.mainApp;
   int _currentTabIndex = 0; // 0 = Review, 1 = Transactions
-  final PopupQueueController _popupController = PopupQueueController();
+  final SmsSyncService _syncService = SmsSyncService.instance;
+  late final PopupQueueController _popupController = _syncService.popups;
 
   // Scan progress & results
   int _scanChecked = 0;
@@ -64,25 +65,16 @@ class _SmsShellScreenState extends State<SmsShellScreen>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _popupController.addListener(_onPopupQueueChanged);
     _checkInitialPermission();
-    _initIncomingSmsListener();
+    unawaited(_syncService.attach());
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     _popupController.removeListener(_onPopupQueueChanged);
-    _popupController.dispose();
+    _syncService.detach();
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _checkMissedSmsOnResume();
-    }
   }
 
   Future<void> _checkInitialPermission() async {
@@ -95,59 +87,6 @@ class _SmsShellScreenState extends State<SmsShellScreen>
       if (existing.isEmpty) {
         setState(() => _flowState = ShellFlowState.permissionRequired);
       }
-    }
-  }
-
-  void _initIncomingSmsListener() {
-    try {
-      Telephony.instance.listenIncomingSms(
-        onNewMessage: (SmsMessage message) {
-          final date = message.date != null
-              ? DateTime.fromMillisecondsSinceEpoch(message.date!)
-              : DateTime.now();
-          _handleIncomingRawSms(
-            RawSmsMessage(
-              sender: message.address,
-              body: message.body ?? '',
-              date: date,
-            ),
-          );
-        },
-        listenInBackground: false,
-      );
-    } catch (_) {
-      // Graceful fallback for non-Android/test
-    }
-  }
-
-  Future<void> _handleIncomingRawSms(RawSmsMessage raw) async {
-    final filterRes = widget.pipeline.filter.evaluate(
-      raw.body,
-      sender: raw.sender,
-    );
-    if (!filterRes.isAccepted) return;
-
-    final tx = widget.pipeline.parser.parse(
-      raw,
-      matchedPhrase: filterRes.matchedPhrase,
-      isLowConfidence: filterRes.isLowConfidence,
-    );
-    if (tx == null) return;
-
-    final insertRes = await widget.repository.insertNewFromScan([tx]);
-    if (insertRes.inserted > 0) {
-      await widget.repository.setLastCheckedSmsTimestamp(
-        raw.date.millisecondsSinceEpoch,
-      );
-
-      final all = await widget.repository.getAll();
-      final key = TransactionRepository.computeDedupeKey(tx);
-      final storedTx = all.firstWhere(
-        (t) => TransactionRepository.computeDedupeKey(t) == key,
-        orElse: () => tx,
-      );
-
-      _popupController.enqueue(storedTx);
     }
   }
 
@@ -212,9 +151,9 @@ class _SmsShellScreenState extends State<SmsShellScreen>
     });
 
     try {
-      final messages = await widget.pipeline.reader.fetchInboxMessages();
-      final res = widget.pipeline.processMessages(messages);
-      final insertRes = await widget.repository.insertNewFromScan(res.transactions);
+      final result = await _syncService.importFullInbox();
+      final res = result.scan;
+      final insertRes = result.insert;
 
       if (mounted) {
         setState(() {
@@ -233,44 +172,6 @@ class _SmsShellScreenState extends State<SmsShellScreen>
           const SnackBar(content: Text('Failed to read inbox. Please try again.')),
         );
       }
-    }
-  }
-
-  Future<void> _checkMissedSmsOnResume() async {
-    try {
-      final lastTimestamp = await widget.repository.getLastCheckedSmsTimestamp();
-      if (lastTimestamp == null) return;
-
-      final allMessages = await widget.pipeline.reader.fetchInboxMessages();
-      final newer = allMessages
-          .where((m) => m.date.millisecondsSinceEpoch > lastTimestamp)
-          .toList();
-      if (newer.isEmpty) return;
-
-      final List<ParsedTransaction> newTxs = [];
-      int maxTimestamp = lastTimestamp;
-
-      for (final raw in newer) {
-        if (raw.date.millisecondsSinceEpoch > maxTimestamp) {
-          maxTimestamp = raw.date.millisecondsSinceEpoch;
-        }
-        final fRes = widget.pipeline.filter.evaluate(raw.body, sender: raw.sender);
-        if (fRes.isAccepted) {
-          final tx = widget.pipeline.parser.parse(
-            raw,
-            matchedPhrase: fRes.matchedPhrase,
-            isLowConfidence: fRes.isLowConfidence,
-          );
-          if (tx != null) newTxs.add(tx);
-        }
-      }
-
-      await widget.repository.setLastCheckedSmsTimestamp(maxTimestamp);
-      if (newTxs.isNotEmpty) {
-        await widget.repository.insertNewFromScan(newTxs);
-      }
-    } catch (_) {
-      // Ignore background refresh errors
     }
   }
 

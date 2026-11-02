@@ -5,6 +5,7 @@ import '../widgets/amount_text.dart';
 import '../widgets/category_widgets.dart';
 import '../widgets/masking_helpers.dart';
 import '../widgets/pill_buttons.dart';
+import '../../../../services/categories/category_registry.dart';
 
 class NewTransactionPopupSheet extends StatefulWidget {
   final ParsedTransaction transaction;
@@ -225,7 +226,7 @@ class _NewTransactionPopupSheetState extends State<NewTransactionPopupSheet> {
                 mainAxisSpacing: 8,
                 crossAxisSpacing: 8,
                 childAspectRatio: 0.95,
-                children: CategoryMeta.validCategories.map((c) {
+                children: CategoryRegistry.instance.names.map((c) {
                   final isSelected = _selectedCategory == c;
                   return InkWell(
                     onTap: () => setState(() => _selectedCategory = c),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -12,6 +14,7 @@ import '../sms/models/parsed_transaction.dart';
 import '../sms/models/transaction_status.dart';
 import '../sms/presentation/screens/manual_add_sheet.dart';
 import '../sms/presentation/screens/sms_shell_screen.dart';
+import '../sms/services/sms_sync_service.dart';
 import '../insights/presentation/screens/insights_home_screen.dart';
 
 /// Activity tab screen dedicated to SMS transactions review, scanning, and sync.
@@ -23,7 +26,20 @@ class ActivityScreen extends StatefulWidget {
 }
 
 class _ActivityScreenState extends State<ActivityScreen> {
-  final TransactionRepository _repository = TransactionRepository();
+  final SmsSyncService _syncService = SmsSyncService.instance;
+  late final TransactionRepository _repository = _syncService.repository;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_syncService.attach());
+  }
+
+  @override
+  void dispose() {
+    _syncService.detach();
+    super.dispose();
+  }
 
   void _openSmsReview() {
     Navigator.of(context).push(

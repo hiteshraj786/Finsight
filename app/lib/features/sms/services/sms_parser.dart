@@ -2,6 +2,8 @@ import '../models/parsed_transaction.dart';
 import '../models/raw_sms_message.dart';
 import '../models/transaction_type.dart';
 import 'sms_categorizer.dart';
+import '../models/payment_method.dart';
+import 'payment_method_detector.dart';
 
 class SmsParser {
   final SmsCategorizer categorizer;
@@ -119,6 +121,7 @@ class SmsParser {
       final category = categorizer.categorize(party);
       final accountLast4 = _parseAccountLast4(body);
       final reference = _parseReference(body);
+      final paymentMethod = const PaymentMethodDetector().detect(body);
 
       // Low confidence rules
       final List<String> reasons = [];
@@ -155,6 +158,7 @@ class SmsParser {
         matchedPhrase: matchedPhrase,
         lowConfidence: computedLowConfidence,
         confidenceReason: confidenceReason,
+        paymentMethod: paymentMethod,
       );
     } catch (_) {
       // Malformed text must not crash

@@ -38,6 +38,16 @@ import 'features/insights/presentation/screens/savings_goals_screen.dart';
 import 'features/insights/presentation/screens/cashflow_screen.dart';
 import 'features/insights/presentation/screens/transaction_search_screen.dart';
 import 'features/insights/presentation/screens/alerts_screen.dart';
+import 'features/overlay/payment_overlay.dart';
+import 'features/overlay/payment_popup_settings_screen.dart';
+import 'features/categories/manage_categories_screen.dart';
+import 'services/categories/category_registry.dart';
+
+@pragma('vm:entry-point')
+void overlayMain() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const PaymentOverlayApp());
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,6 +55,7 @@ void main() async {
   await CurrencyService.initialize();
   await LanguageService.initialize();
   await AppTheme.loadSaved();
+  await CategoryRegistry.instance.load();
   await InsightNotificationService.initialize();
   // WorkManager registration does not prompt for notifications. It simply gives
   // Android a best-effort, offline task to run when the OS permits it.
@@ -282,6 +293,15 @@ class _FinSightAppState extends State<FinSightApp> {
                     preferences: preferences,
                   ),
                 ),
+              );
+            case AppRoutes.categories:
+              return MaterialPageRoute(
+                builder: (_) => const AuthGuard(child: ManageCategoriesScreen()),
+              );
+            case AppRoutes.paymentPopups:
+              return MaterialPageRoute(
+                builder: (_) =>
+                    const AuthGuard(child: PaymentPopupSettingsScreen()),
               );
             case AppRoutes.notifications:
               return MaterialPageRoute(

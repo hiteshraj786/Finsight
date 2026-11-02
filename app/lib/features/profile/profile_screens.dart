@@ -838,6 +838,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     AppRoutes.notifications,
                     arguments: preferences,
                   ),
+                  _SettingsRow(
+                    'Categories',
+                    '',
+                    () => Navigator.pushNamed(context, AppRoutes.categories),
+                  ),
+                  _SettingsRow(
+                    'Payment popups',
+                    '',
+                    () => Navigator.pushNamed(context, AppRoutes.paymentPopups),
+                  ),
                 ),
                 const SizedBox(height: 28),
                 _SettingsRow(

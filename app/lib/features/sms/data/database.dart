@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
+import '../../../data/catalogs/predefined_categories.dart';
+
 part 'database.g.dart';
 
 class Transactions extends Table {
@@ -21,6 +23,8 @@ class Transactions extends Table {
   DateTimeColumn get createdAt => dateTime()();
   TextColumn get normalizedParty => text().withDefault(const Constant(''))();
   TextColumn get categorySource => text().withDefault(const Constant('auto'))();
+  TextColumn get paymentMethod =>
+      text().withDefault(const Constant('unknown'))();
 }
 
 class MerchantRules extends Table {
@@ -39,19 +43,31 @@ class AppStates extends Table {
   Set<Column> get primaryKey => {key};
 }
 
-@DriftDatabase(tables: [Transactions, MerchantRules, AppStates])
+class CustomCategories extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().unique()();
+  TextColumn get iconKey => text().withDefault(const Constant('category'))();
+  TextColumn get keywords => text().withDefault(const Constant(''))();
+  DateTimeColumn get createdAt => dateTime()();
+}
+
+@DriftDatabase(tables: [Transactions, MerchantRules, AppStates, CustomCategories])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e])
     : super(e ?? driftDatabase(name: 'finsight_sms'));
 
+  static final AppDatabase instance = AppDatabase();
+
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    beforeOpen: (_) => customStatement('PRAGMA busy_timeout = 5000'),
     onCreate: (m) async {
       await m.createAll();
       await _createPhase2Tables(m);
+      await seedBuiltInCategories();
     },
     onUpgrade: (m, from, to) async {
       if (from < 2) {
@@ -62,9 +78,43 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 3) {
         await _createPhase2Tables(m);
+        await m.createTable(customCategories);
+      }
+      if (from < 4) {
+        if (from >= 3) {
+          await m.createTable(customCategories);
+        }
+        await m.addColumn(transactions, transactions.paymentMethod);
+      }
+      if (from < 5) {
+        await seedBuiltInCategories();
       }
     },
   );
+
+  Future<int> seedBuiltInCategories() async {
+    final existing = {
+      for (final row in await select(customCategories).get())
+        row.name.toLowerCase(),
+    };
+    var added = 0;
+    for (final category in predefinedCategories) {
+      if (category.name == uncategorizedCategory ||
+          existing.contains(category.name.toLowerCase())) {
+        continue;
+      }
+      await into(customCategories).insert(
+        CustomCategoriesCompanion.insert(
+          name: category.name,
+          iconKey: Value(category.iconKey),
+          keywords: Value(category.keywords.join(',')),
+          createdAt: DateTime.now().toUtc(),
+        ),
+      );
+      added++;
+    }
+    return added;
+  }
 
   Future<void> _createPhase2Tables(Migrator m) async {
     await m.database.customStatement('''CREATE TABLE IF NOT EXISTS budgets (
