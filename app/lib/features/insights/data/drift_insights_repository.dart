@@ -16,7 +16,7 @@ class DriftInsightsRepository implements InsightsRepository {
   final local.AppDatabase _db;
   final Future<List<FinanceAccount>> Function() _accounts;
   DriftInsightsRepository({local.AppDatabase? database, Future<List<FinanceAccount>> Function()? accountsLoader})
-      : _db = database ?? local.AppDatabase(), _accounts = accountsLoader ?? FinanceDataService.getCachedAccounts;
+      : _db = database ?? local.AppDatabase.instance, _accounts = accountsLoader ?? FinanceDataService.getCachedAccounts;
 
   @override
   Future<List<InsightTransaction>> confirmedTransactions({DateTime? from, DateTime? to}) async {

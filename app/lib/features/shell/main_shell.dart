@@ -13,7 +13,9 @@ import '../sms/data/transaction_repository.dart';
 import '../sms/models/parsed_transaction.dart';
 import '../sms/models/transaction_status.dart';
 import '../sms/presentation/screens/manual_add_sheet.dart';
+import '../sms/presentation/screens/new_transaction_popup_sheet.dart';
 import '../sms/presentation/screens/sms_shell_screen.dart';
+import '../sms/presentation/screens/transaction_detail_sheet.dart';
 import '../sms/services/sms_sync_service.dart';
 import '../insights/presentation/screens/insights_home_screen.dart';
 
@@ -280,11 +282,76 @@ class MainShellScreen extends StatefulWidget {
 
 class _MainShellScreenState extends State<MainShellScreen> {
   late int _currentIndex;
+  final SmsSyncService _syncService = SmsSyncService.instance;
+  bool _popupModalOpen = false;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialTab;
+    _syncService.popups.addListener(_onPopupQueueChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showQueuedPopup());
+  }
+
+  @override
+  void dispose() {
+    _syncService.popups.removeListener(_onPopupQueueChanged);
+    super.dispose();
+  }
+
+  void _onPopupQueueChanged() {
+    if (!mounted || _popupModalOpen) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showQueuedPopup());
+  }
+
+  void _showQueuedPopup() {
+    if (!mounted ||
+        _popupModalOpen ||
+        !_syncService.popups.isShowing ||
+        _syncService.popups.currentPopup == null) {
+      return;
+    }
+
+    final tx = _syncService.popups.currentPopup!;
+    _popupModalOpen = true;
+    NewTransactionPopupSheet.show(
+      context,
+      transaction: tx,
+      onConfirm: (category) async {
+        if (tx.id != null) {
+          await _syncService.repository.updatePartyAndCategory(
+            tx.id!,
+            category: category,
+          );
+          await _syncService.repository.updateStatus(
+            tx.id!,
+            TransactionStatus.confirmed,
+          );
+        }
+        _syncService.popups.markDismissed();
+      },
+      onIgnore: () async {
+        if (tx.id != null) {
+          await _syncService.repository.updateStatus(
+            tx.id!,
+            TransactionStatus.ignored,
+          );
+        }
+        _syncService.popups.markDismissed();
+      },
+      onEdit: () {
+        _syncService.popups.markDismissed();
+        TransactionDetailSheet.show(
+          context,
+          transaction: tx,
+          repository: _syncService.repository,
+          onSaved: () {},
+        );
+      },
+    ).whenComplete(() {
+      _popupModalOpen = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _showQueuedPopup());
+    });
   }
 
   @override

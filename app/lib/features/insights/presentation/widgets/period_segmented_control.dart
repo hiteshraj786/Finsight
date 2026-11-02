@@ -15,11 +15,12 @@ class PeriodSegmentedControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       height: 44,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F1FA),
+        color: scheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(22),
       ),
       child: Row(
@@ -34,12 +35,12 @@ class PeriodSegmentedControl extends StatelessWidget {
                 curve: Curves.easeInOut,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF7F3DFF) : Colors.transparent,
+                  color: isSelected ? scheme.primary : Colors.transparent,
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: const Color(0xFF7F3DFF).withValues(alpha: 0.25),
+                            color: scheme.primary.withValues(alpha: 0.25),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -51,7 +52,7 @@ class PeriodSegmentedControl extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: isSelected ? Colors.white : const Color(0xFF91919F),
+                    color: isSelected ? scheme.onPrimary : scheme.onSurfaceVariant,
                   ),
                 ),
               ),

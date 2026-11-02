@@ -17,8 +17,12 @@ Future<void> onBackgroundSms(SmsMessage message) async {
   try {
     final repository = TransactionRepository(db: db);
     final stored = await IncomingSmsImporter(repository).import(raw);
-    if (stored?.id == null) return;
+    if (stored?.id == null) {
+      debugPrint('Background SMS was not recognized as a completed transaction');
+      return;
+    }
     await PaymentPopup.waitUntilDue(raw.date);
+    debugPrint('Showing background payment popup for transaction ${stored!.id}');
     await PaymentPopup.show(stored!.id!, repository);
   } catch (error, stackTrace) {
     debugPrint('Background SMS handling failed: $error\n$stackTrace');

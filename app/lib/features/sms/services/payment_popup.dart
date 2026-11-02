@@ -48,8 +48,20 @@ class PaymentPopup {
     int transactionId,
     TransactionRepository repository,
   ) async {
-    if (!await isEnabled() || !await hasPermission()) return;
     await repository.setAppState(pendingTransactionKey, '$transactionId');
+    final enabled = await isEnabled();
+    final permission = await hasPermission();
+    if (!enabled) {
+      debugPrint('Payment popup skipped: disabled in settings');
+      return;
+    }
+    if (!permission) {
+      debugPrint(
+        'Payment popup skipped: Android display-over-other-apps permission '
+        'has not been granted',
+      );
+      return;
+    }
     try {
       if (!await FlutterOverlayWindow.isActive()) {
         await FlutterOverlayWindow.showOverlay(
@@ -69,6 +81,8 @@ class PaymentPopup {
       if (await FlutterOverlayWindow.isActive()) {
         await Future<void>.delayed(const Duration(milliseconds: 300));
         await FlutterOverlayWindow.shareData({'reload': transactionId});
+      } else {
+        debugPrint('Payment popup skipped: overlay did not become active');
       }
     } catch (error) {
       debugPrint('Could not show payment popup: $error');

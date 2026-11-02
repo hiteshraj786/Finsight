@@ -78,6 +78,7 @@ class SmsSyncService with WidgetsBindingObserver {
 
   void _onIncomingSms(SmsMessage message) {
     if (!_started) return;
+    debugPrint('FinSight received live SMS from ${message.address}');
     unawaited(_handleLiveSms(SmsReader.fromTelephony(message)));
   }
 
@@ -88,9 +89,18 @@ class SmsSyncService with WidgetsBindingObserver {
       await _advanceLastChecked([raw]);
     });
     final tx = stored;
-    if (tx?.id == null) return;
+    if (tx?.id == null) {
+      debugPrint('Live SMS was not recognized as a completed transaction');
+      return;
+    }
     await PaymentPopup.waitUntilDue(raw.date);
-    if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+    final isForeground =
+        WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+    debugPrint(
+      'Live payment ${tx!.id} ready after ${PaymentPopup.delay.inSeconds}s; '
+      'foreground=$isForeground',
+    );
+    if (isForeground) {
       popups.enqueue(tx!);
     } else {
       await PaymentPopup.show(tx!.id!, repository);
@@ -125,8 +135,23 @@ class SmsSyncService with WidgetsBindingObserver {
       try {
         final messages = await reader.fetchInboxMessages();
         final scan = await compute(_processInBackground, messages);
+        final existingKeys = <String>{};
+        for (final tx in scan.transactions) {
+          final key = TransactionRepository.computeDedupeKey(tx);
+          if (await repository.findByDedupeKey(key) != null) {
+            existingKeys.add(key);
+          }
+        }
         final insert = await repository.insertNewFromScan(scan.transactions);
         await _advanceLastChecked(messages);
+        if (scan.transactions.length <= _maxCatchUpPopups) {
+          for (final tx in scan.transactions) {
+            final key = TransactionRepository.computeDedupeKey(tx);
+            if (existingKeys.contains(key)) continue;
+            final stored = await repository.findByDedupeKey(key);
+            if (stored != null) popups.enqueue(stored);
+          }
+        }
         completer.complete(FullImportResult(scan, insert));
       } catch (error, stackTrace) {
         completer.completeError(error, stackTrace);

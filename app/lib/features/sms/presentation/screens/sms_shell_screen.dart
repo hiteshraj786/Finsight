@@ -15,11 +15,9 @@ import 'empty_states.dart';
 import 'import_complete_screen.dart';
 import 'import_scanning_screen.dart';
 import 'manual_add_sheet.dart';
-import 'new_transaction_popup_sheet.dart';
 import 'review_list_screen.dart';
 import 'sms_access_off_screen.dart';
 import 'sms_permission_screen.dart';
-import 'transaction_detail_sheet.dart';
 import 'transactions_screen.dart';
 
 enum ShellFlowState {
@@ -65,14 +63,12 @@ class _SmsShellScreenState extends State<SmsShellScreen> {
   @override
   void initState() {
     super.initState();
-    _popupController.addListener(_onPopupQueueChanged);
     _checkInitialPermission();
     unawaited(_syncService.attach());
   }
 
   @override
   void dispose() {
-    _popupController.removeListener(_onPopupQueueChanged);
     _syncService.detach();
     super.dispose();
   }
@@ -88,48 +84,6 @@ class _SmsShellScreenState extends State<SmsShellScreen> {
         setState(() => _flowState = ShellFlowState.permissionRequired);
       }
     }
-  }
-
-  void _onPopupQueueChanged() {
-    if (!mounted) return;
-    if (_popupController.isShowing && _popupController.currentPopup != null) {
-      final tx = _popupController.currentPopup!;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showNewTransactionModal(tx);
-      });
-    }
-  }
-
-  void _showNewTransactionModal(ParsedTransaction tx) {
-    NewTransactionPopupSheet.show(
-      context,
-      transaction: tx,
-      onConfirm: (category) async {
-        if (tx.id != null) {
-          await widget.repository.updatePartyAndCategory(
-            tx.id!,
-            category: category,
-          );
-          await widget.repository.updateStatus(tx.id!, TransactionStatus.confirmed);
-        }
-        _popupController.markDismissed();
-      },
-      onIgnore: () async {
-        if (tx.id != null) {
-          await widget.repository.updateStatus(tx.id!, TransactionStatus.ignored);
-        }
-        _popupController.markDismissed();
-      },
-      onEdit: () {
-        _popupController.markDismissed();
-        TransactionDetailSheet.show(
-          context,
-          transaction: tx,
-          repository: widget.repository,
-          onSaved: () {},
-        );
-      },
-    );
   }
 
   Future<void> _startScan() async {

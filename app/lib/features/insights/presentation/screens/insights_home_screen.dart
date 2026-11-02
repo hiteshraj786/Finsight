@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/services/language_service.dart';
 import '../../data/insights_repository_provider.dart';
+import '../../../sms/data/transaction_repository.dart';
+import '../../../sms/models/parsed_transaction.dart';
 import '../../domain/category_colors.dart';
 import '../../domain/currency_formatter.dart';
 import '../../domain/models.dart';
@@ -39,11 +43,21 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
   List<BudgetEvaluation> _budgets = [];
   List<RecurringPattern> _recurring = [];
   List<AlertItem> _alerts = [];
+  StreamSubscription<List<ParsedTransaction>>? _transactionSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _transactionSubscription = TransactionRepository().watchAll().listen((_) {
+      if (mounted) unawaited(_loadData());
+    });
+  }
+
+  @override
+  void dispose() {
+    _transactionSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -103,21 +117,22 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
   Widget build(BuildContext context) {
     final unreadAlerts = _alerts.where((a) => !a.isRead).length;
 
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: scheme.surface,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 16),
           child: Container(
             width: 40,
             height: 40,
-            decoration: const BoxDecoration(
-              color: Color(0xFFEEE5FF),
+            decoration: BoxDecoration(
+              color: scheme.primaryContainer,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.person, color: Color(0xFF7F3DFF), size: 24),
+            child: Icon(Icons.person, color: scheme.primary, size: 24),
           ),
         ),
         title: Text(
@@ -125,7 +140,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
           style: GoogleFonts.inter(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF212325),
+            color: scheme.onSurface,
           ),
         ),
         centerTitle: true,
@@ -134,7 +149,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
             alignment: Alignment.center,
             children: [
               IconButton(
-                icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF212325), size: 26),
+                icon: Icon(Icons.notifications_none_rounded, color: scheme.onSurface, size: 26),
                 onPressed: () async {
                   await Navigator.push(
                     context,
@@ -162,9 +177,9 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF7F3DFF)))
+          ? Center(child: CircularProgressIndicator(color: scheme.primary))
           : RefreshIndicator(
-              color: const Color(0xFF7F3DFF),
+              color: scheme.primary,
               onRefresh: _loadData,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -298,6 +313,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
   }
 
   Widget _buildSpendingByCategorySection() {
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -309,7 +325,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
               style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF212325),
+                color: scheme.onSurface,
               ),
             ),
             GestureDetector(
@@ -325,7 +341,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF7F3DFF),
+                  color: scheme.primary,
                 ),
               ),
             ),
@@ -336,9 +352,9 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: scheme.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFF1F1FA)),
+            border: Border.all(color: scheme.outlineVariant),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.03),
@@ -360,7 +376,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF91919F),
+                        color: scheme.onSurfaceVariant,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -370,7 +386,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
-                        color: const Color(0xFF212325),
+                        color: scheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -414,14 +430,14 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                               style: GoogleFonts.inter(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFF212325),
+                                color: scheme.onSurface,
                               ),
                             ),
                             Text(
                               '${item.sharePercentage.toStringAsFixed(1)}% of monthly spend',
                               style: GoogleFonts.inter(
                                 fontSize: 12,
-                                color: const Color(0xFF91919F),
+                                color: scheme.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -435,7 +451,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                             style: GoogleFonts.inter(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF212325),
+                              color: scheme.onSurface,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -461,6 +477,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
   }
 
   Widget _buildSmartInsightsSection() {
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -474,11 +491,11 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                   style: GoogleFonts.inter(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF212325),
+                    color: scheme.onSurface,
                   ),
                 ),
                 const SizedBox(width: 6),
-                const Icon(Icons.auto_awesome, size: 18, color: Color(0xFF7F3DFF)),
+                Icon(Icons.auto_awesome, size: 18, color: scheme.primary),
               ],
             ),
             Text(
@@ -486,7 +503,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
               style: GoogleFonts.inter(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF91919F),
+                color: scheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -564,13 +581,14 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
     required String actionText,
     required VoidCallback onTap,
   }) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       width: 250,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFF1F1FA)),
+        border: Border.all(color: scheme.outlineVariant),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -603,7 +621,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
             style: GoogleFonts.inter(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF212325),
+              color: scheme.onSurface,
               height: 1.3,
             ),
           ),
@@ -614,7 +632,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
               style: GoogleFonts.inter(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF7F3DFF),
+                color: scheme.primary,
               ),
             ),
           ),
@@ -624,6 +642,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
   }
 
   Widget _buildExploreSection() {
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -632,7 +651,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
           style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF212325),
+            color: scheme.onSurface,
           ),
         ),
         const SizedBox(height: 14),
@@ -704,15 +723,16 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
     required String subtitle,
     required VoidCallback onTap,
   }) {
+    final scheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFFFAFAFD),
+          color: scheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFFF1F1FA)),
+          border: Border.all(color: scheme.outlineVariant),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -722,10 +742,10 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: const Color(0xFFEEE5FF),
+                color: scheme.primaryContainer,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: const Color(0xFF7F3DFF), size: 20),
+              child: Icon(icon, color: scheme.primary, size: 20),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -735,14 +755,14 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF212325),
+                    color: scheme.onSurface,
                   ),
                 ),
                 Text(
                   subtitle,
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: const Color(0xFF91919F),
+                    color: scheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -754,6 +774,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
   }
 
   Widget _buildCashflowCard() {
+    final scheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -766,9 +787,9 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFFFBF9FF),
+          color: scheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFFEEE5FF)),
+          border: Border.all(color: scheme.primaryContainer),
         ),
         child: Row(
           children: [
@@ -776,10 +797,10 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFF7F3DFF).withValues(alpha: 0.12),
+                color: scheme.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(Icons.show_chart_rounded, color: Color(0xFF7F3DFF), size: 24),
+              child: Icon(Icons.show_chart_rounded, color: scheme.primary, size: 24),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -791,7 +812,7 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                     style: GoogleFonts.inter(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF212325),
+                      color: scheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -799,13 +820,13 @@ class _InsightsHomeScreenState extends State<InsightsHomeScreen> {
                     'View projected balance and upcoming outflows'.tr(),
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: const Color(0xFF91919F),
+                      color: scheme.onSurfaceVariant,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFF7F3DFF)),
+            Icon(Icons.chevron_right_rounded, color: scheme.primary),
           ],
         ),
       ),
