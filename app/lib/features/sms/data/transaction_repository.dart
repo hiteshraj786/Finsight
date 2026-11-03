@@ -355,16 +355,6 @@ class TransactionRepository {
     final effectiveCategory = category ?? current?.category ?? 'Uncategorized';
     final norm = normalizeParty(effectiveParty);
 
-    final companion = TransactionsCompanion(
-      party: party != null ? Value(party) : const Value.absent(),
-      category: category != null ? Value(category) : const Value.absent(),
-      normalizedParty: Value(norm),
-      categorySource: const Value('user'),
-    );
-    await (_db.update(
-      _db.transactions,
-    )..where((t) => t.id.equals(id))).write(companion);
-
     if (effectiveCategory.isNotEmpty && effectiveCategory != 'Uncategorized') {
       await saveMerchantRule(
         effectiveParty,
@@ -372,6 +362,20 @@ class TransactionRepository {
         applyToPast: applyToPast,
       );
     }
+
+    // Always update the selected row after applying the merchant rule. The
+    // past-transaction query intentionally targets only auto-categorized rows,
+    // so the current user-edited row must be written explicitly.
+    await (_db.update(
+      _db.transactions,
+    )..where((t) => t.id.equals(id))).write(
+      TransactionsCompanion(
+        party: party != null ? Value(party) : const Value.absent(),
+        category: category != null ? Value(category) : const Value.absent(),
+        normalizedParty: Value(norm),
+        categorySource: const Value('user'),
+      ),
+    );
   }
 
   Future<void> confirmAllVisible(List<int> ids) async {

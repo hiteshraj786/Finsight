@@ -31,6 +31,8 @@ class NewTransactionPopupSheet extends StatefulWidget {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
       backgroundColor: Colors.transparent,
       builder: (ctx) => NewTransactionPopupSheet(
         transaction: transaction,

@@ -5,7 +5,7 @@ String formatIndianRupees(int amountPaise) {
 
   final String rupeesStr = rupees.toString();
   if (rupeesStr.length <= 3) {
-    return '₹$rupeesStr.$paiseStr';
+    return '$rupeesStr.$paiseStr';
   }
 
   final String lastThree = rupeesStr.substring(rupeesStr.length - 3);
@@ -19,5 +19,5 @@ String formatIndianRupees(int amountPaise) {
     formattedRemaining.write(remaining[i]);
   }
 
-  return '₹$formattedRemaining,$lastThree.$paiseStr';
+  return '$formattedRemaining,$lastThree.$paiseStr';
 }

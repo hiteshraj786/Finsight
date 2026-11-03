@@ -23,7 +23,7 @@ class AmountText extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDebit = type == TransactionType.debit;
     final prefix = isDebit ? '- ' : '+ ';
-    final formatted = '$prefix${formatIndianRupees(amountPaise)}';
+    final formatted = '$prefix₹${formatIndianRupees(amountPaise)}';
 
     final Color color;
     if (isIgnored) {

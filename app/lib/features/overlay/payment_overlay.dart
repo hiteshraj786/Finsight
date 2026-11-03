@@ -35,7 +35,6 @@ class PaymentOverlay extends StatefulWidget {
 class _PaymentOverlayState extends State<PaymentOverlay> {
   final _repository = TransactionRepository();
   StreamSubscription<dynamic>? _messages;
-  Timer? _closeTimer;
   ParsedTransaction? _transaction;
   String _category = 'Uncategorized';
   bool _saving = false;
@@ -50,7 +49,6 @@ class _PaymentOverlayState extends State<PaymentOverlay> {
   @override
   void dispose() {
     _messages?.cancel();
-    _closeTimer?.cancel();
     super.dispose();
   }
 
@@ -77,12 +75,9 @@ class _PaymentOverlayState extends State<PaymentOverlay> {
       _category = transaction.category;
       _saving = false;
     });
-    _closeTimer?.cancel();
-    _closeTimer = Timer(const Duration(seconds: 20), _close);
   }
 
   Future<void> _close() async {
-    _closeTimer?.cancel();
     try {
       await FlutterOverlayWindow.closeOverlay();
     } catch (_) {}
@@ -119,12 +114,7 @@ class _PaymentOverlayState extends State<PaymentOverlay> {
       bottom: false,
       child: Padding(
         padding: const EdgeInsets.all(10),
-        child: GestureDetector(
-          onTapDown: (_) {
-            _closeTimer?.cancel();
-            _closeTimer = Timer(const Duration(seconds: 20), _close);
-          },
-          child: Card(
+        child: Card(
             elevation: 10,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(14, 10, 8, 8),
@@ -212,7 +202,6 @@ class _PaymentOverlayState extends State<PaymentOverlay> {
                     ],
                   ),
                 ],
-              ),
             ),
           ),
         ),
