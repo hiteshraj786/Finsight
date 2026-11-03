@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_routes.dart';
 import '../../core/services/pin_service.dart';
 import '../../core/services/auth_service.dart';
@@ -19,7 +18,9 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _glowAnimation;
+  late Animation<Offset> _finSlideAnimation;
+  late Animation<Offset> _sightSlideAnimation;
+  late Animation<double> _sparkleAnimation;
   bool _waitingForGoogle = false;
   bool _showOAuthEscapeHatch = false;
   @override
@@ -44,10 +45,30 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    _glowAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _finSlideAnimation = Tween<Offset>(
+      begin: const Offset(-0.08, 0),
+      end: Offset.zero,
+    ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.3, 0.8, curve: Curves.easeInOut),
+        curve: const Interval(0.08, 0.62, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    _sightSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.08, 0),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.2, 0.78, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    _sparkleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.48, 0.92, curve: Curves.easeOutBack),
       ),
     );
 
@@ -112,16 +133,11 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF8B47FF), Color(0xFF7F3DFF), Color(0xFF7231E6)],
-          ),
-        ),
+        color: Theme.of(context).colorScheme.surface,
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
@@ -130,58 +146,22 @@ class _SplashScreenState extends State<SplashScreen>
                 opacity: _fadeAnimation,
                 child: ScaleTransition(
                   scale: _scaleAnimation,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Glow effect behind the "n"
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        child: Opacity(
-                          opacity: _glowAnimation.value,
-                          child: Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.pinkAccent.withValues(
-                                    alpha: 0.6,
-                                  ),
-                                  blurRadius: 60,
-                                  spreadRadius: 20,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Logo text
-                      Text(
-                        'Finsight',
-                        style: GoogleFonts.inter(
-                          fontSize: 42,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textWhite,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      if (_waitingForGoogle && _showOAuthEscapeHatch)
-                        Positioned(
-                          bottom: -92,
-                          child: TextButton(
+                  child: _AnimatedFinSightLogo(
+                    finAnimation: _finSlideAnimation,
+                    sightAnimation: _sightSlideAnimation,
+                    sparkleAnimation: _sparkleAnimation,
+                    escapeHatch: _waitingForGoogle && _showOAuthEscapeHatch
+                        ? TextButton(
                             onPressed: _cancelGoogleSignIn,
                             child: Text(
                               'Having trouble? Return to sign in',
                               style: GoogleFonts.inter(
-                                color: AppColors.textWhite,
+                                color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                          ),
-                        ),
-                    ],
+                          )
+                        : null,
                   ),
                 ),
               ),
@@ -189,6 +169,81 @@ class _SplashScreenState extends State<SplashScreen>
           },
         ),
       ),
+    );
+  }
+}
+
+class _AnimatedFinSightLogo extends StatelessWidget {
+  final Animation<Offset> finAnimation;
+  final Animation<Offset> sightAnimation;
+  final Animation<double> sparkleAnimation;
+  final Widget? escapeHatch;
+
+  const _AnimatedFinSightLogo({
+    required this.finAnimation,
+    required this.sightAnimation,
+    required this.sparkleAnimation,
+    this.escapeHatch,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final logoStyle = GoogleFonts.inter(
+      fontSize: 64,
+      fontWeight: FontWeight.w800,
+      letterSpacing: -4,
+      height: 0.95,
+    );
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SlideTransition(
+                  position: finAnimation,
+                  child: Text(
+                    'fin',
+                    style: logoStyle.copyWith(color: scheme.onSurface),
+                  ),
+                ),
+                SlideTransition(
+                  position: sightAnimation,
+                  child: Text(
+                    'sight',
+                    style: logoStyle.copyWith(color: scheme.primary),
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              top: -18,
+              left: 138,
+              child: FadeTransition(
+                opacity: sparkleAnimation,
+                child: ScaleTransition(
+                  scale: sparkleAnimation,
+                  child: Icon(
+                    Icons.auto_awesome_rounded,
+                    size: 28,
+                    color: scheme.primary,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (escapeHatch != null) ...[
+          const SizedBox(height: 52),
+          escapeHatch!,
+        ],
+      ],
     );
   }
 }
