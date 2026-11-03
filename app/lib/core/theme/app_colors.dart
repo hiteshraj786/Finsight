@@ -17,6 +17,9 @@ class AppColors {
   static const Color background = Color(0xFFFFFFFF);
   static const Color surface = Color(0xFFF6F6F6);
   static const Color scaffoldBackground = Color(0xFFFFFFFF);
+  static const Color splashBackground = Color(0xFF141118);
+  static const Color splashForeground = Color(0xFFEDEAF2);
+  static const Color splashPrimary = Color(0xFFA475FF);
 
   // Text
   static const Color textPrimary = Color(0xFF212325);

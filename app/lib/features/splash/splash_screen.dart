@@ -4,6 +4,7 @@ import '../../core/constants/app_routes.dart';
 import '../../core/services/pin_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/profile_service.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -133,11 +134,11 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: AppColors.splashBackground,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.splashBackground,
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
@@ -156,7 +157,7 @@ class _SplashScreenState extends State<SplashScreen>
                             child: Text(
                               'Having trouble? Return to sign in',
                               style: GoogleFonts.inter(
-                                color: Theme.of(context).colorScheme.primary,
+                                color: AppColors.splashPrimary,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -188,7 +189,6 @@ class _AnimatedFinSightLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final logoStyle = GoogleFonts.inter(
       fontSize: 64,
       fontWeight: FontWeight.w800,
@@ -210,14 +210,14 @@ class _AnimatedFinSightLogo extends StatelessWidget {
                   position: finAnimation,
                   child: Text(
                     'fin',
-                    style: logoStyle.copyWith(color: scheme.onSurface),
+                    style: logoStyle.copyWith(color: AppColors.splashForeground),
                   ),
                 ),
                 SlideTransition(
                   position: sightAnimation,
                   child: Text(
                     'sight',
-                    style: logoStyle.copyWith(color: scheme.primary),
+                    style: logoStyle.copyWith(color: AppColors.splashPrimary),
                   ),
                 ),
               ],
@@ -232,7 +232,7 @@ class _AnimatedFinSightLogo extends StatelessWidget {
                   child: Icon(
                     Icons.auto_awesome_rounded,
                     size: 28,
-                    color: scheme.primary,
+                    color: AppColors.splashPrimary,
                   ),
                 ),
               ),
