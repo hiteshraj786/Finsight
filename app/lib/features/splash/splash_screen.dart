@@ -18,6 +18,9 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  late Animation<Offset> _finSlideAnimation;
+  late Animation<Offset> _sightSlideAnimation;
+  late Animation<double> _sparkleAnimation;
   bool _waitingForGoogle = false;
   bool _showOAuthEscapeHatch = false;
   @override
@@ -39,6 +42,33 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.0, 0.6, curve: Curves.easeOutBack),
+      ),
+    );
+
+    _finSlideAnimation = Tween<Offset>(
+      begin: const Offset(-0.08, 0),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.08, 0.62, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    _sightSlideAnimation = Tween<Offset>(
+      begin: const Offset(0.08, 0),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.2, 0.78, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    _sparkleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.48, 0.92, curve: Curves.easeOutBack),
       ),
     );
 
@@ -116,7 +146,10 @@ class _SplashScreenState extends State<SplashScreen>
                 opacity: _fadeAnimation,
                 child: ScaleTransition(
                   scale: _scaleAnimation,
-                  child: _FinSightLogo(
+                  child: _AnimatedFinSightLogo(
+                    finAnimation: _finSlideAnimation,
+                    sightAnimation: _sightSlideAnimation,
+                    sparkleAnimation: _sparkleAnimation,
                     escapeHatch: _waitingForGoogle && _showOAuthEscapeHatch
                         ? TextButton(
                             onPressed: _cancelGoogleSignIn,
@@ -140,24 +173,71 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-class _FinSightLogo extends StatelessWidget {
+class _AnimatedFinSightLogo extends StatelessWidget {
+  final Animation<Offset> finAnimation;
+  final Animation<Offset> sightAnimation;
+  final Animation<double> sparkleAnimation;
   final Widget? escapeHatch;
 
-  const _FinSightLogo({
+  const _AnimatedFinSightLogo({
+    required this.finAnimation,
+    required this.sightAnimation,
+    required this.sparkleAnimation,
     this.escapeHatch,
   });
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final logoStyle = GoogleFonts.inter(
+      fontSize: 64,
+      fontWeight: FontWeight.w800,
+      letterSpacing: -4,
+      height: 0.95,
+    );
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset(
-          'assets/images/finsight_logo.png',
-          width: 156,
-          height: 156,
-          fit: BoxFit.contain,
-          filterQuality: FilterQuality.high,
+        Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SlideTransition(
+                  position: finAnimation,
+                  child: Text(
+                    'fin',
+                    style: logoStyle.copyWith(color: scheme.onSurface),
+                  ),
+                ),
+                SlideTransition(
+                  position: sightAnimation,
+                  child: Text(
+                    'sight',
+                    style: logoStyle.copyWith(color: scheme.primary),
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              top: -18,
+              left: 138,
+              child: FadeTransition(
+                opacity: sparkleAnimation,
+                child: ScaleTransition(
+                  scale: sparkleAnimation,
+                  child: Icon(
+                    Icons.auto_awesome_rounded,
+                    size: 28,
+                    color: scheme.primary,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         if (escapeHatch != null) ...[
           const SizedBox(height: 52),

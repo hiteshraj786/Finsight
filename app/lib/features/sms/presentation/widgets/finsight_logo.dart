@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class FinSightLogo extends StatelessWidget {
   final double size;
@@ -14,16 +15,28 @@ class FinSightLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final iconBox = Container(
       width: size,
       height: size,
-      child: ClipRRect(
+      decoration: BoxDecoration(
+        color: AppColors.primary,
         borderRadius: BorderRadius.circular(size * 0.28),
-        child: Image.asset(
-          'assets/images/finsight_logo.png',
-          fit: BoxFit.cover,
-          filterQuality: FilterQuality.high,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x337F3DFF),
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        'F',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: size * 0.6,
+          fontWeight: FontWeight.w800,
+          fontFamily: 'Inter',
         ),
       ),
     );
@@ -41,7 +54,7 @@ class FinSightLogo extends StatelessWidget {
           style: TextStyle(
             fontSize: fontSize,
             fontWeight: FontWeight.w700,
-            color: scheme.onSurface,
+            color: AppColors.textPrimary,
             letterSpacing: -0.5,
             fontFamily: 'Inter',
           ),
